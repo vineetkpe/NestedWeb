@@ -1,6 +1,6 @@
 # AI Visibility OS: agent contract
 
-Read this, [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), and the relevant security/testing docs before editing. Product source: [foundation brief](docs/foundation-brief.md); [scope and assumptions](docs/product-scope.md) explicitly identifies missing requirements.
+Read this, [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), and the relevant security/testing docs before editing. Product source: [Task 01 scope and success criteria](docs/product-scope.md); the original [foundation brief](docs/foundation-brief.md) supplies engineering context. Primary ICP: SEO/GEO agencies serving B2B SaaS clients. Core workflow: Measure → Explain → Recommend → Monitor.
 
 ## Current reality
 
@@ -21,6 +21,24 @@ Fresh Next.js App Router / React / strict TypeScript / Tailwind app using npm an
 11. Before provider calls: authenticate, authorize, atomically enforce entitlement/usage limits, reserve worst-case cost, and enforce retry/concurrency/deadline bounds. Fail closed on unknown limits. UI is never billing authority.
 12. Test risk, not coverage percentages. Add regression tests for substantive bug fixes; use TDD for business rules and trust boundaries. Do not delete useful work to satisfy a generic skill's TDD ritual.
 13. Finish by reviewing the actual diff and running applicable checks. For code changes use `npm run verify` and `npm audit`; report commands, results, and remaining limits honestly. Browser changes need desktop/mobile and keyboard inspection. Never label unrun tests as passing.
+
+## Task execution contract
+
+Follow the [Levels 0–6 sequence and exit criteria](docs/product-scope.md#development-sequence-and-level-exit-criteria). Work in small, reviewable tasks with an explicit level, deliverable, acceptance criteria, and stop condition. Document the reason and affected prerequisites in ARCHITECTURE.md before changing the order. Finishing one task does not authorize starting the next. Task 01 is documentation only; Task 02 is manual agency workflow validation, not SaaS implementation.
+
+## Definition of Done
+
+Every implementation task must satisfy all applicable items before completion:
+
+- Correct functionality meets the task's stated acceptance criteria, including meaningful failure cases.
+- Type-safe implementation and trust-boundary validation; no `any`, `@ts-ignore`, lint/type suppressions, or fake assertions used to make checks pass.
+- Appropriate automated tests exercise the actual risk. UI changes include accessibility checks, desktop/mobile behavior, and keyboard inspection.
+- Security review covers the surfaces changed. No secrets reach browser code, props, URLs, logs, or artifacts; no fake data is presented as real customer data; no AI observations, citations, metrics, or supporting evidence are fabricated.
+- Dependencies and architecture are necessary: necessity → reuse → standard library/native capability → installed dependency → smallest correct implementation.
+- `npm run verify` passes, covering formatting, lint, strict types, production build, and the existing test suite. Run additional boundary tests introduced by the task. Check `npm audit` when code or dependencies change; review findings without forced fixes or suppressed failures.
+- Review the actual Git diff, preserve unrelated work, and update documentation when architecture or behavior changes. Report commands, results, and remaining limitations honestly; unavailable checks are not passes.
+
+Documentation-only tasks run the checks their instructions require; Task 01 requires the full `npm run verify`. Stop at the task's acceptance boundary. Do not commit unless instructed.
 
 ## Skills and framework references
 
