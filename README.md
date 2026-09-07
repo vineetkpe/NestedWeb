@@ -38,4 +38,4 @@ npm audit
 | [docs/agent-skills.md](docs/agent-skills.md)           | Installed tools, sources, trust review            |
 | [docs/foundation-report.md](docs/foundation-report.md) | Foundation deliverables and verification evidence |
 
-No deployment or git commit was requested. The existing editor MCP configuration remains intact.
+The foundation is committed on [GitHub](https://github.com/vineetkpe/NestedWeb) at `b13a11e`. Its [hosted foundation checks passed](https://github.com/vineetkpe/NestedWeb/actions/runs/34078930882). No deployment has been created. The existing `.vscode/mcp.json` remains intact and local.

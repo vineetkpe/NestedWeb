@@ -1,10 +1,10 @@
 # Foundation implementation report
 
-Status: foundation complete and locally verified. Date: 2026-09-07. This is a development foundation, not a completed monitoring product.
+Status: foundation complete; verified locally and in hosted GitHub CI. Date: 2026-09-07. This is a development foundation, not a completed monitoring product.
 
 ## Repository and scope
 
-Started with an unborn Git repository containing only `.vscode/mcp.json`. No separate product specification was available. Preserved the user's brief in `docs/foundation-brief.md` and documented assumptions in `docs/product-scope.md`. Existing MCP configuration was preserved. No commit, remote service, deployment, or product data was created.
+Started with an unborn local Git repository containing only `.vscode/mcp.json`. No separate product specification was available. Preserved the user's brief in `docs/foundation-brief.md` and documented assumptions in `docs/product-scope.md`. Existing MCP configuration was preserved. On the user's subsequent instruction, preserved GitHub's initial README commit and committed/pushed the foundation to `main` as [b13a11e](https://github.com/vineetkpe/NestedWeb/commit/b13a11e5256132ef2138de061c55de294c6729cb). The editor MCP configuration remains untracked and local. No database, deployment, or product data was created.
 
 ## Deliverables
 
@@ -53,6 +53,8 @@ Remaining warnings: ESLint 9 is deprecated upstream and awaits compatible upstre
 
 ## Boundaries and next phase
 
-No auth, database migrations, integrations, worker, billing, synthetic scores, or speculative components. Unit/domain and DB integration suites are absent because those implementations are absent. CI is configured but has not run on a hosted Linux runner. No full cross-browser, screen-reader, or production security certification is claimed.
+No auth, database migrations, integrations, worker, billing, synthetic scores, or speculative components. Unit/domain and DB integration suites are absent because those implementations are absent. [Hosted CI run 34078930882](https://github.com/vineetkpe/NestedWeb/actions/runs/34078930882) completed successfully on Ubuntu for `b13a11e`; the GitHub API confirms all job steps passed, including `npm ci`, browser installation, `npm run verify`, and `npm audit --audit-level=high`. No full cross-browser, screen-reader, or production security certification is claimed.
+
+The follow-up request is limited to finishing the foundation. Auth/workspace implementation and deployment remain future phases. No Supabase environment files or local Docker/Supabase/PostgreSQL commands were found during the follow-up inspection. That is an implementation prerequisite for the next phase, not an unfinished dependency of this static preview.
 
 Next: validate the agency workflow, then implement Supabase Auth plus one workspace/project slice with migrations, membership authorization, RLS allow/deny tests, generated DB types, and real UI states. Only then add one bounded grounded provider path and traceable raw evidence.

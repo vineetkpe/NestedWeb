@@ -24,7 +24,7 @@ Ponytail defaults to `full`. Project safety rules override minimal-code shortcut
 
 ## Deployment boundary
 
-No hosting target, production domain, deploy credentials, environment, or deployment was created. CI is local repository configuration until pushed to a GitHub host. Before the first deployment: run `npm ci`, `npm run verify`, `npm audit`; select host/runtime; configure HTTPS/HSTS and the CSP needed for actual routes; define private security contact and monitoring; inspect public artifacts. No deployment secrets are required for the current tests.
+No hosting target, production domain, deploy credentials, environment, or deployment was created. The [GitHub Actions foundation run](https://github.com/vineetkpe/NestedWeb/actions/runs/34078930882) passed on the hosted Ubuntu runner for commit `b13a11e`, including clean install, verification, and the dependency audit. This verifies that commit, not subsequent changes or a deployed environment. Before the first deployment: run `npm ci`, `npm run verify`, `npm audit`; select host/runtime; configure HTTPS/HSTS and the CSP needed for actual routes; define private security contact and monitoring; inspect public artifacts. No deployment secrets are required for the current tests.
 
 With auth/data: separate development/staging/production projects, validate server environment, review key permissions and RLS, establish retention, verify backup restore, and run migrations in a reviewed sequence. Prefer expand/contract migrations and forward repair. Application rollback cannot undo a destructive migration; never automate database reset as rollback.
 

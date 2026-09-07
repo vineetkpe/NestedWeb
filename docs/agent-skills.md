@@ -52,7 +52,7 @@ Upstream license notices for Microsoft Playwright (Apache-2.0), Superpowers, sha
 
 Vendored skills work without reinstall. To review inventory: `npx --yes skills@1.5.23 list --json`. Before an update read source changes including references/scripts, compare with project rules, update only the selected skills, and review `skills-lock.json` plus vendored diff. Do not run blind bulk updates. Skills CLI telemetry/security services may receive public package metadata; never pass customer data through CLI metadata flags.
 
-Skills are available on the next turn. Supporting scripts and referenced workflows are not automatically authorized or installed merely because SKILL.md mentions them. Source review is not exhaustive security certification. Product and repository requirements prevail over generic instructions to commit, install, delegate, stop, or discard code.
+All eleven project skills and the Ponytail skills are visible in the refreshed session catalog. Future skill installations become available on a subsequent turn. Supporting scripts and referenced workflows are not automatically authorized or installed merely because SKILL.md mentions them. Source review is not exhaustive security certification. Product and repository requirements prevail over generic instructions to commit, install, delegate, stop, or discard code.
 
 ## Ponytail
 
