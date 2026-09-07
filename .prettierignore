@@ -1,0 +1,12 @@
+node_modules
+.next
+.agents
+.vscode
+.foundation-cache
+docs/reference/airtable.generated.md
+docs/foundation-brief.md
+package-lock.json
+skills-lock.json
+next-env.d.ts
+playwright-report
+test-results

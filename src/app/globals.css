@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #181d26;
+  --card: #ffffff;
+  --muted: #eef2f6;
+  --muted-foreground: #526071;
+  --border: #d8dee7;
+  --input: #738196;
+  --primary: #181d26;
+  --primary-hover: #303b4b;
+  --primary-foreground: #ffffff;
+  --accent: #e8effa;
+  --accent-foreground: #174b97;
+  --success: #166534;
+  --warning: #854d0e;
+  --destructive: #b42318;
+  --ring: #1b61c9;
+  --chart-1: #1b61c9;
+  --chart-2: #087e8b;
+  --chart-3: #9a6700;
+  --chart-4: #7952a3;
+  --chart-5: #b44732;
+  --radius: 0.5rem;
+  --shadow-popover: 0 8px 24px rgb(24 29 38 / 12%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --font-sans: system-ui, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
