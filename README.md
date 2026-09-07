@@ -1,6 +1,6 @@
 # AI Visibility OS
 
-Foundation for agency-first, evidence-backed AI-answer monitoring. The app currently contains one honest product-preview page. Authentication, data collection, billing, and workspaces are **not implemented**.
+Foundation for agency-first, evidence-backed AI-answer monitoring. The app contains an honest product preview at `/` and a report prototype at `/report`, with unexecuted query templates and empty evidence/metric/action states. The [report specification](docs/report-specification.md) defines the future records and auditable formulas. Authentication, data collection, metric calculations, billing, and workspaces are **not implemented**.
 
 ## Run locally
 

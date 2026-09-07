@@ -2,7 +2,7 @@
 
 ## Current implementation
 
-One Next.js App Router application. `src/app/page.tsx` renders static preview content; `layout.tsx` sets metadata/language; `globals.css` owns design tokens. `next.config.ts` provides baseline response headers. Browser tests in `tests/e2e` exercise the production build. No network data path or server state exists.
+One Next.js App Router application. `src/app/page.tsx` renders static preview content and links to the static report prototype at `src/app/report/page.tsx`; `layout.tsx` sets metadata/language; `globals.css` owns design tokens. `next.config.ts` provides baseline response headers. Browser tests in `tests/e2e` exercise the production build. No network data path or server state exists.
 
 ## ADR-001: small application with explicit boundaries
 
@@ -40,3 +40,9 @@ See [database-foundation.md](docs/database-foundation.md) for entities and tenan
 Status: proposed for the first scanner. Durable Postgres job rows plus one bounded worker are the initial candidate. A synchronous web request cannot safely own retries and paid provider execution. A distributed broker is unnecessary without throughput evidence. The worker runtime depends on the eventual host; do not implement `setTimeout` or unawaited promises as a queue.
 
 See [scanning-architecture.md](docs/scanning-architecture.md). Revisit for measured claim contention, scheduler delay, or runtime limits. No provider SDK, broker, scheduler, billing service, or observability vendor is installed.
+
+## ADR-004: report contract before the data pipeline
+
+Status: accepted for the user's explicit Task 03 instruction. The user reports initial agency validation complete and authorizes a report specification/prototype before authentication, scanner, and intelligence implementation. Individual Task 02 interview/pilot findings remain undocumented; this decision does not invent those findings or mark the research record Done.
+
+This is a bounded exception to implementing Levels 1–4 in order: define the output before automating its production. Use one static `/report` route with explicit empty states and documented future record/metric contracts in [report-specification.md](docs/report-specification.md). A populated dashboard, generic report engine, new dependencies, and speculative data-layer code are unnecessary. There is no untrusted input or stored client information, so existing static security boundaries apply. Add validation, tenant protection, provider controls, metric tests, and stricter CSP when the respective real surfaces are implemented. This task does not authorize those integrations or Task 04.

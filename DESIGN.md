@@ -12,7 +12,7 @@ The reference describes Airtable's marketing site. Retain white canvas, dark ink
 
 An analyst must identify scope, observation date, result, and evidence in that order. An agency must always know whose project it is viewing. Use page title, short description, context/filter row, primary data surface, then supporting detail. Prefer a table when users compare rows. Avoid decorative widgets and synthetic scores.
 
-The current shell has no workspace or production data. It identifies itself as a product preview and explains the evidence method. No fake accounts, subscriptions, scan controls, numerical dashboard, or inactive navigation.
+The current shell has no workspace or production data. `/` identifies itself as a product preview and explains the evidence method; `/report` presents a report prototype with unconfigured company/date, unexecuted query templates, separate evidence layers, an unavailable-metrics table, and no unsupported actions. Use one reading surface with section anchors and semantic headings; all navigation leads to real content. No fake accounts, subscriptions, scan controls, numerical dashboard, or inactive navigation.
 
 ## Colors
 

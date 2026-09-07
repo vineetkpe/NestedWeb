@@ -4,7 +4,7 @@ Read this, [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), and the r
 
 ## Current reality
 
-Fresh Next.js App Router / React / strict TypeScript / Tailwind app using npm and Node 24. One static product-preview route. No auth, database, provider calls, jobs, billing, or production metrics. Do not describe documented plans as implemented features. `.vscode/mcp.json` predates this work; preserve it and keep credentials out of output.
+Next.js App Router / React / strict TypeScript / Tailwind app using npm and Node 24. Static product preview at `/` and empty report prototype at `/report`; future report contracts in [report-specification.md](docs/report-specification.md). No auth, database, provider calls, jobs, billing, or production metrics. Do not describe documented plans as implemented features. `.vscode/mcp.json` predates this work; preserve it and keep credentials out of output.
 
 ## Work rules
 

@@ -15,6 +15,8 @@ Or `npm run verify` after install/browser setup. PowerShell uses `.cmd` wrappers
 
 Current tests cover honest observation status, methodology navigation, no browser runtime errors, keyboard skip link, desktop/mobile overflow, axe WCAG A/AA checks, security headers, and actual 404 behavior. Playwright captures traces/screenshots on failure; `npx playwright show-report` opens the report. Reports may later contain tenant data: keep them ignored, private, and short-lived.
 
+Report prototype tests additionally exercise navigation from/to the preview, unconfigured company/date, unexecuted templates, separate empty evidence/action states, all five unavailable metrics, absence of fabricated time/source links, section anchors, keyboard flow, axe, and 320px reflow. They save report screenshots in ignored `test-results` for visual review. There are five test definitions across desktop/mobile Chromium (ten cases). Future metric formulas in [report-specification.md](docs/report-specification.md) are documentation only; no calculator tests or populated-data security guarantees are claimed.
+
 No domain unit suite or database integration suite exists: there is no business logic or DB implementation to test. This is an explicit absence, not a skipped passing suite. Do not create meaningless tests of static copy solely for coverage.
 
 ## First business feature

@@ -20,8 +20,8 @@ The original foundation brief is preserved verbatim. The absence of a detailed p
 
 ## Current implementation, checked against code
 
-- `src/app/page.tsx` is one static preview with an honest empty observation state and methodology explanation. `layout.tsx` supplies metadata; `globals.css` supplies semantic design tokens. No dashboard or data flow exists.
-- `next.config.ts` sets baseline response headers. npm scripts provide formatting, lint, strict types, build, and Playwright checks. Three browser tests run on desktop/mobile Chromium, including keyboard, axe, empty-state, header, and 404 checks.
+- `src/app/page.tsx` is a static preview with an honest empty observation state and methodology explanation. It links to `src/app/report/page.tsx`, a static report prototype with empty evidence/metric/action states and unexecuted query templates. `layout.tsx` supplies metadata; `globals.css` supplies semantic design tokens. No dashboard or data flow exists.
+- `next.config.ts` sets baseline response headers. npm scripts provide formatting, lint, strict types, build, and Playwright checks. Five browser tests run on desktop/mobile Chromium, including report navigation, keyboard, axe, empty-state, header, and 404 checks.
 - Next.js/React/TypeScript/Tailwind, GitHub CI, engineering contracts, and reviewed skills under `.agents/skills` already exist. There is no separate `skills/` directory to recreate.
 - Auth, workspaces, memberships, projects, database, crawling, provider integrations, scans, metrics, billing, and deployment are only future requirements. The completed development foundation is not completion of Level 1 below.
 
@@ -87,4 +87,4 @@ Before the relevant implementation task, explicitly resolve provider/model, craw
 
 Repository inspected; product scope, V1 boundaries, evidence model, development order, and task Definition of Done documented; existing app still works; required verification passes. Then stop without implementing product functionality or starting Task 02.
 
-Next task: **Task 02 — Validate agency workflow manually**.
+Task 01 handoff: **Task 02 — Validate agency workflow manually**. The user subsequently authorized **Task 03 — Create the First Real AI Visibility Report**, limited to a report specification and empty working prototype. See [report specification](report-specification.md) and [ADR-004](../ARCHITECTURE.md#adr-004-report-contract-before-the-data-pipeline) for the explicit sequencing exception; the interview documentation gaps remain recorded, not filled with assumed findings. Task 04 is not authorized.

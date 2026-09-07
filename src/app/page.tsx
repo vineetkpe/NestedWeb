@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <>
@@ -40,6 +42,12 @@ export default function HomePage() {
             >
               How evidence works
             </a>
+            <Link
+              href="/report"
+              className="inline-flex min-h-11 items-center text-sm font-medium text-accent-foreground underline underline-offset-4"
+            >
+              Explore the report prototype
+            </Link>
           </div>
           <aside
             aria-labelledby="observation-title"

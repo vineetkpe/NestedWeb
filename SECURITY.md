@@ -2,7 +2,7 @@
 
 ## Current exposure and review
 
-The implemented app is a static preview: no user input, auth/session, DB, provider requests, uploads, webhooks, or billing. React renders authored text; there is no HTML injection or URL-fetch path. Baseline headers deny framing and object embedding, constrain forms/base URLs, disable unused device permissions, suppress the framework header, and avoid referrer leakage. Dependencies are pinned and audited; lint rejects explicit unsafe HTML rendering.
+The implemented app consists of a static preview and empty report prototype: no user input, auth/session, DB, provider requests, uploads, webhooks, or billing. React renders authored text and clearly labeled query templates; there is no HTML injection or URL-fetch path. The report has no live citation links or customer records. Baseline headers deny framing and object embedding, constrain forms/base URLs, disable unused device permissions, suppress the framework header, and avoid referrer leakage. Dependencies are pinned and audited; lint rejects explicit unsafe HTML rendering.
 
 The current CSP intentionally has **no script-src restriction**: static Next.js hydration includes inline scripts. This is a limited baseline, not an XSS defense claim. Before adding authenticated/untrusted content, implement and test a nonce-based CSP (or a supported hash-based alternative); allow only required origins. Do not add blanket `unsafe-inline` to claim a strict policy. HSTS belongs at the eventual HTTPS host after TLS is verified; it is not enabled for local HTTP. [Next.js CSP guidance](https://nextjs.org/docs/app/guides/content-security-policy).
 

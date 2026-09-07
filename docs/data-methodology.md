@@ -2,6 +2,8 @@
 
 Status: methodology contract for future implementation. No observations, metric functions, or recommendations exist in the current app.
 
+The [Task 03 report specification](report-specification.md) defines the first report's record contracts and proposed Mention Rate, Recommendation Rate, AI Share of Voice, Citation Share, and Competitor Gap formulas. `/report` presents those metric names as unavailable; definitions are documented but calculation/normalization code is not implemented.
+
 ## Four separate layers
 
 | Layer                     | Meaning                                                                       | Required provenance                                                                                                                                                                                                                               |
