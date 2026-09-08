@@ -1,8 +1,23 @@
 {
-  "servers": {
-    "notion": {
-      "type": "http",
-      "url": "https://mcp.notion.com/mcp"
-    }
-  }
+	"servers": {
+		"supabase": {
+			"type": "http",
+			"url": "https://mcp.supabase.com/mcp?project_ref=ckekmlrybsztcplqaipu&features=docs,account,database,debugging,development,functions,branching&read_only=true",
+			"headers": {
+				"Authorization": "Bearer ${input:supabase-pat}"
+			}
+		},
+		"notion": {
+			"type": "http",
+			"url": "https://mcp.notion.com/mcp"
+		}
+	},
+	"inputs": [
+		{
+			"id": "supabase-pat",
+			"type": "promptString",
+			"description": "Supabase Personal Access Token (enter token only, without Bearer)",
+			"password": true
+		}
+	]
 }

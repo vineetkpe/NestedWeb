@@ -11,13 +11,17 @@ npm test
 npm audit
 ```
 
-Or `npm run verify` after install/browser setup. PowerShell uses `.cmd` wrappers. `check` runs formatting, lint, and `next typegen` followed by strict TypeScript. `test` runs Playwright against the production build on port 3100; no credentials, real provider calls, or dev-server reuse. Build first after source changes.
+Or `npm run verify` after install/browser setup. PowerShell uses `.cmd` wrappers. `check` runs formatting, lint, and `next typegen` followed by strict TypeScript. `test` runs the Node unit/security suite followed by Playwright against the production build on port 3100; no credentials, real provider calls, or dev-server reuse. Build first after source changes.
 
 Current tests cover honest observation status, methodology navigation, no browser runtime errors, keyboard skip link, desktop/mobile overflow, axe WCAG A/AA checks, security headers, and actual 404 behavior. Playwright captures traces/screenshots on failure; `npx playwright show-report` opens the report. Reports may later contain tenant data: keep them ignored, private, and short-lived.
 
 Report prototype tests additionally exercise navigation from/to the preview, unconfigured company/date, unexecuted templates, separate empty evidence/action states, all five unavailable metrics, absence of fabricated time/source links, section anchors, keyboard flow, axe, and 320px reflow. They save report screenshots in ignored `test-results` for visual review. There are five test definitions across desktop/mobile Chromium (ten cases). Future metric formulas in [report-specification.md](docs/report-specification.md) are documentation only; no calculator tests or populated-data security guarantees are claimed.
 
-No domain unit suite or database integration suite exists: there is no business logic or DB implementation to test. This is an explicit absence, not a skipped passing suite. Do not create meaningless tests of static copy solely for coverage.
+`npm run test:unit` uses Node 24's built-in runner and TypeScript type stripping for `src/domain`, `src/application`, and `src/infrastructure` tests. It covers website normalization, malicious URL syntax, IP subnet boundaries, DNS response validation, mixed public/private answers, changed resolution on a later call, cancellation, deadlines, and sanitized failures. DNS tests replace only external resolver methods; no test resolves a public hostname or fetches a website. `allowImportingTsExtensions` supports explicit `.ts` imports under the existing `noEmit` typecheck. The full `verify` command and existing CI now include these tests without new dependencies.
+
+A draft database integration suite exists at `supabase/tests/core_tenancy_test.sql`; it has not executed successfully because the local Supabase database is unavailable. This is an unresolved check, not a passing suite. Domain intake has no Supabase dependency.
+
+`npm run test:db` runs the pgTAP suite against local Supabase only. It is separate from `npm run verify`; passing the application checks does not prove tenant isolation. The database suite uses test-only Auth users, two tenants, real anonymous/authenticated role checks, and a transaction that rolls back its fixtures. It includes a forced second-insert failure to test workspace bootstrap atomicity. Never run these fixtures on a customer project. Replay the migration in a disposable local database, pass this suite, run database lint/advisors, and generate types before hosted rollout. Database CI integration remains pending local verification.
 
 ## First business feature
 

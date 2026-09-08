@@ -15,7 +15,9 @@
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test:e2e",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
+    "test:db": "supabase test db --local",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "check": "npm run format:check && npm run lint && npm run typecheck",
@@ -36,6 +38,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.4",
     "prettier": "3.9.6",
+    "supabase": "2.117.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3"
   }
