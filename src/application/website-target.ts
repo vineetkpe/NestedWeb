@@ -9,8 +9,24 @@ export type WebsiteAddressResolver = (
   hostname: string,
   signal: AbortSignal,
 ) => Promise<unknown>;
+const targetBrand: unique symbol = Symbol("validated website target");
+const issuedTargets = new WeakSet<object>();
+export type ValidatedWebsiteTarget = Website & {
+  readonly addresses: readonly string[];
+  readonly [targetBrand]: true;
+};
+
+/** Proves in-process provenance and immutability, not DNS freshness or authority. */
+export function isValidatedWebsiteTarget(
+  value: unknown,
+): value is ValidatedWebsiteTarget {
+  return (
+    typeof value === "object" && value !== null && issuedTargets.has(value)
+  );
+}
+
 export type WebsiteTargetResult =
-  | { ok: true; value: Website & { readonly addresses: readonly string[] } }
+  | { ok: true; value: ValidatedWebsiteTarget }
   | {
       ok: false;
       code:
@@ -71,10 +87,15 @@ export async function prepareWebsiteTarget(
         return { ok: false, code: "unsafe_address" };
       addresses.push(address);
     }
-    return {
-      ok: true,
-      value: { ...website.value, addresses: [...new Set(addresses)] },
+    const value: ValidatedWebsiteTarget = {
+      ...website.value,
+      addresses: Object.freeze([...new Set(addresses)]),
+      [targetBrand]: true,
     };
+    Object.defineProperty(value, targetBrand, { enumerable: false });
+    Object.freeze(value);
+    issuedTargets.add(value);
+    return { ok: true, value };
   } catch {
     return {
       ok: false,

@@ -149,3 +149,21 @@ test("deadline fails closed even when the resolver ignores cancellation", async 
   assert.deepEqual(await pending, { ok: false, code: "dns_timeout" });
   assert.equal(dnsSignal?.aborted, true);
 });
+
+test("screening results cannot be mutated before a crawler consumes them", async () => {
+  const result = await prepareWebsiteTarget("example.com", async () => [
+    "1.1.1.1",
+  ]);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(Object.isFrozen(result.value), true);
+  assert.equal(Object.isFrozen(result.value.addresses), true);
+  assert.throws(
+    () => Object.assign(result.value, { origin: "https://localhost" }),
+    TypeError,
+  );
+  assert.throws(
+    () => Object.assign(result.value.addresses, { 0: "127.0.0.1" }),
+    TypeError,
+  );
+});

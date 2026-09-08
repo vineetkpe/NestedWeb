@@ -16,7 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "node --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
+    "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
     "test:db": "supabase test db --local",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -26,7 +26,8 @@
   "dependencies": {
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
