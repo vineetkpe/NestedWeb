@@ -1,6 +1,8 @@
 # AI Visibility OS
 
-Foundation for agency-first, evidence-backed AI-answer monitoring. The app contains an honest product preview at `/` and a report prototype at `/report`, with unexecuted query templates and empty evidence/metric/action states. The [report specification](docs/report-specification.md) defines the future records and auditable formulas. Authentication, data collection, metric calculations, billing, and workspaces are **not implemented**.
+Foundation for agency-first, evidence-backed AI-answer monitoring. The app contains an honest product preview at `/` and a report prototype at `/report`, with unexecuted query templates and empty evidence/metric/action states. The [report specification](docs/report-specification.md) defines the future records and auditable formulas. Authentication, live data collection, metric calculations, billing, and workspace UI are **not implemented**.
+
+Standalone modules implement website normalization/DNS preflight, a Firecrawl adapter tested with mocked transport (live crawling is unavailable), and deterministic CompanyProfile extraction from supplied `CrawlResult` data. Profiles retain exact supporting text, unknown fields, and conflicting claims; they are not connected to either route. Local tenant migration and pgTAP files are drafts with database verification/deployment still pending. See [ARCHITECTURE.md](ARCHITECTURE.md) for implemented boundaries and remaining prerequisites.
 
 ## Run locally
 
@@ -21,7 +23,7 @@ npm run verify
 npm audit
 ```
 
-`verify` checks formatting, lint, strict types, production build, and desktop/mobile browser tests including automated accessibility checks. Tests run the production build on loopback port 3100 and manage its lifecycle. See [TESTING.md](TESTING.md) for scope and limitations.
+`verify` checks formatting, lint, strict types, production build, Node unit/security tests, and desktop/mobile browser tests including automated accessibility checks. Browser tests run the production build on loopback port 3100 and manage its lifecycle. Database tests are separate. See [TESTING.md](TESTING.md) for scope and limitations.
 
 ## Read before building
 

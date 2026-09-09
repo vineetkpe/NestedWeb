@@ -10,6 +10,8 @@ The Firecrawl foundation in ADR-008 adds a crawler contract and a server-only re
 
 The standalone company-profile extractor in ADR-009 interprets supplied crawl text without invoking a crawler, model, database, or UI.
 
+Local Supabase configuration, a core tenant migration, and pgTAP tests exist as the unverified database draft in ADR-006. No application database integration or deployed migration is claimed.
+
 ## ADR-001: small application with explicit boundaries
 
 Status: accepted for this foundation. Date: 2026-09-07. Decision basis: user foundation brief and empty repository; assumptions in [product-scope.md](docs/product-scope.md).
@@ -92,6 +94,10 @@ Firecrawl's hosted API accepts URLs and does not expose our screened IPs as tran
 The adapter builds a fixed API request, caps each response at 2 MiB and the whole attempt at 20 seconds, propagates cancellation through request/body reads, normalizes HTTP/provider errors without raw payloads, and performs no retries. A per-instance busy guard bounds concurrent work. Results contain only provider-reported URL/source URL, optional title/description/language/status, and markdown; absent fields are null. Missing content is empty, malformed fields fail closed, external/unsafe reported URLs are rejected, and arbitrary metadata/HTML/provider diagnostics are discarded. No fabricated crawl timestamps, complete-site claim, inferred company, or extracted intelligence.
 
 ## ADR-009: deterministic company-profile interpretation
+
+Follow-up scope, 2026-09-09: the current user request first reconciles implementation-status documentation, then audits and completes only this existing extraction slice. The repository already contains the extractor and its tests at `90ee6f9`; preserve and extend them rather than re-create the feature. This continues the same Level 2 preparation exception, with Level 1 and live-crawl prerequisites still unfinished. Acceptance: strict field states, exact source evidence for every value, unknown unsupported fields, preserved conflicts, inert website content, and supported/missing/malformed/conflicting tests. Stop after applicable verification and reporting; no commit or push.
+
+The follow-up advances the interpretation method to `company-profile-v2`: first-person description placeholders are checked before retaining the full supporting sentence, so `Our company provides N/A.` stays unknown. Other supported statements in the same paragraph retain their evidence. The unknown-input boundary now accepts only declared `CrawlResult` failure codes; malformed failure objects return `invalid_crawl`. Existing field names and evidence structure remain unchanged. These corrections do not broaden the grammar or enable any external action.
 
 Status: authorized by the user's company-profile-only request on 2026-09-09. Level 2 preparation, continuing independently of unfinished Level 1 authentication/database and live-crawl prerequisites. Deliver a typed profile and pure extraction from supplied `CrawlResult` observations with deterministic tests. Stop after review and the four requested verification commands; no commit, live calls, database connection, prompts, intelligence metrics, recommendations, or UI.
 

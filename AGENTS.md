@@ -4,7 +4,7 @@ Read this, [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), and the r
 
 ## Current reality
 
-Next.js App Router / React / strict TypeScript / Tailwind app using npm and Node 24. Static product preview at `/` and empty report prototype at `/report`; future report contracts in [report-specification.md](docs/report-specification.md). No auth, database, provider calls, jobs, billing, or production metrics. Do not describe documented plans as implemented features. `.vscode/mcp.json` predates this work; preserve it and keep credentials out of output.
+Next.js App Router / React / strict TypeScript / Tailwind app using npm and Node 24. Static product preview at `/` and empty report prototype at `/report`; future report contracts in [report-specification.md](docs/report-specification.md). Standalone website normalization/DNS preflight, a mocked Firecrawl adapter with live execution closed, and deterministic evidence-backed CompanyProfile extraction from supplied CrawlResult data exist outside the UI. A local Supabase migration and pgTAP suite are drafted but database verification/deployment remain pending. No auth flow, database integration, live crawling/provider calls, jobs, billing, or production metrics exist. See ARCHITECTURE.md ADR-006–009 for these bounded slices and unfinished prerequisites. Do not describe documented plans as implemented features. `.vscode/mcp.json` predates this work; preserve it and keep credentials out of output.
 
 ## Work rules
 

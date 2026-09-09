@@ -1,4 +1,4 @@
-import type { CrawlPage } from "./crawler.ts";
+import type { CrawlPage, CrawlResult } from "./crawler.ts";
 import type {
   CompanyProfile,
   ProfileEvidence,
@@ -16,6 +16,25 @@ type Statement = { field: FieldName; value: string; evidence: ProfileEvidence };
 const maxTextLength = 2 * 1024 * 1024;
 const maxLineLength = 2000;
 const maxStatements = 200;
+// Exhaustive against the existing contract, including safe rejection of unknown codes.
+const crawlFailureCodes: Readonly<
+  Record<Extract<CrawlResult, { ok: false }>["code"], true>
+> = {
+  invalid_target: true,
+  live_crawl_unavailable: true,
+  busy: true,
+  cancelled: true,
+  timeout: true,
+  unauthorized: true,
+  quota_exceeded: true,
+  rate_limited: true,
+  provider_unavailable: true,
+  provider_error: true,
+  network_error: true,
+  empty_result: true,
+  invalid_response: true,
+  response_too_large: true,
+};
 const firstPartyHeadings = new Set([
   "about us",
   "our company",
@@ -103,6 +122,10 @@ function statementText(
   for (const [pattern, field] of sentenceForms) {
     const match = pattern.exec(text);
     if (match?.[1] !== undefined) {
+      // Check the claimed value before retaining the full description sentence.
+      // An unsupported value must not invalidate other statements in its paragraph.
+      if (!supportedText(match[1].trim().replace(/ +/g, " ")))
+        return { field, value: "" };
       return { field, value: field === "shortDescription" ? text : match[1] };
     }
   }
@@ -268,8 +291,11 @@ export function extractCompanyProfile(input: unknown): CompanyProfileResult {
     code: "input_too_large",
   };
   if (!record(input)) return invalid;
-  if (input.ok === false && typeof input.code === "string")
-    return { ok: false, code: "crawl_failed" };
+  if (input.ok === false)
+    return typeof input.code === "string" &&
+      Object.hasOwn(crawlFailureCodes, input.code)
+      ? { ok: false, code: "crawl_failed" }
+      : invalid;
   if (input.ok !== true || !Array.isArray(input.pages)) return invalid;
   if (input.pages.length > 20) return oversized;
   const pages: CrawlPage[] = [];
@@ -325,7 +351,7 @@ export function extractCompanyProfile(input: unknown): CompanyProfileResult {
   return {
     ok: true,
     profile: {
-      methodVersion: "company-profile-v1",
+      methodVersion: "company-profile-v2",
       fields: {
         companyName: fieldResult(statements, "companyName"),
         productName: fieldResult(statements, "productName"),

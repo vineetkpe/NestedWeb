@@ -30,7 +30,7 @@ export type ProfileField =
     }>;
 
 export type CompanyProfile = Readonly<{
-  methodVersion: "company-profile-v1";
+  methodVersion: "company-profile-v2";
   fields: Readonly<{
     companyName: ProfileField;
     productName: ProfileField;

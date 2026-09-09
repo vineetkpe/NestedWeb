@@ -2,6 +2,8 @@
 
 No scanner or worker is implemented. Start with one grounded provider and a small fixed query cohort after authenticated tenant isolation works. Candidate: durable Postgres job/attempt records and one worker scheduled by the chosen host. Runtime selection remains open. No queue broker, long-running HTTP request, browser scraper, fire-and-forget promise, or in-memory job state is introduced now.
 
+Existing Level 2 preparation consists of website intake/DNS preflight, a Firecrawl adapter tested with mocked transport and no enabled live path, and pure CompanyProfile extraction from supplied `CrawlResult` text (ARCHITECTURE.md ADR-007–009). These modules have no scanner, persistence, provider observation collection, or route integration. The flow below remains proposed; local extraction does not satisfy live-call authorization or durable evidence prerequisites.
+
 ## Flow and states
 
 ```text

@@ -20,10 +20,11 @@ The original foundation brief is preserved verbatim. The absence of a detailed p
 
 ## Current implementation, checked against code
 
-- `src/app/page.tsx` is a static preview with an honest empty observation state and methodology explanation. It links to `src/app/report/page.tsx`, a static report prototype with empty evidence/metric/action states and unexecuted query templates. `layout.tsx` supplies metadata; `globals.css` supplies semantic design tokens. No dashboard or data flow exists.
-- `next.config.ts` sets baseline response headers. npm scripts provide formatting, lint, strict types, build, and Playwright checks. Five browser tests run on desktop/mobile Chromium, including report navigation, keyboard, axe, empty-state, header, and 404 checks.
+- `src/app/page.tsx` is a static preview with an honest empty observation state and methodology explanation. It links to `src/app/report/page.tsx`, a static report prototype with empty evidence/metric/action states and unexecuted query templates. `layout.tsx` supplies metadata; `globals.css` supplies semantic design tokens. No dashboard or route-connected data flow exists.
+- `next.config.ts` sets baseline response headers. npm scripts provide formatting, lint, strict types, build, Node unit/security tests, and Playwright checks. Five browser tests run on desktop/mobile Chromium, including report navigation, keyboard, axe, empty-state, header, and 404 checks.
 - Next.js/React/TypeScript/Tailwind, GitHub CI, engineering contracts, and reviewed skills under `.agents/skills` already exist. There is no separate `skills/` directory to recreate.
-- Auth, workspaces, memberships, projects, database, crawling, provider integrations, scans, metrics, billing, and deployment are only future requirements. The completed development foundation is not completion of Level 1 below.
+- Standalone website intake/DNS preflight, a Firecrawl contract and mocked adapter with live execution closed, and evidence-backed CompanyProfile extraction from supplied crawl results exist. These modules do not collect live data or populate the UI. See ADR-007–009 for the authorized Level 2 preparation exceptions.
+- Local Supabase migration and pgTAP files draft profiles, workspaces, memberships, and projects; application integration, migration deployment, and passing database verification remain pending (ADR-006). Authentication, live crawling/provider execution, scans, metrics, billing, and deployment remain future work. Neither Level 1 nor Level 2 exit criteria are complete.
 
 Task 01 changes documentation only. It does not implement Supabase, auth, database, scanner, Firecrawl, Gemini or other APIs, AI calls, dashboard, billing (including Stripe/Razorpay), background jobs, or new product functionality. Keep the preview working and free of fabricated customer data.
 
@@ -79,9 +80,9 @@ Security, accessibility, observability needed to diagnose a feature, and cost co
 
 V1 succeeds when an agency can complete Measure → Explain → Recommend → Monitor for a real B2B SaaS client: inspect sampled answers and sources, understand detected competitors/citations and metric calculations, choose a supported specific action, then revisit compatible historical evidence. All V1 capabilities above must meet their level exit criteria and the [task Definition of Done](../AGENTS.md#definition-of-done). Rising visibility or guaranteed ranking is not an acceptance criterion.
 
-The workflow and willingness to pay are not yet validated. No interview count, conversion target, price, or customer outcome is invented here. Level 0 must record actual feedback and the rationale for its decision before Level 1 begins.
+The user reported initial agency validation complete when authorizing Task 03 (ADR-004), but the underlying interview/pilot findings and willingness-to-pay evidence remain undocumented. No interview count, conversion target, price, or customer outcome is invented here. Level 0's evidence record remains incomplete; subsequent bounded sequencing exceptions are recorded in ARCHITECTURE.md.
 
-Before the relevant implementation task, explicitly resolve provider/model, crawl scope and budget, query cohort/locale, profile review, retention/sharing, metric definitions and uncertainty, plan pricing/limits, hosting, and operational/performance targets. These are bounded implementation decisions, not permission to add new V1 features. Never infer a provider or deployment target from available personal credentials. [Database](database-foundation.md) and scanning documents remain proposals until implemented and verified.
+Before the relevant implementation task, explicitly resolve provider/model, crawl scope and budget, query cohort/locale, profile review, retention/sharing, metric definitions and uncertainty, plan pricing/limits, hosting, and operational/performance targets. These are bounded implementation decisions, not permission to add new V1 features. Never infer a provider or deployment target from available personal credentials. The [database](database-foundation.md) document records local drafts and outstanding verification; [scanning architecture](scanning-architecture.md) specifies future orchestration around the existing standalone modules.
 
 ## Task 01 stop condition
 
