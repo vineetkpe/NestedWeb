@@ -1,4 +1,9 @@
 import "server-only";
+import {
+  readProviderBody,
+  discard,
+  ResponseTooLarge,
+} from "./provider-response-body.ts";
 import type { Crawler, CrawlResult } from "../application/crawler.ts";
 import {
   isValidatedWebsiteTarget,
@@ -29,50 +34,6 @@ export type FirecrawlExchange = (
 type FirecrawlSetup =
   | { ok: true; crawler: Crawler }
   | { ok: false; code: "missing_credential" | "invalid_credential" };
-
-const maxResponseBytes = 2 * 1024 * 1024;
-class ResponseTooLarge extends Error {}
-
-function discard(body: ReadableStream<Uint8Array> | null): void {
-  // Cancellation failure cannot change an already selected safe error outcome.
-  if (body && !body.locked) void body.cancel().catch(() => undefined);
-}
-
-async function readBody(
-  response: Response,
-  signal: AbortSignal,
-): Promise<string> {
-  const length = response.headers.get("content-length");
-  if (length !== null && Number(length) > maxResponseBytes) {
-    discard(response.body);
-    throw new ResponseTooLarge();
-  }
-  if (!response.body) return "";
-  const reader = response.body.getReader();
-  const cancel = () => {
-    void reader.cancel().catch(() => undefined);
-  };
-  signal.addEventListener("abort", cancel, { once: true });
-  try {
-    signal.throwIfAborted();
-    let bytes = 0;
-    let text = "";
-    const decoder = new TextDecoder("utf-8", { fatal: true });
-    while (true) {
-      const chunk = await reader.read();
-      signal.throwIfAborted();
-      if (chunk.done) break;
-      bytes += chunk.value.byteLength;
-      if (bytes > maxResponseBytes) throw new ResponseTooLarge();
-      text += decoder.decode(chunk.value, { stream: true });
-    }
-    return text + decoder.decode();
-  } finally {
-    signal.removeEventListener("abort", cancel);
-    cancel();
-    reader.releaseLock();
-  }
-}
 
 function httpFailure(status: number): CrawlResult {
   if (status === 401 || status === 403)
@@ -160,7 +121,7 @@ export function createFirecrawlCrawler(
         }
         let payload: unknown;
         try {
-          const text = await readBody(response, controller.signal);
+          const text = await readProviderBody(response, controller.signal);
           payload = JSON.parse(text);
         } catch (error) {
           if (error instanceof ResponseTooLarge)
