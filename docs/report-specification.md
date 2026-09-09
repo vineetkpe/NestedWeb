@@ -39,6 +39,8 @@ A query has `queryId`, `version`, `kind`, exact `text`, intended `locale`, and `
 
 Templates in the prototype are examples of questions, not a real query cohort and not recorded executions. There is no run/scan control.
 
+The standalone ADR-010 library now generates planned questions from supplied CompanyProfile v2 evidence, without populating this prototype. Its six category identifiers map to the kinds above; comparison is currently product-versus-category tools, since the profile has no supported named-competitor relationship. Missing or conflicting required fields omit a question. Templates use English with unspecified locale, stable local query IDs, versioned text, and profile field/value/evidence references. Retain the profile and crawl to resolve them. Generation is not execution, provider observation, durable storage, or a completed report cohort.
+
 ## Raw observation
 
 Each future record contains `observationId`, `queryId`, `queryVersion`, exact `queryText`, `provider`, `surface` (API or named manual interface), nullable `modelVersion` (unknown if not disclosed), actual `observedAt` UTC, exact `rawResponse`, response digest, and `outcome` (`answered`, `refused`, `partial`, or `failed`). Preserve raw content independently of display/normalization. `rawResponse` is null if no response was received, not an invented explanation. A safe failure code belongs in a separate field.
