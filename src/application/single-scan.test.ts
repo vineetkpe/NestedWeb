@@ -6,46 +6,69 @@ import type {
   GroundedQueryResponse,
 } from "./grounded-ai-provider.ts";
 import { runSingleScan } from "./single-scan.ts";
-import type { GeneratedPrompt } from "../domain/prompt-library.ts";
+import type {
+  GeneratedPrompt,
+  PromptCategory,
+  PromptTemplateVersion,
+} from "../domain/prompt-library.ts";
 import type {
   ObservationFailureCode,
   RawObservation,
 } from "../domain/raw-observation.ts";
 
+function queryId(templateVersion: PromptTemplateVersion, text: string): string {
+  return `niche-prompts-v1:${encodeURIComponent(
+    JSON.stringify([templateVersion, "en", null, text]),
+  )}`;
+}
+
 function plannedPrompt(
-  queryId: string,
-  templateVersion: GeneratedPrompt["templateVersion"],
+  category: PromptCategory,
+  templateVersion: PromptTemplateVersion,
   text: string,
 ): GeneratedPrompt {
   return {
-    queryId,
-    category: "category-discovery",
+    queryId: queryId(templateVersion, text),
+    category,
     text,
     templateVersion,
     language: "en",
     locale: null,
     state: "planned",
-    evidenceRefs: [],
+    evidenceRefs: [
+      {
+        field: "industry",
+        valueIndex: 0,
+        evidenceIndexes: [0],
+      },
+    ],
   };
 }
 
 const prompts = [
   plannedPrompt(
-    "query-1",
+    "category-discovery",
     "category@v1",
     "Which tools are available for test analytics?",
   ),
   plannedPrompt(
-    "query-2",
+    "best-tools-platforms",
     "best-audience@v1",
     "What are the best test analytics tools for agencies?",
   ),
   plannedPrompt(
-    "query-3",
+    "buyer-intent",
     "buyer@v1",
     "What should agencies look for in test analytics tools?",
   ),
 ] as const;
+
+const promptGeneration = {
+  ok: true as const,
+  methodVersion: "niche-prompts-v1" as const,
+  profileMethodVersion: "company-profile-v2" as const,
+  prompts,
+};
 
 const capabilities = Object.freeze({
   provider: "gemini" as const,
@@ -95,7 +118,7 @@ function fakeProvider(
 const input = {
   scanId: "scan-test-1",
   attemptId: "attempt-test-1",
-  prompts,
+  promptGeneration,
 };
 
 function executionQueries() {
@@ -106,7 +129,7 @@ function executionQueries() {
   }));
 }
 
-test("runs existing planned prompts sequentially and preserves exact query order and identity", async () => {
+test("runs one coherent prompt cohort sequentially with complete distinct results", async () => {
   let active = 0;
   let maxActive = 0;
   const seen: GroundedQueryRequest[] = [];
@@ -122,6 +145,10 @@ test("runs existing planned prompts sequentially and preserves exact query order
   const result = await runSingleScan(input, provider);
   assert.ok(result.ok);
   assert.equal(maxActive, 1);
+  assert.equal(result.result.scanId, input.scanId);
+  assert.equal(result.result.attemptId, input.attemptId);
+  assert.equal(result.result.promptMethodVersion, "niche-prompts-v1");
+  assert.equal(result.result.profileMethodVersion, "company-profile-v2");
   assert.deepEqual(
     seen.map(({ queryId, queryVersion, queryText }) => ({
       queryId,
@@ -131,13 +158,23 @@ test("runs existing planned prompts sequentially and preserves exact query order
     executionQueries(),
   );
   assert.deepEqual(
+    result.result.queries.map((item) => item.prompt),
+    prompts,
+  );
+  assert.deepEqual(
     result.result.queries.map((item) => item.query),
     executionQueries(),
   );
-  assert.deepEqual(
-    result.result.queries.map((item) => item.observationId),
-    ["attempt-test-1-q01", "attempt-test-1-q02", "attempt-test-1-q03"],
+  const observationIds = result.result.queries.map(
+    (item) => item.observationId,
   );
+  assert.deepEqual(observationIds, [
+    "attempt-test-1-q01",
+    "attempt-test-1-q02",
+    "attempt-test-1-q03",
+  ]);
+  assert.equal(new Set(observationIds).size, prompts.length);
+  assert.equal(result.result.queries.length, prompts.length);
   assert.deepEqual(
     result.result.queries.map((item) => item.state),
     ["answered", "answered", "answered"],
@@ -195,7 +232,10 @@ test("records provider boundary failures without fabricating observations and co
 
 test("rejects a provider response that changes query or observation identity", async () => {
   const result = await runSingleScan(
-    { ...input, prompts: prompts.slice(0, 1) },
+    {
+      ...input,
+      promptGeneration: { ...promptGeneration, prompts: prompts.slice(0, 1) },
+    },
     fakeProvider(async (request) => ({
       ok: true,
       observation: observation({ ...request, queryText: "changed" }),
@@ -203,13 +243,9 @@ test("rejects a provider response that changes query or observation identity", a
   );
 
   assert.ok(result.ok);
-  assert.deepEqual(result.result.queries[0], {
-    state: "boundary_failure",
-    query: executionQueries()[0],
-    observationId: "attempt-test-1-q01",
-    observation: null,
-    code: "provider_exception",
-  });
+  assert.equal(result.result.queries[0]?.state, "boundary_failure");
+  assert.equal(result.result.queries[0]?.observation, null);
+  assert.equal(result.result.queries[0]?.observationId, "attempt-test-1-q01");
 });
 
 test("pre-aborted scans make no provider calls and mark every query unattempted", async () => {
@@ -266,17 +302,18 @@ test("rejects more than ten prompts before provider execution", async () => {
     calls++;
     return { ok: true, observation: observation(request) };
   });
+  const manyPrompts = Array.from({ length: 11 }, (_, index) =>
+    plannedPrompt(
+      "category-discovery",
+      "category@v1",
+      `Which tools are available for synthetic category ${index}?`,
+    ),
+  );
   const result = await runSingleScan(
     {
       scanId: "scan-test-1",
       attemptId: "attempt-test-1",
-      prompts: Array.from({ length: 11 }, (_, index) =>
-        plannedPrompt(
-          `query-${index}`,
-          "category@v1",
-          `Synthetic prompt ${index}`,
-        ),
-      ),
+      promptGeneration: { ...promptGeneration, prompts: manyPrompts },
     },
     provider,
   );
@@ -285,29 +322,105 @@ test("rejects more than ten prompts before provider execution", async () => {
   assert.equal(calls, 0);
 });
 
-test("rejects duplicate or malformed planned prompt identity before provider execution", async () => {
+test("rejects forged or internally inconsistent prompt cohorts before provider execution", async () => {
   let calls = 0;
   const provider = fakeProvider(async (request) => {
     calls++;
     return { ok: true, observation: observation(request) };
   });
 
-  for (const badPrompts of [
-    [prompts[0], prompts[0]],
-    [{ ...prompts[0], queryId: "" }],
-    [{ ...prompts[0], templateVersion: "" }],
-    [{ ...prompts[0], text: "" }],
-    [{ ...prompts[0], state: "not-planned" }],
-  ]) {
+  const badCohorts = [
+    { ...promptGeneration, methodVersion: "future-method" },
+    { ...promptGeneration, profileMethodVersion: "future-profile" },
+    {
+      ...promptGeneration,
+      prompts: [{ ...prompts[0], queryId: "forged-query-id" }],
+    },
+    {
+      ...promptGeneration,
+      prompts: [{ ...prompts[0], category: "buyer-intent" }],
+    },
+    {
+      ...promptGeneration,
+      prompts: [{ ...prompts[0], evidenceRefs: [] }],
+    },
+    { ...promptGeneration, prompts: [prompts[0], prompts[0]] },
+  ];
+
+  for (const badCohort of badCohorts) {
     const result = await runSingleScan(
       {
         scanId: "scan-test-1",
         attemptId: "attempt-test-1",
-        prompts: badPrompts,
+        promptGeneration: badCohort,
       },
       provider,
     );
-    assert.deepEqual(result, { ok: false, code: "invalid_prompts" });
+    assert.deepEqual(result, { ok: false, code: "invalid_prompt_cohort" });
   }
   assert.equal(calls, 0);
+});
+
+test("snapshots mutable scan identity and prompt provenance before awaiting", async () => {
+  const mutablePrompt = {
+    ...prompts[0],
+    evidenceRefs: [
+      {
+        field: "industry",
+        valueIndex: 0,
+        evidenceIndexes: [0],
+      },
+    ],
+  };
+  const mutableInput = {
+    scanId: "scan-original",
+    attemptId: "attempt-original",
+    promptGeneration: {
+      ...promptGeneration,
+      prompts: [mutablePrompt],
+    },
+  };
+
+  const result = await runSingleScan(
+    mutableInput,
+    fakeProvider(async (request) => {
+      mutableInput.scanId = "scan-mutated";
+      mutableInput.attemptId = "attempt-mutated";
+      mutablePrompt.text = "mutated prompt";
+      mutablePrompt.evidenceRefs[0]!.evidenceIndexes[0] = 99;
+      return { ok: true, observation: observation(request) };
+    }),
+  );
+
+  assert.ok(result.ok);
+  assert.equal(result.result.scanId, "scan-original");
+  assert.equal(result.result.attemptId, "attempt-original");
+  assert.equal(result.result.queries[0]?.observationId, "attempt-original-q01");
+  assert.equal(
+    result.result.queries[0]?.prompt.text,
+    "Which tools are available for test analytics?",
+  );
+  assert.deepEqual(
+    result.result.queries[0]?.prompt.evidenceRefs[0]?.evidenceIndexes,
+    [0],
+  );
+});
+
+test("accepts an empty generated cohort without inventing work", async () => {
+  let calls = 0;
+  const result = await runSingleScan(
+    {
+      scanId: "scan-empty",
+      attemptId: "attempt-empty",
+      promptGeneration: { ...promptGeneration, prompts: [] },
+    },
+    fakeProvider(async (request) => {
+      calls++;
+      return { ok: true, observation: observation(request) };
+    }),
+  );
+
+  assert.ok(result.ok);
+  assert.equal(calls, 0);
+  assert.deepEqual(result.result.queries, []);
 });
