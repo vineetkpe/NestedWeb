@@ -28,6 +28,8 @@ jobs:
           cache: npm
       - run: npm install --global npm@11.17.0
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run verify
-      - run: npm audit --audit-level=high
+      - name: Temporary formatter diff
+        run: |
+          npx prettier --write src/application/single-scan.ts
+          git diff -- src/application/single-scan.ts
+          exit 1
