@@ -206,9 +206,7 @@ function snapshotPrompt(value: unknown): GeneratedPrompt | null {
   });
 }
 
-function validatePromptGeneration(
-  value: unknown,
-):
+function validatePromptGeneration(value: unknown):
   | PromptGenerationSuccess
   | Readonly<{
       ok: false;
