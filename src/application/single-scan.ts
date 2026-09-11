@@ -80,7 +80,8 @@ function validateInput(input: unknown): SingleScanRunResult | ScanInput {
   if (!record(input)) return { ok: false, code: "invalid_scan_identity" };
   if (!validIdentity(input.scanId) || !validIdentity(input.attemptId))
     return { ok: false, code: "invalid_scan_identity" };
-  if (!Array.isArray(input.prompts)) return { ok: false, code: "invalid_prompts" };
+  if (!Array.isArray(input.prompts))
+    return { ok: false, code: "invalid_prompts" };
   if (input.prompts.length > 10)
     return { ok: false, code: "too_many_prompts" };
 
