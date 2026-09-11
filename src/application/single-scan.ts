@@ -6,9 +6,7 @@ import type {
 import type { RawObservation } from "../domain/raw-observation.ts";
 
 export type ScanBoundaryFailureCode =
-  | "invalid_request"
-  | "invalid_clock"
-  | "provider_exception";
+  "invalid_request" | "invalid_clock" | "provider_exception";
 
 export type PlannedScanQuery = Readonly<
   Omit<GroundedQueryRequest, "observationId">
@@ -82,8 +80,7 @@ function validateInput(input: unknown): SingleScanRunResult | ScanInput {
     return { ok: false, code: "invalid_scan_identity" };
   if (!Array.isArray(input.prompts))
     return { ok: false, code: "invalid_prompts" };
-  if (input.prompts.length > 10)
-    return { ok: false, code: "too_many_prompts" };
+  if (input.prompts.length > 10) return { ok: false, code: "too_many_prompts" };
 
   const prompts: PlannedScanQuery[] = [];
   const queryIds = new Set<string>();
