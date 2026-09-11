@@ -1,5 +1,6 @@
 import type {
   GroundedAIProvider,
+  GroundedQueryRequest,
   GroundedQueryResponse,
 } from "./grounded-ai-provider.ts";
 import type { RawObservation } from "../domain/raw-observation.ts";
@@ -9,11 +10,9 @@ export type ScanBoundaryFailureCode =
   | "invalid_clock"
   | "provider_exception";
 
-export type PlannedScanQuery = Readonly<{
-  queryId: string;
-  queryVersion: string;
-  queryText: string;
-}>;
+export type PlannedScanQuery = Readonly<
+  Omit<GroundedQueryRequest, "observationId">
+>;
 
 export type ScanQueryResult =
   | Readonly<{
@@ -90,17 +89,18 @@ function validateInput(input: unknown): SingleScanRunResult | ScanInput {
   for (const value of input.prompts) {
     if (
       !record(value) ||
+      value.state !== "planned" ||
       !validText(value.queryId, 8192) ||
-      !validText(value.queryVersion, 128) ||
-      !validText(value.queryText, 600) ||
+      !validText(value.templateVersion, 128) ||
+      !validText(value.text, 600) ||
       queryIds.has(value.queryId)
     )
       return { ok: false, code: "invalid_prompts" };
     queryIds.add(value.queryId);
     prompts.push({
       queryId: value.queryId,
-      queryVersion: value.queryVersion,
-      queryText: value.queryText,
+      queryVersion: value.templateVersion,
+      queryText: value.text,
     });
   }
 
@@ -144,9 +144,10 @@ function boundaryFailure(
 }
 
 /**
- * In-memory Level 2 preparation only. This coordinates already-planned queries
- * against an injected provider contract; it does not authorize live execution,
- * persistence, retries, interpretation, metrics, recommendations, or billing.
+ * In-memory Level 2 preparation only. This coordinates the existing planned
+ * prompt-library output against an injected provider contract; it does not
+ * authorize live execution, persistence, retries, interpretation, metrics,
+ * recommendations, or billing.
  */
 export async function runSingleScan(
   input: unknown,
