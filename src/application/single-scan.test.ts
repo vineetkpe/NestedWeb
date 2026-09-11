@@ -6,27 +6,45 @@ import type {
   GroundedQueryResponse,
 } from "./grounded-ai-provider.ts";
 import { runSingleScan } from "./single-scan.ts";
+import type { GeneratedPrompt } from "../domain/prompt-library.ts";
 import type {
   ObservationFailureCode,
   RawObservation,
 } from "../domain/raw-observation.ts";
 
+function plannedPrompt(
+  queryId: string,
+  templateVersion: GeneratedPrompt["templateVersion"],
+  text: string,
+): GeneratedPrompt {
+  return {
+    queryId,
+    category: "category-discovery",
+    text,
+    templateVersion,
+    language: "en",
+    locale: null,
+    state: "planned",
+    evidenceRefs: [],
+  };
+}
+
 const prompts = [
-  {
-    queryId: "query-1",
-    queryVersion: "category@v1",
-    queryText: "Which tools are available for test analytics?",
-  },
-  {
-    queryId: "query-2",
-    queryVersion: "best-audience@v1",
-    queryText: "What are the best test analytics tools for agencies?",
-  },
-  {
-    queryId: "query-3",
-    queryVersion: "buyer@v1",
-    queryText: "What should agencies look for in test analytics tools?",
-  },
+  plannedPrompt(
+    "query-1",
+    "category@v1",
+    "Which tools are available for test analytics?",
+  ),
+  plannedPrompt(
+    "query-2",
+    "best-audience@v1",
+    "What are the best test analytics tools for agencies?",
+  ),
+  plannedPrompt(
+    "query-3",
+    "buyer@v1",
+    "What should agencies look for in test analytics tools?",
+  ),
 ] as const;
 
 const capabilities = Object.freeze({
@@ -80,7 +98,15 @@ const input = {
   prompts,
 };
 
-test("runs at most ten prompts sequentially and preserves exact query order and identity", async () => {
+function executionQueries() {
+  return prompts.map((prompt) => ({
+    queryId: prompt.queryId,
+    queryVersion: prompt.templateVersion,
+    queryText: prompt.text,
+  }));
+}
+
+test("runs existing planned prompts sequentially and preserves exact query order and identity", async () => {
   let active = 0;
   let maxActive = 0;
   const seen: GroundedQueryRequest[] = [];
@@ -102,7 +128,11 @@ test("runs at most ten prompts sequentially and preserves exact query order and 
       queryVersion,
       queryText,
     })),
-    prompts,
+    executionQueries(),
+  );
+  assert.deepEqual(
+    result.result.queries.map((item) => item.query),
+    executionQueries(),
   );
   assert.deepEqual(
     result.result.queries.map((item) => item.observationId),
@@ -175,7 +205,7 @@ test("rejects a provider response that changes query or observation identity", a
   assert.ok(result.ok);
   assert.deepEqual(result.result.queries[0], {
     state: "boundary_failure",
-    query: prompts[0],
+    query: executionQueries()[0],
     observationId: "attempt-test-1-q01",
     observation: null,
     code: "provider_exception",
@@ -240,11 +270,13 @@ test("rejects more than ten prompts before provider execution", async () => {
     {
       scanId: "scan-test-1",
       attemptId: "attempt-test-1",
-      prompts: Array.from({ length: 11 }, (_, index) => ({
-        queryId: `query-${index}`,
-        queryVersion: "category@v1",
-        queryText: `Synthetic prompt ${index}`,
-      })),
+      prompts: Array.from({ length: 11 }, (_, index) =>
+        plannedPrompt(
+          `query-${index}`,
+          "category@v1",
+          `Synthetic prompt ${index}`,
+        ),
+      ),
     },
     provider,
   );
@@ -253,7 +285,7 @@ test("rejects more than ten prompts before provider execution", async () => {
   assert.equal(calls, 0);
 });
 
-test("rejects duplicate or malformed prompt identity before provider execution", async () => {
+test("rejects duplicate or malformed planned prompt identity before provider execution", async () => {
   let calls = 0;
   const provider = fakeProvider(async (request) => {
     calls++;
@@ -262,9 +294,10 @@ test("rejects duplicate or malformed prompt identity before provider execution",
 
   for (const badPrompts of [
     [prompts[0], prompts[0]],
-    [{ queryId: "", queryVersion: "category@v1", queryText: "Valid" }],
-    [{ queryId: "q", queryVersion: "", queryText: "Valid" }],
-    [{ queryId: "q", queryVersion: "category@v1", queryText: "" }],
+    [{ ...prompts[0], queryId: "" }],
+    [{ ...prompts[0], templateVersion: "" }],
+    [{ ...prompts[0], text: "" }],
+    [{ ...prompts[0], state: "not-planned" }],
   ]) {
     const result = await runSingleScan(
       { scanId: "scan-test-1", attemptId: "attempt-test-1", prompts: badPrompts },
