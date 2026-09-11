@@ -14,9 +14,7 @@ import type {
 import type { RawObservation } from "../domain/raw-observation.ts";
 
 export type ScanBoundaryFailureCode =
-  | "invalid_request"
-  | "invalid_clock"
-  | "provider_exception";
+  "invalid_request" | "invalid_clock" | "provider_exception";
 
 type PromptGenerationSuccess = Extract<PromptGenerationResult, { ok: true }>;
 
@@ -74,17 +72,18 @@ type ScanInput = Readonly<{
   promptGeneration: PromptGenerationSuccess;
 }>;
 
-const templateCategories: Readonly<Record<PromptTemplateVersion, PromptCategory>> =
-  Object.freeze({
-    "category@v1": "category-discovery",
-    "service-area@v1": "category-discovery",
-    "best-audience@v1": "best-tools-platforms",
-    "alternatives@v1": "alternatives",
-    "comparison-category@v1": "comparison",
-    "use-case@v1": "use-case-recommendation",
-    "use-case-audience@v1": "use-case-recommendation",
-    "buyer@v1": "buyer-intent",
-  });
+const templateCategories: Readonly<
+  Record<PromptTemplateVersion, PromptCategory>
+> = Object.freeze({
+  "category@v1": "category-discovery",
+  "service-area@v1": "category-discovery",
+  "best-audience@v1": "best-tools-platforms",
+  "alternatives@v1": "alternatives",
+  "comparison-category@v1": "comparison",
+  "use-case@v1": "use-case-recommendation",
+  "use-case-audience@v1": "use-case-recommendation",
+  "buyer@v1": "buyer-intent",
+});
 
 const profileFields = new Set<keyof CompanyProfile["fields"]>([
   "companyName",
@@ -161,7 +160,10 @@ function promptEvidenceReference(
   });
 }
 
-function expectedQueryId(templateVersion: PromptTemplateVersion, text: string): string {
+function expectedQueryId(
+  templateVersion: PromptTemplateVersion,
+  text: string,
+): string {
   return `niche-prompts-v1:${encodeURIComponent(
     JSON.stringify([templateVersion, "en", null, text]),
   )}`;
@@ -208,7 +210,10 @@ function validatePromptGeneration(
   value: unknown,
 ):
   | PromptGenerationSuccess
-  | Readonly<{ ok: false; code: "invalid_prompt_cohort" | "too_many_prompts" }> {
+  | Readonly<{
+      ok: false;
+      code: "invalid_prompt_cohort" | "too_many_prompts";
+    }> {
   if (
     !record(value) ||
     value.ok !== true ||
@@ -217,8 +222,7 @@ function validatePromptGeneration(
     !Array.isArray(value.prompts)
   )
     return { ok: false, code: "invalid_prompt_cohort" };
-  if (value.prompts.length > 10)
-    return { ok: false, code: "too_many_prompts" };
+  if (value.prompts.length > 10) return { ok: false, code: "too_many_prompts" };
 
   const prompts: GeneratedPrompt[] = [];
   const queryIds = new Set<string>();
@@ -238,9 +242,7 @@ function validatePromptGeneration(
   });
 }
 
-function validateInput(
-  input: unknown,
-): SingleScanRunResult | ScanInput {
+function validateInput(input: unknown): SingleScanRunResult | ScanInput {
   if (!record(input)) return { ok: false, code: "invalid_scan_identity" };
   if (!validIdentity(input.scanId) || !validIdentity(input.attemptId))
     return { ok: false, code: "invalid_scan_identity" };
