@@ -34,12 +34,12 @@ select throws_ok($$insert into public.profiles (id) values ('00000000-0000-4000-
   '23503', null, 'profile must reference a real Auth user');
 select ok(not has_schema_privilege('anon', 'app_private', 'usage'),
   'anonymous callers cannot access the private schema');
-select ok(not has_function_privilege('anon', 'public.create_workspace(text)', 'execute'),
+select ok(not has_function_privilege('anon', 'public.create_workspace(text,uuid)', 'execute'),
   'anonymous callers have no bootstrap execution grant');
 select ok(not has_function_privilege('authenticated', 'app_private.touch_updated_at()', 'execute'),
   'clients cannot directly execute the timestamp trigger function');
 select ok(not prosecdef, 'public bootstrap wrapper uses invoker privileges')
-from pg_proc where oid = 'public.create_workspace(text)'::regprocedure;
+from pg_proc where oid = 'public.create_workspace(text,uuid)'::regprocedure;
 
 set local role anon;
 select throws_ok('select * from public.profiles', '42501', null, 'anonymous profile reads denied');
@@ -50,7 +50,8 @@ select throws_ok($$insert into public.projects (workspace_id,name,tracked_domain
   '42501', null, 'anonymous project insert denied');
 select throws_ok($$update public.projects set name='bad'$$, '42501', null, 'anonymous update denied');
 select throws_ok('delete from public.projects', '42501', null, 'anonymous delete denied');
-select throws_ok($$select public.create_workspace('bad')$$, '42501', null, 'anonymous bootstrap denied');
+select throws_ok($$select public.create_workspace('bad','30000000-0000-4000-8000-000000000001')$$,
+  '42501', null, 'anonymous bootstrap denied');
 
 reset role;
 set local role authenticated;
@@ -136,7 +137,8 @@ select is((select count(*) from public.workspaces), 0::bigint, 'editable metadat
 select throws_ok($$insert into public.projects (workspace_id,name,tracked_domain) values ('10000000-0000-4000-8000-000000000001','forged membership','forged.example.test')$$,
   '42501', null, 'editable metadata cannot authorize project creation');
 select set_config('request.jwt.claims', '{}', true);
-select throws_ok($$select public.create_workspace(' ')$$, '23514', null, 'invalid bootstrap rejected');
+select throws_ok($$select public.create_workspace(' ','30000000-0000-4000-8000-000000000002')$$,
+  '23514', null, 'invalid bootstrap rejected');
 select is((select count(*) from public.workspace_memberships), 0::bigint, 'failed bootstrap left no membership');
 
 -- Fail the second bootstrap insert after the workspace insert has succeeded.
@@ -152,7 +154,7 @@ revoke all on function app_private.test_reject_membership() from public, anon, a
 create trigger test_reject_membership before insert on public.workspace_memberships
   for each row execute function app_private.test_reject_membership();
 set local role authenticated;
-select throws_ok($$select public.create_workspace('Rollback test agency')$$,
+select throws_ok($$select public.create_workspace('Rollback test agency','30000000-0000-4000-8000-000000000003')$$,
   'P0001', 'Test-only membership failure', 'membership failure propagates from bootstrap');
 reset role;
 select is((select count(*) from public.workspaces where name='Rollback test agency'),
@@ -162,12 +164,30 @@ select is((select count(*) from public.workspace_memberships where user_id='0000
 drop trigger test_reject_membership on public.workspace_memberships;
 drop function app_private.test_reject_membership();
 set local role authenticated;
-select lives_ok($$select public.create_workspace('New agency')$$, 'signed-in nonmember can bootstrap own workspace');
+select lives_ok($$select public.create_workspace('New agency','30000000-0000-4000-8000-000000000004')$$,
+  'signed-in nonmember can bootstrap own workspace');
 select is((select count(*) from public.workspaces), 1::bigint, 'bootstrap creates exactly one visible workspace');
 select is((select role from public.workspace_memberships), 'owner', 'bootstrap creates owner membership');
 select is((select created_by from public.workspaces), '00000000-0000-4000-8000-000000000004'::uuid, 'bootstrap derives creator from auth.uid');
+select is(
+  public.create_workspace('New agency','30000000-0000-4000-8000-000000000004'),
+  (select id from public.workspaces where name='New agency'),
+  'same bootstrap replay returns the existing workspace'
+);
+select is((select count(*) from public.workspaces), 1::bigint, 'same bootstrap replay creates no duplicate workspace');
+select is((select count(*) from public.workspace_memberships), 1::bigint, 'same bootstrap replay creates no duplicate membership');
+select throws_ok(
+  $$select public.create_workspace('Different agency','30000000-0000-4000-8000-000000000004')$$,
+  '22023', 'Idempotency key reused with different workspace name',
+  'idempotency key cannot be reused for different workspace input'
+);
+select throws_ok(
+  'select * from app_private.workspace_bootstrap_requests',
+  '42501', null, 'clients cannot read private bootstrap idempotency state'
+);
 select set_config('request.jwt.claim.sub', '', true);
-select throws_ok($$select public.create_workspace('missing identity')$$, '42501', null, 'bootstrap rejects missing identity even with authenticated role');
+select throws_ok($$select public.create_workspace('missing identity','30000000-0000-4000-8000-000000000005')$$,
+  '42501', null, 'bootstrap rejects missing identity even with authenticated role');
 select is((select count(*) from public.projects), 0::bigint, 'missing identity cannot read tenant data');
 
 reset role;
