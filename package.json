@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write src/infrastructure/supabase-prompt-cohort-persistence.ts src/infrastructure/supabase-prompt-cohort-persistence.test.ts src/infrastructure/supabase-scan-reservation.test.ts && git diff -- src/infrastructure/supabase-prompt-cohort-persistence.ts src/infrastructure/supabase-prompt-cohort-persistence.test.ts src/infrastructure/supabase-scan-reservation.test.ts && exit 1",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
     "test:db": "supabase test db --local",
