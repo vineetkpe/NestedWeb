@@ -22,10 +22,13 @@ test("returns the current membership row for the requested workspace", async () 
     };
   };
 
-  assert.deepEqual(await executeSupabaseWorkspaceAuthorization(REQUEST, query), {
-    ok: true,
-    membership: { workspaceId: REQUEST.workspaceId, role: "owner" },
-  });
+  assert.deepEqual(
+    await executeSupabaseWorkspaceAuthorization(REQUEST, query),
+    {
+      ok: true,
+      membership: { workspaceId: REQUEST.workspaceId, role: "owner" },
+    },
+  );
   assert.deepEqual(calls, [REQUEST.workspaceId]);
 });
 
@@ -35,10 +38,13 @@ test("treats an absent membership row as authorization denial", async () => {
     error: null,
   });
 
-  assert.deepEqual(await executeSupabaseWorkspaceAuthorization(REQUEST, query), {
-    ok: false,
-    code: "not_member",
-  });
+  assert.deepEqual(
+    await executeSupabaseWorkspaceAuthorization(REQUEST, query),
+    {
+      ok: false,
+      code: "not_member",
+    },
+  );
 });
 
 test("fails closed on database errors and thrown queries", async () => {
