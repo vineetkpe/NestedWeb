@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { GroundedAIProvider } from "./grounded-ai-provider.ts";
+import type {
+  GroundedAIProvider,
+  GroundedQueryResponse,
+} from "./grounded-ai-provider.ts";
 import type { GroundedObservationPersistenceGateway } from "./grounded-observation-persistence.ts";
 import { executeClaimedQuery } from "./execute-claimed-query.ts";
 import type { ScanWorkClaim } from "./scan-worker.ts";
@@ -72,7 +75,7 @@ function liveProvider(value: RawObservation): GroundedAIProvider {
       maxQueries: 1,
       maxCitations: 50,
     }),
-    async query(input) {
+    async query(input: unknown): Promise<GroundedQueryResponse> {
       assert.deepEqual(input, {
         observationId: claim.queries[0]!.observationId,
         queryId: claim.queries[0]!.queryId,
@@ -137,7 +140,7 @@ test("refuses a non-live provider before any query or persistence call", async (
       maxQueries: 1,
       maxCitations: 50,
     }),
-    async query() {
+    async query(): Promise<GroundedQueryResponse> {
       providerCalls += 1;
       return { ok: true, observation: observation() };
     },
