@@ -189,6 +189,8 @@ select is((select payload ->> 'replayed' from pg_temp.c7a_fixture where label = 
   'false', 'first persistence is not a replay');
 
 reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'f1000000-0000-4000-8000-000000000001', true);
 select is((select count(*) from public.raw_observations), 1::bigint,
   'one immutable raw observation is stored');
 select is((select count(*) from public.raw_citations), 3::bigint,
@@ -207,6 +209,7 @@ select is((select state from public.scan_attempt_queries
   where scan_id = 'f4000000-0000-4000-8000-000000000001'),
   'answered', 'only the claimed attempt query advances to answered');
 
+reset role;
 set local role service_role;
 insert into pg_temp.c7a_fixture (label, payload)
 select 'replay', public.persist_grounded_observation(
@@ -220,9 +223,15 @@ select 'replay', public.persist_grounded_observation(
 );
 select is((select payload ->> 'replayed' from pg_temp.c7a_fixture where label = 'replay'),
   'true', 'identical evidence replay is idempotent');
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'f1000000-0000-4000-8000-000000000001', true);
 select is((select count(*) from public.raw_citations), 3::bigint,
   'idempotent replay does not duplicate citations');
 
+reset role;
+set local role service_role;
 select throws_ok(
   format(
     'select public.persist_grounded_observation(%L::uuid,%L::uuid,%L::uuid,%L::uuid,%L::uuid,0,%L::jsonb)',
