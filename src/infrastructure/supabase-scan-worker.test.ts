@@ -34,7 +34,9 @@ const retryRequest: ValidatedScanRetryRequest = Object.freeze({
   leaseToken: leaseRequest.leaseToken,
 });
 
-function claimData(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function claimData(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     workspaceId: "F2000000-0000-4000-8000-000000000001",
     scanId: "F3000000-0000-4000-8000-000000000001",
@@ -72,7 +74,9 @@ function claimData(overrides: Record<string, unknown> = {}): Record<string, unkn
   };
 }
 
-function leaseData(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function leaseData(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     workspaceId: "F2000000-0000-4000-8000-000000000001",
     scanId: "F3000000-0000-4000-8000-000000000001",
@@ -84,7 +88,9 @@ function leaseData(overrides: Record<string, unknown> = {}): Record<string, unkn
   };
 }
 
-function retryData(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function retryData(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
   return {
     workspaceId: "F2000000-0000-4000-8000-000000000001",
     scanId: "F3000000-0000-4000-8000-000000000001",
@@ -99,10 +105,13 @@ function retryData(overrides: Record<string, unknown> = {}): Record<string, unkn
 
 test("executeSupabaseScanWorkClaim sends only the claim RPC contract and parses a claim", async () => {
   let captured: unknown;
-  const result = await executeSupabaseScanWorkClaim(claimRequest, async (args) => {
-    captured = args;
-    return { data: claimData(), error: null };
-  });
+  const result = await executeSupabaseScanWorkClaim(
+    claimRequest,
+    async (args) => {
+      captured = args;
+      return { data: claimData(), error: null };
+    },
+  );
 
   assert.deepEqual(captured, {
     p_worker_id: claimRequest.workerId,
@@ -160,10 +169,13 @@ test("executeSupabaseScanWorkClaim rejects malformed or internally inconsistent 
   ];
 
   for (const data of invalidClaims) {
-    const result = await executeSupabaseScanWorkClaim(claimRequest, async () => ({
-      data,
-      error: null,
-    }));
+    const result = await executeSupabaseScanWorkClaim(
+      claimRequest,
+      async () => ({
+        data,
+        error: null,
+      }),
+    );
     assert.deepEqual(result, {
       ok: false,
       code: "invalid_database_response",
@@ -173,10 +185,13 @@ test("executeSupabaseScanWorkClaim rejects malformed or internally inconsistent 
 
 test("executeSupabaseScanLeaseRenewal sends exact ownership fields and parses renewal", async () => {
   let captured: unknown;
-  const result = await executeSupabaseScanLeaseRenewal(leaseRequest, async (args) => {
-    captured = args;
-    return { data: leaseData(), error: null };
-  });
+  const result = await executeSupabaseScanLeaseRenewal(
+    leaseRequest,
+    async (args) => {
+      captured = args;
+      return { data: leaseData(), error: null };
+    },
+  );
 
   assert.deepEqual(captured, {
     p_workspace_id: leaseRequest.workspaceId,
@@ -248,10 +263,13 @@ test("scan worker adapters map lease ownership failures without leaking database
     ["Scan lease not found", "lease_not_found"],
     ["Scan lease expired", "lease_expired"],
   ] as const) {
-    const claim = await executeSupabaseScanWorkClaim(claimRequest, async () => ({
-      data: null,
-      error: { code: "P0001", message },
-    }));
+    const claim = await executeSupabaseScanWorkClaim(
+      claimRequest,
+      async () => ({
+        data: null,
+        error: { code: "P0001", message },
+      }),
+    );
     const renewal = await executeSupabaseScanLeaseRenewal(
       leaseRequest,
       async () => ({ data: null, error: { code: "P0001", message } }),
@@ -267,12 +285,7 @@ test("scan worker adapters map lease ownership failures without leaking database
 });
 
 test("scan worker adapters fail closed on malformed envelopes, unknown errors and thrown transports", async () => {
-  for (const response of [
-    null,
-    [],
-    { data: claimData() },
-    { error: null },
-  ]) {
+  for (const response of [null, [], { data: claimData() }, { error: null }]) {
     const result = await executeSupabaseScanWorkClaim(
       claimRequest,
       async () => response,
