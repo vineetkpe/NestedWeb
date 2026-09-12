@@ -58,7 +58,7 @@ insert into app_private.scan_provider_configs (
   provider, model_id, price_version, currency,
   worst_case_cost_per_query_microunits, max_output_tokens,
   max_global_active_scans, enabled
-) values ('gemini', 'gemini-test-model', 'test-price-v1', 'USD', 100, 4096, 2, true);
+) values ('gemini', 'gemini-test-model', 'test-price-v1', 'USD', 100, 4096, 3, true);
 insert into app_private.workspace_scan_controls (
   workspace_id, provider, model_id, price_version, enabled,
   max_queries_per_scan, max_attempts_per_scan, max_concurrent_scans,
@@ -186,6 +186,11 @@ select throws_ok(
   'project budget is enforced against reserved worst-case cost'
 );
 
+reset role;
+update app_private.scan_provider_configs
+set max_global_active_scans = 2
+where provider = 'gemini' and model_id = 'gemini-test-model' and price_version = 'test-price-v1';
+set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
 select throws_ok(
   $$select public.reserve_scan(
