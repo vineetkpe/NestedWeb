@@ -29,10 +29,7 @@ export type CrawlResult =
         | "network_error"
         | "empty_result"
         | "invalid_response"
-        | "response_too_large"
-        | "redirect_not_allowed"
-        | "unsupported_content_type"
-        | "target_http_error";
+        | "response_too_large";
     };
 
 export interface Crawler {
