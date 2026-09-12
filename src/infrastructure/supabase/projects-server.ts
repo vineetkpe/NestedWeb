@@ -8,17 +8,13 @@ import {
   type ListProjectsRequest,
   type ListProjectsResult,
 } from "../../application/projects.ts";
-import {
-  authorizeWorkspaceMembership,
-} from "../../application/workspace-authorization.ts";
+import { authorizeWorkspaceMembership } from "../../application/workspace-authorization.ts";
 import { requireSupabaseIdentity } from "../supabase-auth.ts";
 import {
   executeSupabaseProjectCreate,
   executeSupabaseProjectList,
 } from "../supabase-projects.ts";
-import {
-  executeSupabaseWorkspaceAuthorization,
-} from "../supabase-workspace-authorization.ts";
+import { executeSupabaseWorkspaceAuthorization } from "../supabase-workspace-authorization.ts";
 import { createSupabaseServerClient } from "./server.ts";
 
 export async function createCurrentUserProject(
@@ -43,9 +39,8 @@ export async function createCurrentUserProject(
     );
     if (!authorization.ok) return authorization;
 
-    return executeSupabaseProjectCreate(
-      validatedRequest,
-      async (args) => client.rpc("create_project", args),
+    return executeSupabaseProjectCreate(validatedRequest, async (args) =>
+      client.rpc("create_project", args),
     );
   });
 }
@@ -72,15 +67,13 @@ export async function listCurrentUserProjects(
     );
     if (!authorization.ok) return authorization;
 
-    return executeSupabaseProjectList(
-      validatedRequest,
-      async (workspaceId) =>
-        client
-          .from("projects")
-          .select("id,workspace_id,name,tracked_domain")
-          .eq("workspace_id", workspaceId)
-          .order("created_at", { ascending: true })
-          .order("id", { ascending: true }),
+    return executeSupabaseProjectList(validatedRequest, async (workspaceId) =>
+      client
+        .from("projects")
+        .select("id,workspace_id,name,tracked_domain")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true }),
     );
   });
 }
