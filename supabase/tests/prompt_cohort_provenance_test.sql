@@ -84,6 +84,7 @@ create temp table c6_results (
   payload jsonb not null
 );
 grant select, insert, update, delete on table pg_temp.c6_results to service_role;
+grant select on table pg_temp.c6_results to authenticated;
 
 select ok(has_function_privilege('service_role',
   'public.persist_prompt_cohort(uuid,uuid,uuid,uuid,jsonb,jsonb)', 'execute'),
@@ -154,7 +155,7 @@ reset role;
 select is((select count(*) from public.prompt_cohorts), 4::bigint,
   'four immutable prompt cohort snapshots were persisted');
 select is((select count(*) from public.prompt_cohort_queries), 7::bigint,
-  'query rows preserve the exact planned prompts while zero-query cohorts stay empty');
+  'query rows preserve exact planned prompts while zero-query cohorts stay empty');
 select is((select query_count from public.prompt_cohorts
   where id = (select (payload ->> 'cohortId')::uuid from pg_temp.c6_results where label = 'a-empty')),
   0::smallint, 'sparse profiles can durably persist a zero-query cohort');
