@@ -25,13 +25,128 @@ insert into public.projects (id, workspace_id, name, tracked_domain, created_by)
   ('c3000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001', 'Budget Client A', 'budget-a.example.test', 'c1000000-0000-4000-8000-000000000001'),
   ('c3000000-0000-4000-8000-000000000002', 'c2000000-0000-4000-8000-000000000002', 'Budget Client B', 'budget-b.example.test', 'c1000000-0000-4000-8000-000000000002');
 
+insert into public.company_profile_snapshots (
+  id, workspace_id, project_id, idempotency_key, request_fingerprint,
+  capture_method_version, captured_at, crawl_result, profile_method_version, profile
+) values
+  (
+    'c5000000-0000-4000-8000-000000000101',
+    'c2000000-0000-4000-8000-000000000001',
+    'c3000000-0000-4000-8000-000000000001',
+    'c5100000-0000-4000-8000-000000000101', repeat('a', 64),
+    'native-entry-page-v1', now(),
+    '{"ok":true,"pages":[{}]}'::jsonb,
+    'company-profile-v2',
+    '{"methodVersion":"company-profile-v2","fields":{"companyName":{"status":"unknown"},"productName":{"status":"unknown"},"shortDescription":{"status":"unknown"},"primaryProduct":{"status":"unknown"},"targetAudience":{"status":"unknown"},"industry":{"status":"unknown"},"keyUseCases":{"status":"unknown"},"capabilities":{"status":"unknown"},"geography":{"status":"unknown"}},"excludedPages":[]}'::jsonb
+  ),
+  (
+    'c5000000-0000-4000-8000-000000000102',
+    'c2000000-0000-4000-8000-000000000002',
+    'c3000000-0000-4000-8000-000000000002',
+    'c5100000-0000-4000-8000-000000000102', repeat('b', 64),
+    'native-entry-page-v1', now(),
+    '{"ok":true,"pages":[{}]}'::jsonb,
+    'company-profile-v2',
+    '{"methodVersion":"company-profile-v2","fields":{"companyName":{"status":"unknown"},"productName":{"status":"unknown"},"shortDescription":{"status":"unknown"},"primaryProduct":{"status":"unknown"},"targetAudience":{"status":"unknown"},"industry":{"status":"unknown"},"keyUseCases":{"status":"unknown"},"capabilities":{"status":"unknown"},"geography":{"status":"unknown"}},"excludedPages":[]}'::jsonb
+  );
+
+create function pg_temp.make_prompt_cohort(
+  p_workspace_id uuid,
+  p_project_id uuid,
+  p_profile_snapshot_id uuid,
+  p_cohort_id uuid,
+  p_idempotency_key uuid,
+  p_query_count integer
+)
+returns void
+language plpgsql
+as $$
+begin
+  insert into public.prompt_cohorts (
+    id, workspace_id, project_id, profile_snapshot_id, idempotency_key,
+    request_fingerprint, prompt_method_version, profile_method_version,
+    language, locale, query_count
+  ) values (
+    p_cohort_id, p_workspace_id, p_project_id, p_profile_snapshot_id, p_idempotency_key,
+    repeat('c', 64), 'niche-prompts-v1', 'company-profile-v2', 'en', null, p_query_count
+  );
+
+  insert into public.prompt_cohort_queries (
+    workspace_id, project_id, cohort_id, query_ordinal, query_id,
+    category, template_version, query_text, language, locale, state, evidence_refs
+  )
+  select
+    p_workspace_id,
+    p_project_id,
+    p_cohort_id,
+    ordinal::smallint,
+    'niche-prompts-v1:' || p_cohort_id::text || ':' || ordinal::text,
+    'category-discovery',
+    'category@v1',
+    'Test query ' || ordinal::text,
+    'en',
+    null,
+    'planned',
+    '[{"field":"industry","valueIndex":0,"evidenceIndexes":[0]}]'::jsonb
+  from generate_series(0, p_query_count - 1) ordinal;
+end;
+$$;
+
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000001',
+  'c6100000-0000-4000-8000-000000000001', 2);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000002',
+  'c6100000-0000-4000-8000-000000000002', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000003',
+  'c6100000-0000-4000-8000-000000000003', 4);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000004',
+  'c6100000-0000-4000-8000-000000000004', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000005',
+  'c6100000-0000-4000-8000-000000000005', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000006',
+  'c6100000-0000-4000-8000-000000000006', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000001', 'c3000000-0000-4000-8000-000000000001',
+  'c5000000-0000-4000-8000-000000000101', 'c6000000-0000-4000-8000-000000000011',
+  'c6100000-0000-4000-8000-000000000011', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000002', 'c3000000-0000-4000-8000-000000000002',
+  'c5000000-0000-4000-8000-000000000102', 'c6000000-0000-4000-8000-000000000007',
+  'c6100000-0000-4000-8000-000000000007', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000002', 'c3000000-0000-4000-8000-000000000002',
+  'c5000000-0000-4000-8000-000000000102', 'c6000000-0000-4000-8000-000000000008',
+  'c6100000-0000-4000-8000-000000000008', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000002', 'c3000000-0000-4000-8000-000000000002',
+  'c5000000-0000-4000-8000-000000000102', 'c6000000-0000-4000-8000-000000000009',
+  'c6100000-0000-4000-8000-000000000009', 1);
+select pg_temp.make_prompt_cohort(
+  'c2000000-0000-4000-8000-000000000002', 'c3000000-0000-4000-8000-000000000002',
+  'c5000000-0000-4000-8000-000000000102', 'c6000000-0000-4000-8000-000000000010',
+  'c6100000-0000-4000-8000-000000000010', 1);
+
 select ok(not has_table_privilege('authenticated', 'app_private.scan_provider_configs', 'select'),
   'authenticated callers cannot read provider pricing controls');
 select ok(not has_table_privilege('authenticated', 'app_private.scan_cost_reservations', 'select'),
   'authenticated callers cannot read private cost ledger rows');
-select ok(has_function_privilege('authenticated',
+select ok(not has_function_privilege('authenticated',
   'public.reserve_scan(uuid,uuid,uuid,text,text,jsonb)', 'execute'),
-  'authenticated callers can enter only the bounded reservation RPC');
+  'legacy caller-supplied query reservation is revoked');
+select ok(has_function_privilege('authenticated',
+  'public.reserve_scan_from_cohort(uuid,uuid,uuid,uuid)', 'execute'),
+  'authenticated callers enter only the cohort-backed reservation RPC');
 select ok(not has_function_privilege('authenticated',
   'public.settle_scan_reservation(uuid,uuid,uuid,bigint)', 'execute'),
   'authenticated callers cannot settle their own cost reservations');
@@ -42,12 +157,11 @@ select ok(has_function_privilege('service_role',
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000001',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:test-1","queryVersion":"category@v1","queryText":"Which tools are available?"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000001'
   )$$,
   'P0001', 'Scan execution unavailable',
   'missing operator configuration defaults to zero paid scans'
@@ -81,36 +195,30 @@ insert into app_private.project_scan_controls (
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
 select is(
-  public.reserve_scan(
+  public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000001',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[
-      {"queryId":"niche-prompts-v1:test-1","queryVersion":"category@v1","queryText":"Which tools are available?"},
-      {"queryId":"niche-prompts-v1:test-2","queryVersion":"buyer@v1","queryText":"What should buyers look for?"}
-    ]'::jsonb
+    'c6000000-0000-4000-8000-000000000001'
   ) ->> 'reservedMicrounits',
   '400',
-  'worst-case reservation is queries times attempts times configured upper bound'
+  'worst-case reservation is cohort queries times attempts times configured upper bound'
 );
 select is((select count(*) from public.scans), 1::bigint,
   'reservation atomically persists one scan');
 select is((select count(*) from public.scan_queries), 2::bigint,
-  'reservation atomically snapshots ordered queries');
+  'reservation atomically snapshots ordered cohort queries');
+select is((select count(*) from public.scan_prompt_cohorts), 1::bigint,
+  'reservation binds the scan to one durable prompt cohort');
 select is(
-  public.reserve_scan(
+  public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000001',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[
-      {"queryId":"niche-prompts-v1:test-1","queryVersion":"category@v1","queryText":"Which tools are available?"},
-      {"queryId":"niche-prompts-v1:test-2","queryVersion":"buyer@v1","queryText":"What should buyers look for?"}
-    ]'::jsonb
+    'c6000000-0000-4000-8000-000000000001'
   ) ->> 'replayed',
   'true',
-  'same idempotency key and exact payload replays without new reservation'
+  'same idempotency key and cohort replay without new reservation'
 );
 
 reset role;
@@ -124,63 +232,53 @@ select ok(
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000001',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:changed","queryVersion":"category@v1","queryText":"Changed request"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000002'
   )$$,
   '22023', 'Idempotency key reused with different scan request',
-  'idempotency key cannot be reused with a changed scan payload'
+  'idempotency key cannot be reused with a changed cohort query payload'
 );
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000002',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[
-      {"queryId":"niche-prompts-v1:a","queryVersion":"category@v1","queryText":"A"},
-      {"queryId":"niche-prompts-v1:b","queryVersion":"buyer@v1","queryText":"B"},
-      {"queryId":"niche-prompts-v1:c","queryVersion":"use-case@v1","queryText":"C"},
-      {"queryId":"niche-prompts-v1:d","queryVersion":"alternatives@v1","queryText":"D"}
-    ]'::jsonb
+    'c6000000-0000-4000-8000-000000000003'
   )$$,
   'P0001', 'Scan query limit exceeded',
   'configured query limit fails closed before reserving cost'
 );
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000002',
     'c4000000-0000-4000-8000-000000000003',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:cross","queryVersion":"category@v1","queryText":"Cross tenant"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000007'
   )$$,
   '42501', null,
-  'workspace member cannot reserve a scan for another tenant project'
+  'workspace member cannot reserve a scan for another tenant project/cohort'
 );
 select throws_ok($$select * from app_private.scan_cost_reservations$$,
   '42501', null, 'client cannot inspect private reservation ledger');
 
 select is(
-  public.reserve_scan(
+  public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000004',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:test-3","queryVersion":"category@v1","queryText":"One more question"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000004'
   ) ->> 'reservedMicrounits',
   '200', 'a second request reserves the remaining project budget'
 );
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000005',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:test-4","queryVersion":"category@v1","queryText":"Budget overflow"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000005'
   )$$,
   'P0001', 'Project scan budget exhausted',
   'project budget is enforced against reserved worst-case cost'
@@ -193,12 +291,11 @@ where provider = 'gemini' and model_id = 'gemini-test-model' and price_version =
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000002',
     'c3000000-0000-4000-8000-000000000002',
     'c4000000-0000-4000-8000-000000000006',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:global","queryVersion":"category@v1","queryText":"Global concurrency"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000007'
   )$$,
   'P0001', 'Provider scan concurrency exhausted',
   'provider-level concurrency cap is enforced across tenants'
@@ -249,12 +346,11 @@ where workspace_id = 'c2000000-0000-4000-8000-000000000001';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
 select is(
-  public.reserve_scan(
+  public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000007',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:after-release","queryVersion":"category@v1","queryText":"After release"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000006'
   ) ->> 'reservedMicrounits',
   '200', 'settlement releases only confirmed unused budget for later work'
 );
@@ -275,22 +371,20 @@ where workspace_id = 'c2000000-0000-4000-8000-000000000002'
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
 select is(
-  public.reserve_scan(
+  public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000002',
     'c3000000-0000-4000-8000-000000000002',
     'c4000000-0000-4000-8000-000000000008',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:request-1","queryVersion":"category@v1","queryText":"First request"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000008'
   ) ->> 'reservedMicrounits',
   '200', 'first request inside the configured window is reserved'
 );
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000002',
     'c3000000-0000-4000-8000-000000000002',
     'c4000000-0000-4000-8000-000000000009',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:request-2","queryVersion":"category@v1","queryText":"Second request"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000009'
   )$$,
   'P0001', 'Workspace scan request limit exhausted',
   'workspace request-window cap is enforced before another reservation'
@@ -308,12 +402,11 @@ where provider = 'gemini' and model_id = 'gemini-test-model' and price_version =
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000002',
     'c3000000-0000-4000-8000-000000000002',
     'c4000000-0000-4000-8000-000000000010',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:disabled","queryVersion":"category@v1","queryText":"Provider disabled"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000010'
   )$$,
   'P0001', 'Provider pricing unavailable',
   'operator provider switch immediately blocks new paid work'
@@ -325,12 +418,11 @@ select set_config(
 );
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000003', true);
 select throws_ok(
-  $$select public.reserve_scan(
+  $$select public.reserve_scan_from_cohort(
     'c2000000-0000-4000-8000-000000000001',
     'c3000000-0000-4000-8000-000000000001',
     'c4000000-0000-4000-8000-000000000011',
-    'niche-prompts-v1', 'company-profile-v2',
-    '[{"queryId":"niche-prompts-v1:forged","queryVersion":"category@v1","queryText":"Forged metadata"}]'::jsonb
+    'c6000000-0000-4000-8000-000000000011'
   )$$,
   '42501', null,
   'editable auth metadata cannot grant budget or workspace access'
