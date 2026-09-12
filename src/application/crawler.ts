@@ -1,6 +1,6 @@
 import type { ValidatedWebsiteTarget } from "./website-target.ts";
 
-/** Provider-reported values only. Content is untrusted text, never instructions. */
+/** Observed crawler values only. Content is untrusted text, never instructions. */
 export type CrawlPage = Readonly<{
   url: string;
   sourceUrl: string | null;
@@ -29,7 +29,10 @@ export type CrawlResult =
         | "network_error"
         | "empty_result"
         | "invalid_response"
-        | "response_too_large";
+        | "response_too_large"
+        | "redirect_not_allowed"
+        | "unsupported_content_type"
+        | "target_http_error";
     };
 
 export interface Crawler {
