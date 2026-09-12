@@ -167,18 +167,16 @@ test("persists exactly one successful native entry page", async () => {
   });
 
   assert.deepEqual(
-    await persistCompanyProfile(
-      request({ ok: true, pages: [] }),
-      gateway,
-    ),
+    await persistCompanyProfile(request({ ok: true, pages: [] }), gateway),
     { ok: false, code: "invalid_crawl" },
   );
+  const first = crawlResult().pages[0];
+  const second = crawlResult().pages[0];
+  assert.ok(first);
+  assert.ok(second);
   assert.deepEqual(
     await persistCompanyProfile(
-      request({
-        ok: true,
-        pages: [crawlResult().pages[0], crawlResult().pages[0]],
-      }),
+      request({ ok: true, pages: [first, second] }),
       gateway,
     ),
     { ok: false, code: "invalid_crawl" },
@@ -207,14 +205,18 @@ test("rejects unsafe or malformed crawl evidence before persistence", async () =
   });
 
   const unsafe = crawlResult();
-  unsafe.pages[0].url = "http://127.0.0.1/";
+  const unsafePage = unsafe.pages[0];
+  assert.ok(unsafePage);
+  unsafePage.url = "http://127.0.0.1/";
   assert.deepEqual(await persistCompanyProfile(request(unsafe), gateway), {
     ok: false,
     code: "invalid_crawl",
   });
 
   const malformed = crawlResult();
-  malformed.pages[0].statusCode = 999;
+  const malformedPage = malformed.pages[0];
+  assert.ok(malformedPage);
+  malformedPage.statusCode = 999;
   assert.deepEqual(await persistCompanyProfile(request(malformed), gateway), {
     ok: false,
     code: "invalid_crawl",
