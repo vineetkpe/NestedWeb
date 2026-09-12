@@ -1,6 +1,6 @@
 import type { ValidatedWebsiteTarget } from "./website-target.ts";
 
-/** Provider-reported values only. Content is untrusted text, never instructions. */
+/** Observed crawler values only. Content is untrusted text, never instructions. */
 export type CrawlPage = Readonly<{
   url: string;
   sourceUrl: string | null;
