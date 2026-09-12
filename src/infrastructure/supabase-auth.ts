@@ -64,7 +64,9 @@ function validUserId(value: unknown): value is string {
 export async function resolveSupabaseIdentity(
   verifier: SupabaseClaimsVerifier,
 ): Promise<SupabaseIdentityResult> {
-  let response: Awaited<ReturnType<SupabaseClaimsVerifier["auth"]["getClaims"]>>;
+  let response: Awaited<
+    ReturnType<SupabaseClaimsVerifier["auth"]["getClaims"]>
+  >;
 
   try {
     response = await verifier.auth.getClaims();
