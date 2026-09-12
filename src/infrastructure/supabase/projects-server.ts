@@ -8,13 +8,17 @@ import {
   type ListProjectsRequest,
   type ListProjectsResult,
 } from "../../application/projects.ts";
-import { authorizeWorkspaceMembership } from "../../application/workspace-authorization.ts";
+import {
+  authorizeWorkspaceMembership,
+} from "../../application/workspace-authorization.ts";
 import { requireSupabaseIdentity } from "../supabase-auth.ts";
 import {
   executeSupabaseProjectCreate,
   executeSupabaseProjectList,
 } from "../supabase-projects.ts";
-import { executeSupabaseWorkspaceAuthorization } from "../supabase-workspace-authorization.ts";
+import {
+  executeSupabaseWorkspaceAuthorization,
+} from "../supabase-workspace-authorization.ts";
 import { createSupabaseServerClient } from "./server.ts";
 
 export async function createCurrentUserProject(
