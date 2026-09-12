@@ -28,15 +28,6 @@ jobs:
           cache: npm
       - run: npm install --global npm@11.17.0
       - run: npm ci
-      - name: Print native crawl Prettier diff
-        run: |
-          npx prettier --write \
-            src/infrastructure/native-entry-crawler.ts \
-            src/infrastructure/native-entry-crawler.test.ts
-          git diff -- \
-            src/infrastructure/native-entry-crawler.ts \
-            src/infrastructure/native-entry-crawler.test.ts
-          exit 1
       - run: npx playwright install --with-deps chromium
       - run: npm run verify
       - run: npm audit --audit-level=high
