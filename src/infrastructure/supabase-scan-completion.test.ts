@@ -99,10 +99,10 @@ test("rejects inconsistent success payloads", async () => {
     successData({ replayed: "false" }),
   ];
   for (const data of invalid) {
-    const result = await executeSupabaseScanCompletion(
-      request,
-      async () => ({ data, error: null }),
-    );
+    const result = await executeSupabaseScanCompletion(request, async () => ({
+      data,
+      error: null,
+    }));
     assert.deepEqual(result, {
       ok: false,
       code: "invalid_database_response",
