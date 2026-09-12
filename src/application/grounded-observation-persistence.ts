@@ -6,8 +6,7 @@ import type {
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const RFC3339_MILLIS_PATTERN =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const RFC3339_MILLIS_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const RESPONSE_DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const MAX_EVIDENCE_BYTES = 2 * 1024 * 1024;
 const MAX_JSON_NODES = 20_000;
@@ -117,7 +116,10 @@ function boundedString(
   return value;
 }
 
-function optionalString(value: unknown, maxLength: number): string | null | undefined {
+function optionalString(
+  value: unknown,
+  maxLength: number,
+): string | null | undefined {
   if (value === null) return null;
   const text = boundedString(value, maxLength);
   return text === null ? undefined : text;
@@ -155,7 +157,12 @@ function snapshotJson(
   for (const key of Reflect.ownKeys(descriptors)) {
     if (typeof key !== "string") return undefined;
     const descriptor = descriptors[key];
-    if (!descriptor || descriptor.get || descriptor.set || !("value" in descriptor))
+    if (
+      !descriptor ||
+      descriptor.get ||
+      descriptor.set ||
+      !("value" in descriptor)
+    )
       return undefined;
     if (!descriptor.enumerable) continue;
     const copied = snapshotJson(descriptor.value, budget, depth + 1);
@@ -288,7 +295,8 @@ function snapshotObservation(value: unknown): RawObservation | null {
     rawResponseState === "not_received" ||
     rawResponseState === "discarded"
   ) {
-    if (value.rawResponse !== null || value.responseDigest !== null) return null;
+    if (value.rawResponse !== null || value.responseDigest !== null)
+      return null;
     rawResponse = null;
     responseDigest = null;
   } else {
@@ -314,8 +322,13 @@ function snapshotObservation(value: unknown): RawObservation | null {
 
   let groundingMetadata: Readonly<Record<string, unknown>> | null = null;
   if (value.groundingMetadata !== null) {
-    const copied = snapshotJson(value.groundingMetadata, { nodes: MAX_JSON_NODES });
-    if (!record(copied) || byteLength(JSON.stringify(copied)) > MAX_EVIDENCE_BYTES)
+    const copied = snapshotJson(value.groundingMetadata, {
+      nodes: MAX_JSON_NODES,
+    });
+    if (
+      !record(copied) ||
+      byteLength(JSON.stringify(copied)) > MAX_EVIDENCE_BYTES
+    )
       return null;
     groundingMetadata = copied;
   }
@@ -351,7 +364,8 @@ function snapshotObservation(value: unknown): RawObservation | null {
     responseDigest,
     rawResponseState,
     outcome,
-    failureCode: outcome === "failed" ? (failureCode as ObservationFailureCode) : null,
+    failureCode:
+      outcome === "failed" ? (failureCode as ObservationFailureCode) : null,
     answerText,
     finishReason,
     groundingMetadata,
