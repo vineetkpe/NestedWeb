@@ -36,9 +36,7 @@ export type CompanyProfileSnapshotSummary = Readonly<{
 }>;
 
 export type CompanyProfilePersistenceGatewayFailureCode =
-  | "idempotency_conflict"
-  | "database_error"
-  | "invalid_database_response";
+  "idempotency_conflict" | "database_error" | "invalid_database_response";
 
 export type CompanyProfilePersistenceGatewayResult =
   | Readonly<{ ok: true; snapshot: CompanyProfileSnapshotSummary }>
