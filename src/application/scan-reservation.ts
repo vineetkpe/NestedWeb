@@ -201,8 +201,7 @@ function snapshotPromptGeneration(value: unknown):
     value.prompts.length === 0
   )
     return { ok: false, code: "invalid_prompt_cohort" };
-  if (value.prompts.length > 10)
-    return { ok: false, code: "too_many_prompts" };
+  if (value.prompts.length > 10) return { ok: false, code: "too_many_prompts" };
 
   const queries: ReservedScanQuery[] = [];
   const queryIds = new Set<string>();
