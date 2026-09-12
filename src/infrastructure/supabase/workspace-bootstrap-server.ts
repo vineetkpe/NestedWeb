@@ -23,7 +23,7 @@ export async function bootstrapCurrentUserWorkspace(
   await requireSupabaseIdentity(client);
 
   return bootstrapWorkspace(request, (validatedRequest) =>
-    executeSupabaseWorkspaceBootstrap(validatedRequest, (args) =>
+    executeSupabaseWorkspaceBootstrap(validatedRequest, async (args) =>
       client.rpc("create_workspace", args),
     ),
   );
