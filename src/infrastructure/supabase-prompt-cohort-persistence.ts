@@ -103,8 +103,7 @@ export async function executeSupabasePromptCohortPersistence(
   }
 
   const cohort = parseCohort(response.data);
-  if (cohort === null)
-    return { ok: false, code: "invalid_database_response" };
+  if (cohort === null) return { ok: false, code: "invalid_database_response" };
   if (cohort.profileSnapshotId !== request.profileSnapshotId)
     return { ok: false, code: "invalid_database_response" };
   if (cohort.queryCount !== request.prompts.length)
