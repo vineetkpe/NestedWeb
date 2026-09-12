@@ -513,7 +513,10 @@ export function createNativeEntryCrawler(
       scope: "entry_page" as const,
       maxPages: 1 as const,
     }),
-    async crawl(target, signal): Promise<CrawlResult> {
+    async crawl(
+      target: ValidatedWebsiteTarget,
+      signal?: AbortSignal,
+    ): Promise<CrawlResult> {
       if (!isValidatedWebsiteTarget(target))
         return { ok: false, code: "invalid_target" };
       if (signal?.aborted) return { ok: false, code: "cancelled" };
