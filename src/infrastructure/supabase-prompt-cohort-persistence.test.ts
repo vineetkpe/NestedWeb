@@ -106,10 +106,7 @@ test("maps the explicit persistence database errors", async () => {
 });
 
 test("unknown, malformed and thrown database failures fail closed", async () => {
-  for (const error of [
-    { code: "XX000", message: "unexpected" },
-    "malformed",
-  ]) {
+  for (const error of [{ code: "XX000", message: "unexpected" }, "malformed"]) {
     const result = await executeSupabasePromptCohortPersistence(
       request,
       async () => ({ data: null, error }),
@@ -149,7 +146,13 @@ test("rejects malformed or mismatched success payloads", async () => {
     });
   }
 
-  for (const response of [null, [], {}, { data: successData() }, { error: null }]) {
+  for (const response of [
+    null,
+    [],
+    {},
+    { data: successData() },
+    { error: null },
+  ]) {
     const result = await executeSupabasePromptCohortPersistence(
       request,
       async () => response,
