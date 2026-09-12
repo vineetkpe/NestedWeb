@@ -10,10 +10,7 @@ import {
   claimAndExecuteFirstQuery,
   type ClaimedLiveProviderFactory,
 } from "./claim-first-query.ts";
-import type {
-  ScanWorkClaim,
-  ScanWorkerGateway,
-} from "./scan-worker.ts";
+import type { ScanWorkClaim, ScanWorkerGateway } from "./scan-worker.ts";
 import type { RawObservation } from "../domain/raw-observation.ts";
 
 const workerId = "11111111-1111-4111-8111-111111111111";
@@ -128,10 +125,15 @@ test("claims one attempt, derives provider config from the claim and persists on
     });
     return liveProvider();
   };
-  const persistence: GroundedObservationPersistenceGateway = async (request) => {
+  const persistence: GroundedObservationPersistenceGateway = async (
+    request,
+  ) => {
     persistenceCalls += 1;
     assert.equal(request.queryOrdinal, 0);
-    assert.equal(request.observation.observationId, claim.queries[0]!.observationId);
+    assert.equal(
+      request.observation.observationId,
+      claim.queries[0]!.observationId,
+    );
     return {
       ok: true,
       snapshot: {
