@@ -163,10 +163,18 @@ test("preserves duplicate URLs as distinct citation occurrences", async () => {
   assert.equal(result.ok, true);
   assert.ok(captured);
   assert.equal(captured.observation.citations.length, 2);
-  assert.equal(captured.observation.citations[0]?.citedUrl, "https://example.com/a");
-  assert.equal(captured.observation.citations[1]?.citedUrl, "https://example.com/a");
+  assert.equal(
+    captured.observation.citations[0]?.citedUrl,
+    "https://example.com/a",
+  );
+  assert.equal(
+    captured.observation.citations[1]?.citedUrl,
+    "https://example.com/a",
+  );
   assert.deepEqual(
-    captured.observation.citations.map((citation) => citation.groundingChunkIndex),
+    captured.observation.citations.map(
+      (citation) => citation.groundingChunkIndex,
+    ),
     [0, 2],
   );
 });
@@ -251,10 +259,13 @@ test("rejects malformed observation evidence before persistence", async () => {
 
   for (const value of invalid) {
     let calls = 0;
-    const result = await persistGroundedObservation(request(value), async () => {
-      calls += 1;
-      return { ok: false, code: "database_error" };
-    });
+    const result = await persistGroundedObservation(
+      request(value),
+      async () => {
+        calls += 1;
+        return { ok: false, code: "database_error" };
+      },
+    );
     assert.deepEqual(result, { ok: false, code: "invalid_observation" });
     assert.equal(calls, 0);
   }
