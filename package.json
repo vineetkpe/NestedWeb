@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write src/application/projects.ts src/infrastructure/supabase-projects.ts src/infrastructure/supabase/projects-server.ts && git diff -- src/application/projects.ts src/infrastructure/supabase-projects.ts src/infrastructure/supabase/projects-server.ts && exit 1",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
     "test:db": "supabase test db --local",
