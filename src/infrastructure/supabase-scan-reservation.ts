@@ -46,11 +46,7 @@ function boundedText(value: unknown, max: number): value is string {
 }
 
 function positiveSafeInteger(value: unknown): value is number {
-  return (
-    typeof value === "number" &&
-    Number.isSafeInteger(value) &&
-    value > 0
-  );
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 function mapDatabaseError(
@@ -165,8 +161,7 @@ export async function executeSupabaseScanReservation(
     return { ok: false, code: "invalid_database_response" };
 
   if (response.error !== null && response.error !== undefined) {
-    if (!record(response.error))
-      return { ok: false, code: "database_error" };
+    if (!record(response.error)) return { ok: false, code: "database_error" };
     return mapDatabaseError(response.error);
   }
 
