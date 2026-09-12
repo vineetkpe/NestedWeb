@@ -165,7 +165,8 @@ export async function executeSupabaseScanReservation(
     return { ok: false, code: "invalid_database_response" };
 
   if (response.error !== null && response.error !== undefined) {
-    if (!record(response.error)) return { ok: false, code: "database_error" };
+    if (!record(response.error))
+      return { ok: false, code: "database_error" };
     return mapDatabaseError(response.error);
   }
 
