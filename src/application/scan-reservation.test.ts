@@ -68,48 +68,45 @@ function request(promptGeneration: unknown): Record<string, unknown> {
   };
 }
 
-test(
-  "reserveScan normalizes identities and snapshots exact ordered query identity",
-  async () => {
-    const first = prompt("category@v1", "Which tools are available?");
-    const second = prompt("buyer@v1", "What should buyers look for?");
-    let captured: ValidatedReserveScanRequest | undefined;
-    const gateway: ScanReservationGateway = async (validated) => {
-      captured = validated;
-      return { ok: false, code: "execution_unavailable" };
-    };
+test("reserveScan normalizes identities and snapshots exact ordered query identity", async () => {
+  const first = prompt("category@v1", "Which tools are available?");
+  const second = prompt("buyer@v1", "What should buyers look for?");
+  let captured: ValidatedReserveScanRequest | undefined;
+  const gateway: ScanReservationGateway = async (validated) => {
+    captured = validated;
+    return { ok: false, code: "execution_unavailable" };
+  };
 
-    const result = await reserveScan(
-      request(generation([first, second])) as never,
-      gateway,
-    );
+  const result = await reserveScan(
+    request(generation([first, second])) as never,
+    gateway,
+  );
 
-    assert.deepEqual(result, { ok: false, code: "execution_unavailable" });
-    assert.ok(captured);
-    assert.equal(captured.workspaceId, workspaceId.toLowerCase());
-    assert.equal(captured.projectId, projectId.toLowerCase());
-    assert.equal(captured.idempotencyKey, idempotencyKey.toLowerCase());
-    assert.equal(captured.promptMethodVersion, "niche-prompts-v1");
-    assert.equal(captured.profileMethodVersion, "company-profile-v2");
-    assert.deepEqual(captured.queries, [
-      {
-        queryId: first.queryId,
-        queryVersion: "category@v1",
-        queryText: first.text,
-      },
-      {
-        queryId: second.queryId,
-        queryVersion: "buyer@v1",
-        queryText: second.text,
-      },
-    ]);
-    assert.equal(Object.hasOwn(captured, "provider"), false);
-    assert.equal(Object.hasOwn(captured, "reservedMicrounits"), false);
-    assert.equal(Object.isFrozen(captured), true);
-    assert.equal(Object.isFrozen(captured.queries), true);
-    assert.equal(Object.isFrozen(captured.queries[0]), true);
-  },
-);
+  assert.deepEqual(result, { ok: false, code: "execution_unavailable" });
+  assert.ok(captured);
+  assert.equal(captured.workspaceId, workspaceId.toLowerCase());
+  assert.equal(captured.projectId, projectId.toLowerCase());
+  assert.equal(captured.idempotencyKey, idempotencyKey.toLowerCase());
+  assert.equal(captured.promptMethodVersion, "niche-prompts-v1");
+  assert.equal(captured.profileMethodVersion, "company-profile-v2");
+  assert.deepEqual(captured.queries, [
+    {
+      queryId: first.queryId,
+      queryVersion: "category@v1",
+      queryText: first.text,
+    },
+    {
+      queryId: second.queryId,
+      queryVersion: "buyer@v1",
+      queryText: second.text,
+    },
+  ]);
+  assert.equal(Object.hasOwn(captured, "provider"), false);
+  assert.equal(Object.hasOwn(captured, "reservedMicrounits"), false);
+  assert.equal(Object.isFrozen(captured), true);
+  assert.equal(Object.isFrozen(captured.queries), true);
+  assert.equal(Object.isFrozen(captured.queries[0]), true);
+});
 
 test("reserveScan rejects malformed UUIDs before the gateway", async () => {
   for (const [field, code] of [
@@ -158,61 +155,55 @@ test("reserveScan rejects empty and oversized prompt cohorts", async () => {
   assert.equal(calls, 0);
 });
 
-test(
-  "reserveScan rejects forged query identity, invalid version, bad text and duplicates",
-  async () => {
-    let calls = 0;
-    const gateway: ScanReservationGateway = async () => {
-      calls += 1;
-      return { ok: false, code: "database_error" };
-    };
+test("reserveScan rejects forged query identity, invalid version, bad text and duplicates", async () => {
+  let calls = 0;
+  const gateway: ScanReservationGateway = async () => {
+    calls += 1;
+    return { ok: false, code: "database_error" };
+  };
 
-    const forged = prompt("category@v1", "Valid question");
-    forged.queryId = "niche-prompts-v1:forged";
+  const forged = prompt("category@v1", "Valid question");
+  forged.queryId = "niche-prompts-v1:forged";
 
-    const invalidVersion = prompt("category@v1", "Another question");
-    invalidVersion.templateVersion = "unknown@v1";
+  const invalidVersion = prompt("category@v1", "Another question");
+  invalidVersion.templateVersion = "unknown@v1";
 
-    const badText = prompt("buyer@v1", "Buyer question");
-    badText.text = " ";
+  const badText = prompt("buyer@v1", "Buyer question");
+  badText.text = " ";
 
-    const duplicate = prompt("alternatives@v1", "What are the alternatives?");
+  const duplicate = prompt("alternatives@v1", "What are the alternatives?");
 
-    for (const prompts of [
-      [forged],
-      [invalidVersion],
-      [badText],
-      [duplicate, { ...duplicate }],
-    ]) {
-      const result = await reserveScan(
-        request(generation(prompts)) as never,
-        gateway,
-      );
-      assert.deepEqual(result, { ok: false, code: "invalid_prompt_cohort" });
-    }
-    assert.equal(calls, 0);
-  },
-);
-
-test(
-  "reserveScan rejects malformed evidence references before reservation",
-  async () => {
-    const invalid = prompt("category@v1", "Valid question");
-    invalid.evidenceRefs = [
-      { field: "industry", valueIndex: 0, evidenceIndexes: [0, 0] },
-    ];
-    let calls = 0;
+  for (const prompts of [
+    [forged],
+    [invalidVersion],
+    [badText],
+    [duplicate, { ...duplicate }],
+  ]) {
     const result = await reserveScan(
-      request(generation([invalid])) as never,
-      async () => {
-        calls += 1;
-        return { ok: false, code: "database_error" };
-      },
+      request(generation(prompts)) as never,
+      gateway,
     );
     assert.deepEqual(result, { ok: false, code: "invalid_prompt_cohort" });
-    assert.equal(calls, 0);
-  },
-);
+  }
+  assert.equal(calls, 0);
+});
+
+test("reserveScan rejects malformed evidence references before reservation", async () => {
+  const invalid = prompt("category@v1", "Valid question");
+  invalid.evidenceRefs = [
+    { field: "industry", valueIndex: 0, evidenceIndexes: [0, 0] },
+  ];
+  let calls = 0;
+  const result = await reserveScan(
+    request(generation([invalid])) as never,
+    async () => {
+      calls += 1;
+      return { ok: false, code: "database_error" };
+    },
+  );
+  assert.deepEqual(result, { ok: false, code: "invalid_prompt_cohort" });
+  assert.equal(calls, 0);
+});
 
 test("reserveScan preserves typed gateway failures", async () => {
   const expected = [
