@@ -94,7 +94,8 @@ export async function executeSupabaseProjectCreate(
     if (record(error)) {
       if (
         error.code === "22023" &&
-        error.message === "Idempotency key reused with different project payload"
+        error.message ===
+          "Idempotency key reused with different project payload"
       ) {
         return { ok: false, code: "idempotency_conflict" };
       }
