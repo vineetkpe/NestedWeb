@@ -19,7 +19,9 @@ const attemptId = "F4000000-0000-4000-8000-000000000001";
 const workerId = "F5000000-0000-4000-8000-000000000001";
 const leaseToken = "F6000000-0000-4000-8000-000000000001";
 
-function gateway(overrides: Partial<ScanWorkerGateway> = {}): ScanWorkerGateway {
+function gateway(
+  overrides: Partial<ScanWorkerGateway> = {},
+): ScanWorkerGateway {
   return {
     claim: async () => ({ ok: true, claim: null }),
     renew: async () => ({ ok: false, code: "lease_not_found" }),
