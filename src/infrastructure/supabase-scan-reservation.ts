@@ -157,7 +157,11 @@ export async function executeSupabaseScanReservation(
     return { ok: false, code: "database_error" };
   }
 
-  if (!record(response))
+  if (
+    !record(response) ||
+    !Object.hasOwn(response, "data") ||
+    !Object.hasOwn(response, "error")
+  )
     return { ok: false, code: "invalid_database_response" };
 
   if (response.error !== null && response.error !== undefined) {
