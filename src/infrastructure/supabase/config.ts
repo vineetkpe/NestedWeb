@@ -35,10 +35,12 @@ function safeSupabaseUrl(value: string): boolean {
   );
 }
 
-export function requireSupabasePublicConfig(input: Readonly<{
-  url: string | undefined;
-  publishableKey: string | undefined;
-}>): SupabasePublicConfig {
+export function requireSupabasePublicConfig(
+  input: Readonly<{
+    url: string | undefined;
+    publishableKey: string | undefined;
+  }>,
+): SupabasePublicConfig {
   const url = configured(input.url);
   const publishableKey = configured(input.publishableKey);
 
