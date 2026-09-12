@@ -76,7 +76,10 @@ function boundedText(value: unknown, max: number): value is string {
   );
 }
 
-function positiveSafeInteger(value: unknown, max = Number.MAX_SAFE_INTEGER): value is number {
+function positiveSafeInteger(
+  value: unknown,
+  max = Number.MAX_SAFE_INTEGER,
+): value is number {
   return (
     typeof value === "number" &&
     Number.isSafeInteger(value) &&
@@ -105,7 +108,11 @@ function parseEnvelope(response: unknown):
   | Readonly<{ ok: true; data: unknown }>
   | Readonly<{
       ok: false;
-      code: "database_error" | "invalid_database_response" | "lease_not_found" | "lease_expired";
+      code:
+        | "database_error"
+        | "invalid_database_response"
+        | "lease_not_found"
+        | "lease_expired";
     }> {
   if (
     !record(response) ||
@@ -122,7 +129,10 @@ function parseEnvelope(response: unknown):
   return { ok: true, data: response.data };
 }
 
-function parseQuery(value: unknown, expectedOrdinal: number): ScanWorkQuery | null {
+function parseQuery(
+  value: unknown,
+  expectedOrdinal: number,
+): ScanWorkQuery | null {
   if (
     !record(value) ||
     value.queryOrdinal !== expectedOrdinal ||
