@@ -70,9 +70,15 @@ export type ScanRetryGatewayResult =
   | Readonly<{ ok: false; code: ScanWorkerGatewayFailureCode }>;
 
 export type ScanWorkerGateway = Readonly<{
-  claim: (request: ValidatedScanWorkClaimRequest) => Promise<ScanWorkClaimGatewayResult>;
-  renew: (request: ValidatedScanLeaseRequest) => Promise<ScanLeaseGatewayResult>;
-  retry: (request: ValidatedScanRetryRequest) => Promise<ScanRetryGatewayResult>;
+  claim: (
+    request: ValidatedScanWorkClaimRequest,
+  ) => Promise<ScanWorkClaimGatewayResult>;
+  renew: (
+    request: ValidatedScanLeaseRequest,
+  ) => Promise<ScanLeaseGatewayResult>;
+  retry: (
+    request: ValidatedScanRetryRequest,
+  ) => Promise<ScanRetryGatewayResult>;
 }>;
 
 export type ScanWorkClaimRequest = Readonly<{
@@ -209,7 +215,8 @@ export async function claimScanWork(
   const workerId = normalizeUuid(request.workerId);
   if (workerId === null) return { ok: false, code: "invalid_worker_id" };
   const leaseSeconds = normalizeLeaseSeconds(request.leaseSeconds);
-  if (leaseSeconds === null) return { ok: false, code: "invalid_lease_seconds" };
+  if (leaseSeconds === null)
+    return { ok: false, code: "invalid_lease_seconds" };
 
   return gateway.claim(Object.freeze({ workerId, leaseSeconds }));
 }
@@ -221,7 +228,8 @@ export async function renewScanWorkLease(
   const identity = validateLeaseIdentity(request);
   if (!identity.ok) return identity;
   const leaseSeconds = normalizeLeaseSeconds(request.leaseSeconds);
-  if (leaseSeconds === null) return { ok: false, code: "invalid_lease_seconds" };
+  if (leaseSeconds === null)
+    return { ok: false, code: "invalid_lease_seconds" };
 
   return gateway.renew(
     Object.freeze({
