@@ -95,7 +95,9 @@ export type PinnedHttpsRequest = Readonly<{
 
 export type PinnedHttpsResponse = Readonly<{
   statusCode: number;
-  headers: IncomingHttpHeaders | Readonly<Record<string, string | string[] | undefined>>;
+  headers:
+    | IncomingHttpHeaders
+    | Readonly<Record<string, string | string[] | undefined>>;
   body: AsyncIterable<Uint8Array>;
   destroy: () => void;
 }>;
@@ -270,16 +272,12 @@ function extractHtml(html: string): HtmlExtraction | null {
     const decoded = decodeEntities(raw).replace(/[\p{Cc}\p{Cf}]/gu, " ");
     const text = decoded.replace(/\s+/gu, " ").trim();
     if (!text) return;
-    if (
-      output &&
-      !/[\s\n]$/.test(output) &&
-      !/^[,.;:!?)]/.test(text)
-    )
+    if (output && !/[\s\n]$/.test(output) && !/^[,.;:!?)]/.test(text))
       output += " ";
     output += text;
   };
 
-  for (let index = 0; index < html.length; ) {
+  for (let index = 0; index < html.length;) {
     if (html.startsWith("<!--", index)) {
       const end = html.indexOf("-->", index + 4);
       if (end === -1) return null;
@@ -463,7 +461,8 @@ function redirectUrl(
 export function buildPinnedHttpsRequestOptions(
   request: PinnedHttpsRequest,
 ): HttpsRequestOptions {
-  if (isIP(request.address) === 0) throw new TypeError("Pinned address must be an IP");
+  if (isIP(request.address) === 0)
+    throw new TypeError("Pinned address must be an IP");
   return {
     protocol: "https:",
     hostname: request.address,
@@ -510,7 +509,10 @@ export function createNativeEntryCrawler(
   const exchange = options.exchange ?? nodePinnedHttpsExchange;
   let busy = false;
   return Object.freeze({
-    capabilities: Object.freeze({ scope: "entry_page" as const, maxPages: 1 as const }),
+    capabilities: Object.freeze({
+      scope: "entry_page" as const,
+      maxPages: 1 as const,
+    }),
     async crawl(target, signal): Promise<CrawlResult> {
       if (!isValidatedWebsiteTarget(target))
         return { ok: false, code: "invalid_target" };
@@ -539,7 +541,11 @@ export function createNativeEntryCrawler(
 
       const run = async (): Promise<CrawlResult> => {
         let currentUrl = new URL(target.origin);
-        for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+        for (
+          let redirectCount = 0;
+          redirectCount <= MAX_REDIRECTS;
+          redirectCount += 1
+        ) {
           const response = await exchange({
             address,
             hostname: target.hostname,
@@ -577,9 +583,14 @@ export function createNativeEntryCrawler(
             return { ok: false, code: "provider_error" };
           }
           if (
-            !acceptableHtmlContentType(firstHeader(response.headers, "content-type")) ||
+            !acceptableHtmlContentType(
+              firstHeader(response.headers, "content-type"),
+            ) ||
             ![null, "identity"].includes(
-              firstHeader(response.headers, "content-encoding")?.toLowerCase() ?? null,
+              firstHeader(
+                response.headers,
+                "content-encoding",
+              )?.toLowerCase() ?? null,
             )
           ) {
             response.destroy();
@@ -587,8 +598,10 @@ export function createNativeEntryCrawler(
           }
 
           const bytes = await readBoundedHtml(response, controller.signal);
-          if (bytes === "too_large") return { ok: false, code: "response_too_large" };
-          if (bytes === "invalid") return { ok: false, code: "invalid_response" };
+          if (bytes === "too_large")
+            return { ok: false, code: "response_too_large" };
+          if (bytes === "invalid")
+            return { ok: false, code: "invalid_response" };
 
           let html: string;
           try {
@@ -597,7 +610,8 @@ export function createNativeEntryCrawler(
             return { ok: false, code: "invalid_response" };
           }
           const extracted = extractHtml(html);
-          if (extracted === null) return { ok: false, code: "invalid_response" };
+          if (extracted === null)
+            return { ok: false, code: "invalid_response" };
           if (
             extracted.markdown === null &&
             extracted.title === null &&
