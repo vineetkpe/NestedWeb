@@ -94,7 +94,10 @@ test("executes one claimed query with the database-issued observation UUID and p
     assert.equal(request.workerId, claim.workerId);
     assert.equal(request.leaseToken, claim.leaseToken);
     assert.equal(request.queryOrdinal, 0);
-    assert.equal(request.observation.observationId, claim.queries[0]!.observationId);
+    assert.equal(
+      request.observation.observationId,
+      claim.queries[0]!.observationId,
+    );
     return {
       ok: true,
       snapshot: {
@@ -116,7 +119,10 @@ test("executes one claimed query with the database-issued observation UUID and p
   assert.equal(result.ok, true);
   assert.equal(persisted, 1);
   if (result.ok)
-    assert.equal(result.snapshot.observationId, claim.queries[0]!.observationId);
+    assert.equal(
+      result.snapshot.observationId,
+      claim.queries[0]!.observationId,
+    );
 });
 
 test("refuses a non-live provider before any query or persistence call", async () => {
