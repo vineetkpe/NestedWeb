@@ -8,20 +8,7 @@ const request: ValidatedReserveScanRequest = Object.freeze({
   workspaceId: "a2000000-0000-4000-8000-000000000001",
   projectId: "a3000000-0000-4000-8000-000000000001",
   idempotencyKey: "a4000000-0000-4000-8000-000000000001",
-  promptMethodVersion: "niche-prompts-v1",
-  profileMethodVersion: "company-profile-v2",
-  queries: Object.freeze([
-    Object.freeze({
-      queryId: "niche-prompts-v1:first",
-      queryVersion: "category@v1" as const,
-      queryText: "Which tools are available?",
-    }),
-    Object.freeze({
-      queryId: "niche-prompts-v1:second",
-      queryVersion: "buyer@v1" as const,
-      queryText: "What should buyers look for?",
-    }),
-  ]),
+  promptCohortId: "a5000000-0000-4000-8000-000000000001",
 });
 
 function successData(
@@ -29,6 +16,7 @@ function successData(
 ): Record<string, unknown> {
   return {
     scanId: "A6000000-0000-4000-8000-000000000001",
+    promptCohortId: request.promptCohortId,
     reservationId: "A7000000-0000-4000-8000-000000000001",
     reservedMicrounits: "400",
     currency: "USD",
@@ -43,7 +31,7 @@ function successData(
   };
 }
 
-test("executeSupabaseScanReservation sends only the exact RPC contract and parses success", async () => {
+test("executeSupabaseScanReservation sends only durable cohort identity and parses success", async () => {
   let captured: unknown;
   const result = await executeSupabaseScanReservation(request, async (args) => {
     captured = args;
@@ -54,25 +42,13 @@ test("executeSupabaseScanReservation sends only the exact RPC contract and parse
     p_workspace_id: request.workspaceId,
     p_project_id: request.projectId,
     p_idempotency_key: request.idempotencyKey,
-    p_prompt_method_version: "niche-prompts-v1",
-    p_profile_method_version: "company-profile-v2",
-    p_queries: [
-      {
-        queryId: "niche-prompts-v1:first",
-        queryVersion: "category@v1",
-        queryText: "Which tools are available?",
-      },
-      {
-        queryId: "niche-prompts-v1:second",
-        queryVersion: "buyer@v1",
-        queryText: "What should buyers look for?",
-      },
-    ],
+    p_prompt_cohort_id: request.promptCohortId,
   });
   assert.deepEqual(result, {
     ok: true,
     reservation: {
       scanId: "a6000000-0000-4000-8000-000000000001",
+      promptCohortId: request.promptCohortId,
       reservationId: "a7000000-0000-4000-8000-000000000001",
       reservedMicrounits: "400",
       currency: "USD",
@@ -96,10 +72,26 @@ test("executeSupabaseScanReservation maps the explicit database failure contract
       "Idempotency key reused with different scan request",
       "idempotency_conflict",
     ],
+    [
+      "22023",
+      "Idempotency key reused with different scan prompt cohort",
+      "idempotency_conflict",
+    ],
     ["P0001", "Scan execution unavailable", "execution_unavailable"],
     ["P0001", "Workspace budget window unavailable", "execution_unavailable"],
     ["P0001", "Project budget window unavailable", "execution_unavailable"],
     ["P0001", "Provider pricing unavailable", "execution_unavailable"],
+    [
+      "P0001",
+      "Prompt cohort query snapshot incomplete",
+      "execution_unavailable",
+    ],
+    [
+      "P0001",
+      "Existing scan lacks prompt cohort provenance",
+      "execution_unavailable",
+    ],
+    ["P0001", "Prompt cohort has no executable queries", "empty_prompt_cohort"],
     ["P0001", "Scan query limit exceeded", "query_limit_exceeded"],
     ["P0001", "Workspace scan concurrency exhausted", "concurrency_exhausted"],
     ["P0001", "Project scan concurrency exhausted", "concurrency_exhausted"],
@@ -141,9 +133,11 @@ test("executeSupabaseScanReservation treats unknown database errors as database_
   }
 });
 
-test("executeSupabaseScanReservation rejects malformed success payloads", async () => {
+test("executeSupabaseScanReservation rejects malformed or mismatched success payloads", async () => {
   const invalid = [
     successData({ scanId: "not-a-uuid" }),
+    successData({ promptCohortId: "not-a-uuid" }),
+    successData({ promptCohortId: "a5000000-0000-4000-8000-000000000099" }),
     successData({ reservationId: "not-a-uuid" }),
     successData({ reservedMicrounits: "0" }),
     successData({ reservedMicrounits: 400 }),

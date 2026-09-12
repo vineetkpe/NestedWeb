@@ -11,8 +11,8 @@ import { createSupabaseServerClient } from "./server.ts";
 
 /**
  * Authenticated reservation entry point only. Membership, project ownership,
- * limits, pricing and budget are re-checked atomically inside reserve_scan;
- * this boundary never executes a provider call.
+ * prompt-cohort provenance, limits, pricing and budget are re-checked atomically
+ * inside reserve_scan_from_cohort; this boundary never executes a provider call.
  */
 export async function reserveCurrentUserScan(
   request: ReserveScanRequest,
@@ -23,7 +23,7 @@ export async function reserveCurrentUserScan(
   return reserveScan(request, (validatedRequest) =>
     executeSupabaseScanReservation(
       validatedRequest,
-      async (args) => await client.rpc("reserve_scan", args),
+      async (args) => await client.rpc("reserve_scan_from_cohort", args),
     ),
   );
 }

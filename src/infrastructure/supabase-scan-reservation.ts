@@ -17,13 +17,7 @@ export type SupabaseScanReservationRpc = (
     p_workspace_id: string;
     p_project_id: string;
     p_idempotency_key: string;
-    p_prompt_method_version: "niche-prompts-v1";
-    p_profile_method_version: "company-profile-v2";
-    p_queries: readonly Readonly<{
-      queryId: string;
-      queryVersion: string;
-      queryText: string;
-    }>[];
+    p_prompt_cohort_id: string;
   }>,
 ) => Promise<unknown>;
 
@@ -58,16 +52,21 @@ function mapDatabaseError(
   if (code === "42501") return { ok: false, code: "authorization_denied" };
   if (
     code === "22023" &&
-    message === "Idempotency key reused with different scan request"
+    (message === "Idempotency key reused with different scan request" ||
+      message === "Idempotency key reused with different scan prompt cohort")
   )
     return { ok: false, code: "idempotency_conflict" };
 
   if (code === "P0001" && typeof message === "string") {
+    if (message === "Prompt cohort has no executable queries")
+      return { ok: false, code: "empty_prompt_cohort" };
     if (
       message === "Scan execution unavailable" ||
       message === "Workspace budget window unavailable" ||
       message === "Project budget window unavailable" ||
-      message === "Provider pricing unavailable"
+      message === "Provider pricing unavailable" ||
+      message === "Prompt cohort query snapshot incomplete" ||
+      message === "Existing scan lacks prompt cohort provenance"
     )
       return { ok: false, code: "execution_unavailable" };
     if (message === "Scan query limit exceeded")
@@ -97,6 +96,7 @@ function parseReservation(value: unknown): ScanReservationSummary | null {
   if (
     !record(value) ||
     !validUuid(value.scanId) ||
+    !validUuid(value.promptCohortId) ||
     !validUuid(value.reservationId) ||
     typeof value.reservedMicrounits !== "string" ||
     !POSITIVE_INTEGER_TEXT.test(value.reservedMicrounits) ||
@@ -118,6 +118,7 @@ function parseReservation(value: unknown): ScanReservationSummary | null {
 
   return Object.freeze({
     scanId: value.scanId.toLowerCase(),
+    promptCohortId: value.promptCohortId.toLowerCase(),
     reservationId: value.reservationId.toLowerCase(),
     reservedMicrounits: value.reservedMicrounits,
     currency: value.currency,
@@ -141,13 +142,7 @@ export async function executeSupabaseScanReservation(
       p_workspace_id: request.workspaceId,
       p_project_id: request.projectId,
       p_idempotency_key: request.idempotencyKey,
-      p_prompt_method_version: request.promptMethodVersion,
-      p_profile_method_version: request.profileMethodVersion,
-      p_queries: request.queries.map((query) => ({
-        queryId: query.queryId,
-        queryVersion: query.queryVersion,
-        queryText: query.queryText,
-      })),
+      p_prompt_cohort_id: request.promptCohortId,
     });
   } catch {
     return { ok: false, code: "database_error" };
@@ -167,6 +162,8 @@ export async function executeSupabaseScanReservation(
 
   const reservation = parseReservation(response.data);
   if (reservation === null)
+    return { ok: false, code: "invalid_database_response" };
+  if (reservation.promptCohortId !== request.promptCohortId)
     return { ok: false, code: "invalid_database_response" };
 
   return { ok: true, reservation };

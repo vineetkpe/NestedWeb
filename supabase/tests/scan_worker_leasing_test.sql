@@ -14,6 +14,67 @@ insert into public.projects (id, workspace_id, name, tracked_domain, created_by)
   ('e3000000-0000-4000-8000-000000000001', 'e2000000-0000-4000-8000-000000000001',
    'Worker Client', 'worker.example.test', 'e1000000-0000-4000-8000-000000000001');
 
+insert into public.company_profile_snapshots (
+  id, workspace_id, project_id, idempotency_key, request_fingerprint,
+  capture_method_version, captured_at, crawl_result, profile_method_version, profile
+) values (
+  'e7000000-0000-4000-8000-000000000101',
+  'e2000000-0000-4000-8000-000000000001',
+  'e3000000-0000-4000-8000-000000000001',
+  'e7100000-0000-4000-8000-000000000101', repeat('e', 64),
+  'native-entry-page-v1', now(), '{"ok":true,"pages":[{}]}'::jsonb,
+  'company-profile-v2',
+  '{"methodVersion":"company-profile-v2","fields":{"companyName":{"status":"unknown"},"productName":{"status":"unknown"},"shortDescription":{"status":"unknown"},"primaryProduct":{"status":"unknown"},"targetAudience":{"status":"unknown"},"industry":{"status":"unknown"},"keyUseCases":{"status":"unknown"},"capabilities":{"status":"unknown"},"geography":{"status":"unknown"}},"excludedPages":[]}'::jsonb
+);
+
+create function pg_temp.make_worker_cohort(
+  p_cohort_id uuid,
+  p_idempotency_key uuid,
+  p_query_count integer
+)
+returns void
+language plpgsql
+as $$
+begin
+  insert into public.prompt_cohorts (
+    id, workspace_id, project_id, profile_snapshot_id, idempotency_key,
+    request_fingerprint, prompt_method_version, profile_method_version,
+    language, locale, query_count
+  ) values (
+    p_cohort_id,
+    'e2000000-0000-4000-8000-000000000001',
+    'e3000000-0000-4000-8000-000000000001',
+    'e7000000-0000-4000-8000-000000000101',
+    p_idempotency_key, repeat('d', 64),
+    'niche-prompts-v1', 'company-profile-v2', 'en', null, p_query_count
+  );
+
+  insert into public.prompt_cohort_queries (
+    workspace_id, project_id, cohort_id, query_ordinal, query_id,
+    category, template_version, query_text, language, locale, state, evidence_refs
+  )
+  select
+    'e2000000-0000-4000-8000-000000000001',
+    'e3000000-0000-4000-8000-000000000001',
+    p_cohort_id,
+    ordinal::smallint,
+    'niche-prompts-v1:' || p_cohort_id::text || ':' || ordinal::text,
+    'category-discovery', 'category@v1', 'Worker query ' || ordinal::text,
+    'en', null, 'planned',
+    '[{"field":"industry","valueIndex":0,"evidenceIndexes":[0]}]'::jsonb
+  from generate_series(0, p_query_count - 1) ordinal;
+end;
+$$;
+select pg_temp.make_worker_cohort(
+  'e8000000-0000-4000-8000-000000000001',
+  'e8100000-0000-4000-8000-000000000001', 2);
+select pg_temp.make_worker_cohort(
+  'e8000000-0000-4000-8000-000000000002',
+  'e8100000-0000-4000-8000-000000000002', 1);
+select pg_temp.make_worker_cohort(
+  'e8000000-0000-4000-8000-000000000003',
+  'e8100000-0000-4000-8000-000000000003', 1);
+
 insert into app_private.scan_provider_configs (
   provider, model_id, price_version, currency,
   worst_case_cost_per_query_microunits, max_output_tokens,
@@ -70,15 +131,11 @@ select throws_ok(
   '42501', null,
   'customer role cannot enter worker claim RPC'
 );
-select public.reserve_scan(
+select public.reserve_scan_from_cohort(
   'e2000000-0000-4000-8000-000000000001',
   'e3000000-0000-4000-8000-000000000001',
   'e4000000-0000-4000-8000-000000000001',
-  'niche-prompts-v1', 'company-profile-v2',
-  '[
-    {"queryId":"niche-prompts-v1:worker-1","queryVersion":"category@v1","queryText":"Which tools are available?"},
-    {"queryId":"niche-prompts-v1:worker-2","queryVersion":"buyer@v1","queryText":"What should buyers look for?"}
-  ]'::jsonb
+  'e8000000-0000-4000-8000-000000000001'
 );
 
 reset role;
@@ -185,12 +242,11 @@ select ok(public.claim_scan_work('e5000000-0000-4000-8000-000000000001', 60) is 
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'e1000000-0000-4000-8000-000000000001', true);
-select public.reserve_scan(
+select public.reserve_scan_from_cohort(
   'e2000000-0000-4000-8000-000000000001',
   'e3000000-0000-4000-8000-000000000001',
   'e4000000-0000-4000-8000-000000000002',
-  'niche-prompts-v1', 'company-profile-v2',
-  '[{"queryId":"niche-prompts-v1:expired","queryVersion":"category@v1","queryText":"Expired lease recovery"}]'::jsonb
+  'e8000000-0000-4000-8000-000000000002'
 );
 reset role;
 set local role service_role;
@@ -248,12 +304,11 @@ select public.retry_scan_work(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'e1000000-0000-4000-8000-000000000001', true);
-select public.reserve_scan(
+select public.reserve_scan_from_cohort(
   'e2000000-0000-4000-8000-000000000001',
   'e3000000-0000-4000-8000-000000000001',
   'e4000000-0000-4000-8000-000000000003',
-  'niche-prompts-v1', 'company-profile-v2',
-  '[{"queryId":"niche-prompts-v1:kill-switch","queryVersion":"category@v1","queryText":"Provider stop"}]'::jsonb
+  'e8000000-0000-4000-8000-000000000003'
 );
 reset role;
 update app_private.scan_provider_configs
