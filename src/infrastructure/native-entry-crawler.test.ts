@@ -21,7 +21,8 @@ async function target() {
 }
 
 function body(value: string | Uint8Array): AsyncIterable<Uint8Array> {
-  const bytes = typeof value === "string" ? new TextEncoder().encode(value) : value;
+  const bytes =
+    typeof value === "string" ? new TextEncoder().encode(value) : value;
   return (async function* () {
     yield bytes;
   })();
@@ -115,7 +116,10 @@ test("native crawler uses the exact screened address and extracts inert entry-pa
   assert.match(page?.markdown ?? "", /^# About us/m);
   assert.match(page?.markdown ?? "", /Company name: Example Corp/);
   assert.match(page?.markdown ?? "", /Primary product: Evidence Platform/);
-  assert.doesNotMatch(page?.markdown ?? "", /Script Injection|Hidden Claim|Footer Claim|Evil Navigation/);
+  assert.doesNotMatch(
+    page?.markdown ?? "",
+    /Script Injection|Hidden Claim|Footer Claim|Evil Navigation/,
+  );
 
   assert.deepEqual(captured, {
     address: ip,
@@ -168,14 +172,20 @@ test("same-origin redirects remain on the same pinned address and are bounded", 
       });
       if (calls.length === 1)
         return response(302, "", { location: "/about?source=redirect" });
-      return response(200, html("<h1>About us</h1><p>Company name: Example Corp</p>"));
+      return response(
+        200,
+        html("<h1>About us</h1><p>Company name: Example Corp</p>"),
+      );
     },
   });
 
   const result = await crawler.crawl(await target());
   assert.equal(result.ok, true);
   if (!result.ok) return;
-  assert.equal(result.pages[0]?.url, "https://example.com/about?source=redirect");
+  assert.equal(
+    result.pages[0]?.url,
+    "https://example.com/about?source=redirect",
+  );
   assert.deepEqual(calls, [
     { address: ip, hostname: "example.com", path: "/" },
     {
@@ -220,10 +230,7 @@ test("redirect loops are capped", async () => {
 
 for (const [headers, expected] of [
   [{ "content-type": "application/json" }, "invalid_response"],
-  [
-    { "content-type": "text/html; charset=iso-8859-1" },
-    "invalid_response",
-  ],
+  [{ "content-type": "text/html; charset=iso-8859-1" }, "invalid_response"],
   [
     { "content-type": "text/html; charset=utf-8", "content-encoding": "gzip" },
     "invalid_response",
@@ -292,7 +299,8 @@ test("non-success HTTP responses do not become crawl evidence", async () => {
 
 test("empty HTML remains explicit rather than fabricated evidence", async () => {
   const result = await createNativeEntryCrawler({
-    exchange: async () => response(200, "<html><body><script>only script</script></body></html>"),
+    exchange: async () =>
+      response(200, "<html><body><script>only script</script></body></html>"),
   }).crawl(await target());
   assert.deepEqual(result, { ok: false, code: "empty_result" });
 });
@@ -312,7 +320,9 @@ test("raw, copied and forged targets cannot reach the exchange", async () => {
     { ...validated },
     { origin: "https://example.com", hostname: "example.com", addresses: [ip] },
   ]) {
-    const result: unknown = await Reflect.apply(crawler.crawl, crawler, [value]);
+    const result: unknown = await Reflect.apply(crawler.crawl, crawler, [
+      value,
+    ]);
     assert.deepEqual(result, { ok: false, code: "invalid_target" });
   }
   assert.equal(calls, 0);
