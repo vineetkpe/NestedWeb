@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { ValidatedWorkspaceAuthorizationRequest } from "../application/workspace-authorization.ts";
+import type {
+  ValidatedWorkspaceAuthorizationRequest,
+} from "../application/workspace-authorization.ts";
 import {
   executeSupabaseWorkspaceAuthorization,
   type SupabaseWorkspaceMembershipQuery,
