@@ -36,27 +36,34 @@ const body = JSON.stringify({
 });
 
 test("explicit live provider uses only the fixed Gemini HTTPS exchange", async (t) => {
-  const fetch = t.mock.method(globalThis, "fetch", async (input, init) => {
-    assert.equal(
-      input,
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-live-test:generateContent",
-    );
-    assert.equal(init?.method, "POST");
-    assert.equal(init?.redirect, "error");
-    assert.equal(init?.cache, "no-store");
-    assert.equal(init?.credentials, "omit");
-    assert.equal(init?.referrerPolicy, "no-referrer");
-    assert.deepEqual(init?.headers, {
-      "x-goog-api-key": key,
-      "Content-Type": "application/json",
-    });
-    assert.deepEqual(JSON.parse(String(init?.body)), {
-      contents: [{ role: "user", parts: [{ text: request.queryText }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { candidateCount: 1, maxOutputTokens: 1234 },
-    });
-    return new Response(body, { status: 200 });
-  });
+  const fetch = t.mock.method(
+    globalThis,
+    "fetch",
+    async (
+      input: Parameters<typeof globalThis.fetch>[0],
+      init?: Parameters<typeof globalThis.fetch>[1],
+    ) => {
+      assert.equal(
+        input,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-live-test:generateContent",
+      );
+      assert.equal(init?.method, "POST");
+      assert.equal(init?.redirect, "error");
+      assert.equal(init?.cache, "no-store");
+      assert.equal(init?.credentials, "omit");
+      assert.equal(init?.referrerPolicy, "no-referrer");
+      assert.deepEqual(init?.headers, {
+        "x-goog-api-key": key,
+        "Content-Type": "application/json",
+      });
+      assert.deepEqual(JSON.parse(String(init?.body)), {
+        contents: [{ role: "user", parts: [{ text: request.queryText }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { candidateCount: 1, maxOutputTokens: 1234 },
+      });
+      return new Response(body, { status: 200 });
+    },
+  );
 
   const setup = createLiveGeminiProvider({
     env: { GEMINI_API_KEY: key },
