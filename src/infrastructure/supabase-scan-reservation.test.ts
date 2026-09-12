@@ -155,13 +155,15 @@ test("executeSupabaseScanReservation rejects malformed success payloads", async 
 });
 
 test("executeSupabaseScanReservation rejects malformed envelopes", async () => {
-  for (const response of [null, [], "response", { data: successData() }]) {
+  for (const response of [
+    null,
+    [],
+    "response",
+    { data: successData() },
+    { error: null },
+  ]) {
     const result = await executeSupabaseScanReservation(request, async () => response);
-    if (response && typeof response === "object" && !Array.isArray(response)) {
-      assert.equal(result.ok, true);
-    } else {
-      assert.deepEqual(result, { ok: false, code: "invalid_database_response" });
-    }
+    assert.deepEqual(result, { ok: false, code: "invalid_database_response" });
   }
 });
 
