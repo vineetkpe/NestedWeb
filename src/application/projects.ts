@@ -103,8 +103,7 @@ export async function createProject(
   gateway: CreateProjectGateway,
 ): Promise<CreateProjectResult> {
   const workspaceId = normalizeUuid(request.workspaceId);
-  if (workspaceId === null)
-    return { ok: false, code: "invalid_workspace_id" };
+  if (workspaceId === null) return { ok: false, code: "invalid_workspace_id" };
 
   if (!validProjectName(request.name))
     return { ok: false, code: "invalid_project_name" };
@@ -132,8 +131,7 @@ export async function listProjects(
   gateway: ListProjectsGateway,
 ): Promise<ListProjectsResult> {
   const workspaceId = normalizeUuid(request.workspaceId);
-  if (workspaceId === null)
-    return { ok: false, code: "invalid_workspace_id" };
+  if (workspaceId === null) return { ok: false, code: "invalid_workspace_id" };
 
   return gateway(Object.freeze({ workspaceId }));
 }
