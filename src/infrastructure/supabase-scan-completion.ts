@@ -33,7 +33,10 @@ function mapDatabaseError(
     return { ok: false, code: "lease_expired" };
   if (error.code === "P0001" && error.message === "Scan evidence incomplete")
     return { ok: false, code: "evidence_incomplete" };
-  if (error.code === "P0001" && error.message === "Provider metering unavailable")
+  if (
+    error.code === "P0001" &&
+    error.message === "Provider metering unavailable"
+  )
     return { ok: false, code: "metering_unavailable" };
   if (
     error.code === "22023" &&
