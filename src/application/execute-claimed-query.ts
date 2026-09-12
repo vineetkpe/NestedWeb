@@ -23,7 +23,11 @@ export type ExecuteClaimedQueryResult =
   | Readonly<{
       ok: false;
       stage: "provider";
-      code: "invalid_request" | "invalid_clock" | "provider_exception" | "identity_mismatch";
+      code:
+        | "invalid_request"
+        | "invalid_clock"
+        | "provider_exception"
+        | "identity_mismatch";
     }>
   | Readonly<{
       ok: false;
