@@ -37,7 +37,11 @@ export async function createCurrentUserProject(
               .maybeSingle(),
         ),
     );
-    if (!authorization.ok) return authorization;
+    if (!authorization.ok) {
+      if (authorization.code === "invalid_workspace_id")
+        return { ok: false, code: "invalid_database_response" };
+      return authorization;
+    }
 
     return executeSupabaseProjectCreate(validatedRequest, async (args) =>
       client.rpc("create_project", args),
@@ -65,7 +69,11 @@ export async function listCurrentUserProjects(
               .maybeSingle(),
         ),
     );
-    if (!authorization.ok) return authorization;
+    if (!authorization.ok) {
+      if (authorization.code === "invalid_workspace_id")
+        return { ok: false, code: "invalid_database_response" };
+      return authorization;
+    }
 
     return executeSupabaseProjectList(validatedRequest, async (workspaceId) =>
       client
