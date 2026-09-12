@@ -21,8 +21,8 @@ export async function reserveCurrentUserScan(
   await requireSupabaseIdentity(client);
 
   return reserveScan(request, (validatedRequest) =>
-    executeSupabaseScanReservation(validatedRequest, (args) =>
-      client.rpc("reserve_scan", args),
+    executeSupabaseScanReservation(validatedRequest, async (args) =>
+      await client.rpc("reserve_scan", args),
     ),
   );
 }
