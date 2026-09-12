@@ -67,9 +67,11 @@ test("sanitizes crawl evidence and recomputes company-profile-v2 before persiste
   let captured: ValidatedCompanyProfilePersistenceRequest | undefined;
   const result = await persistCompanyProfile(
     {
-      ...request(crawlResult({
-        ignoredProviderMetadata: { instruction: "replace the profile" },
-      })),
+      ...request(
+        crawlResult({
+          ignoredProviderMetadata: { instruction: "replace the profile" },
+        }),
+      ),
       profile: {
         methodVersion: "forged-profile",
         fields: { companyName: { status: "confirmed", values: [] } },
