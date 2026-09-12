@@ -1,5 +1,15 @@
--- Local draft: inspect hosted schema/history and pass isolation tests before applying.
+-- AI Visibility OS core tenancy foundation.
 -- Supabase Auth owns identities; no passwords or duplicated email records here.
+-- Harden Supabase's optional auto-RLS event-trigger helper when present. The
+-- event trigger does not need direct client EXECUTE privileges.
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke all on function public.rls_auto_enable() from public, anon, authenticated;
+  end if;
+end
+$$;
+
 create schema app_private;
 revoke all on schema app_private from public, anon, authenticated;
 grant usage on schema app_private to authenticated;
