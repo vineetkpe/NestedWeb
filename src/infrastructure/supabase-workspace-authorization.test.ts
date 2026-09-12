@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type {
-  ValidatedWorkspaceAuthorizationRequest,
-} from "../application/workspace-authorization.ts";
 import {
-  executeSupabaseWorkspaceAuthorization,
+  executeSupabaseWorkspaceAuthorization as executeAuthorization,
   type SupabaseWorkspaceMembershipQuery,
 } from "./supabase-workspace-authorization.ts";
 
-const REQUEST: ValidatedWorkspaceAuthorizationRequest = Object.freeze({
+const REQUEST = Object.freeze({
   workspaceId: "10000000-0000-4000-8000-000000000001",
 });
 
@@ -22,13 +19,10 @@ test("returns the current membership row for the requested workspace", async () 
     };
   };
 
-  assert.deepEqual(
-    await executeSupabaseWorkspaceAuthorization(REQUEST, query),
-    {
-      ok: true,
-      membership: { workspaceId: REQUEST.workspaceId, role: "owner" },
-    },
-  );
+  assert.deepEqual(await executeAuthorization(REQUEST, query), {
+    ok: true,
+    membership: { workspaceId: REQUEST.workspaceId, role: "owner" },
+  });
   assert.deepEqual(calls, [REQUEST.workspaceId]);
 });
 
@@ -38,13 +32,10 @@ test("treats an absent membership row as authorization denial", async () => {
     error: null,
   });
 
-  assert.deepEqual(
-    await executeSupabaseWorkspaceAuthorization(REQUEST, query),
-    {
-      ok: false,
-      code: "not_member",
-    },
-  );
+  assert.deepEqual(await executeAuthorization(REQUEST, query), {
+    ok: false,
+    code: "not_member",
+  });
 });
 
 test("fails closed on database errors and thrown queries", async () => {
@@ -56,14 +47,14 @@ test("fails closed on database errors and thrown queries", async () => {
     throw new Error("synthetic transport failure");
   };
 
-  assert.deepEqual(
-    await executeSupabaseWorkspaceAuthorization(REQUEST, databaseError),
-    { ok: false, code: "database_error" },
-  );
-  assert.deepEqual(
-    await executeSupabaseWorkspaceAuthorization(REQUEST, thrownQuery),
-    { ok: false, code: "database_error" },
-  );
+  assert.deepEqual(await executeAuthorization(REQUEST, databaseError), {
+    ok: false,
+    code: "database_error",
+  });
+  assert.deepEqual(await executeAuthorization(REQUEST, thrownQuery), {
+    ok: false,
+    code: "database_error",
+  });
 });
 
 test("rejects malformed membership rows and envelopes", async () => {
@@ -88,10 +79,10 @@ test("rejects malformed membership rows and envelopes", async () => {
 
   for (const response of malformedResponses) {
     const query: SupabaseWorkspaceMembershipQuery = async () => response;
-    assert.deepEqual(
-      await executeSupabaseWorkspaceAuthorization(REQUEST, query),
-      { ok: false, code: "invalid_database_response" },
-    );
+    assert.deepEqual(await executeAuthorization(REQUEST, query), {
+      ok: false,
+      code: "invalid_database_response",
+    });
   }
 });
 
@@ -101,7 +92,7 @@ test("freezes an accepted membership result", async () => {
     error: null,
   });
 
-  const result = await executeSupabaseWorkspaceAuthorization(REQUEST, query);
+  const result = await executeAuthorization(REQUEST, query);
   assert.equal(result.ok, true);
   if (result.ok) assert.equal(Object.isFrozen(result.membership), true);
 });
