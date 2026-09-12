@@ -91,11 +91,7 @@ test("executeSupabaseScanReservation maps the explicit database failure contract
       "Existing scan lacks prompt cohort provenance",
       "execution_unavailable",
     ],
-    [
-      "P0001",
-      "Prompt cohort has no executable queries",
-      "empty_prompt_cohort",
-    ],
+    ["P0001", "Prompt cohort has no executable queries", "empty_prompt_cohort"],
     ["P0001", "Scan query limit exceeded", "query_limit_exceeded"],
     ["P0001", "Workspace scan concurrency exhausted", "concurrency_exhausted"],
     ["P0001", "Project scan concurrency exhausted", "concurrency_exhausted"],
