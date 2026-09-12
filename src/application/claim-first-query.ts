@@ -73,8 +73,7 @@ export async function claimAndExecuteFirstQuery(
   signal?: AbortSignal,
 ): Promise<ClaimFirstQueryResult> {
   const claimed = await claimScanWork(request, workerGateway);
-  if (!claimed.ok)
-    return { ok: false, stage: "claim", code: claimed.code };
+  if (!claimed.ok) return { ok: false, stage: "claim", code: claimed.code };
   if (claimed.claim === null) return { ok: true, state: "idle" };
 
   const provider = providerForClaim(claimed.claim, providerFactory);
@@ -92,8 +91,7 @@ export async function claimAndExecuteFirstQuery(
     persistenceGateway,
     signal,
   );
-  if (!executed.ok)
-    return { ok: false, stage: "query", result: executed };
+  if (!executed.ok) return { ok: false, stage: "query", result: executed };
 
   return {
     ok: true,
