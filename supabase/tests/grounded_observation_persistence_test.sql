@@ -323,8 +323,8 @@ select is((select count(*) from public.raw_citations), 0::bigint,
 
 reset role;
 update app_private.scan_worker_leases
-set heartbeat_at = clock_timestamp() - interval '2 minutes',
-    lease_expires_at = clock_timestamp() - interval '1 minute'
+set heartbeat_at = claimed_at,
+    lease_expires_at = claimed_at + interval '1 millisecond'
 where workspace_id = 'f2000000-0000-4000-8000-000000000001'
   and scan_id = 'f4000000-0000-4000-8000-000000000001';
 set local role service_role;
