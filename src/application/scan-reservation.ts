@@ -131,10 +131,7 @@ function templateVersion(value: unknown): value is PromptTemplateVersion {
   return typeof value === "string" && Object.hasOwn(templateCategories, value);
 }
 
-function expectedQueryId(
-  version: PromptTemplateVersion,
-  text: string,
-): string {
+function expectedQueryId(version: PromptTemplateVersion, text: string): string {
   return `niche-prompts-v1:${encodeURIComponent(
     JSON.stringify([version, "en", null, text]),
   )}`;
@@ -230,8 +227,7 @@ export async function reserveScan(
   gateway: ScanReservationGateway,
 ): Promise<ReserveScanResult> {
   const workspaceId = normalizeUuid(request.workspaceId);
-  if (workspaceId === null)
-    return { ok: false, code: "invalid_workspace_id" };
+  if (workspaceId === null) return { ok: false, code: "invalid_workspace_id" };
 
   const projectId = normalizeUuid(request.projectId);
   if (projectId === null) return { ok: false, code: "invalid_project_id" };
