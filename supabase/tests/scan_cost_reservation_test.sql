@@ -203,7 +203,6 @@ select is(
 );
 select is((select count(*) from public.scans), 1::bigint, 'reservation atomically persists one scan');
 select is((select count(*) from public.scan_queries), 2::bigint, 'reservation atomically snapshots ordered queries');
-
 select is(
   (
     public.reserve_scan(
@@ -221,13 +220,22 @@ select is(
   'true',
   'same idempotency key and exact payload replays without new reservation'
 );
-select is((select count(*) from app_private.scan_cost_reservations), 1::bigint, 'replay creates no duplicate cost reservation');
+
+-- Inspect private accounting only as the test owner, never while impersonating a client.
+reset role;
+select is(
+  (select count(*) from app_private.scan_cost_reservations),
+  1::bigint,
+  'replay creates no duplicate cost reservation'
+);
 select like(
   (select request_fingerprint from public.scans),
   repeat('_', 64),
   'database computes and stores a 64-character request fingerprint'
 );
 
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
 select throws_ok(
   $$select public.reserve_scan(
     'c2000000-0000-4000-8000-000000000001',
@@ -278,7 +286,6 @@ select throws_ok(
   null,
   'client cannot inspect private reservation ledger'
 );
-
 select is(
   (
     public.reserve_scan(
@@ -357,11 +364,13 @@ select is(
   'confirmed zero cost releases unused reservation without deleting history'
 );
 
+-- Complete only the first scan. The released second scan remains queued so that
+-- a third reservation reaches the provider-wide active-scan cap of two.
 reset role;
 update public.scans set state = 'running'
-where workspace_id = 'c2000000-0000-4000-8000-000000000001';
+where idempotency_key = 'c4000000-0000-4000-8000-000000000001';
 update public.scans set state = 'completed'
-where workspace_id = 'c2000000-0000-4000-8000-000000000001';
+where idempotency_key = 'c4000000-0000-4000-8000-000000000001';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true);
@@ -379,7 +388,6 @@ select is(
   '200',
   'settlement and release free only confirmed unused budget'
 );
-
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
 select throws_ok(
   $$select public.reserve_scan(
@@ -395,14 +403,66 @@ select throws_ok(
   'provider-level concurrency cap is enforced across tenants'
 );
 
+-- Clear active A scans, then prove the configured request window also fails closed.
 reset role;
 update public.scans set state = 'running'
-where idempotency_key = 'c4000000-0000-4000-8000-000000000006';
+where idempotency_key in (
+  'c4000000-0000-4000-8000-000000000004',
+  'c4000000-0000-4000-8000-000000000006'
+);
 update public.scans set state = 'completed'
-where idempotency_key = 'c4000000-0000-4000-8000-000000000006';
+where idempotency_key in (
+  'c4000000-0000-4000-8000-000000000004',
+  'c4000000-0000-4000-8000-000000000006'
+);
+update app_private.workspace_scan_controls
+set max_scans_per_window = 1
+where workspace_id = 'c2000000-0000-4000-8000-000000000002';
+update app_private.project_scan_controls
+set max_scans_per_window = 1
+where workspace_id = 'c2000000-0000-4000-8000-000000000002'
+  and project_id = 'c3000000-0000-4000-8000-000000000002';
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
+select is(
+  (
+    public.reserve_scan(
+      'c2000000-0000-4000-8000-000000000002',
+      'c3000000-0000-4000-8000-000000000002',
+      'c4000000-0000-4000-8000-000000000007',
+      'niche-prompts-v1',
+      'company-profile-v2',
+      '[{"queryId":"niche-prompts-v1:request-1","queryVersion":"category@v1","queryText":"First request"}]'::jsonb
+    ) ->> 'reservedMicrounits'
+  ),
+  '200',
+  'first request inside the configured window is reserved'
+);
+select throws_ok(
+  $$select public.reserve_scan(
+    'c2000000-0000-4000-8000-000000000002',
+    'c3000000-0000-4000-8000-000000000002',
+    'c4000000-0000-4000-8000-000000000010',
+    'niche-prompts-v1',
+    'company-profile-v2',
+    '[{"queryId":"niche-prompts-v1:request-2","queryVersion":"category@v1","queryText":"Second request"}]'::jsonb
+  )$$,
+  'P0001',
+  'Workspace scan request limit exhausted',
+  'workspace request-window cap is enforced before another reservation'
+);
+
+reset role;
+update public.scans set state = 'running'
+where idempotency_key = 'c4000000-0000-4000-8000-000000000007';
+update public.scans set state = 'completed'
+where idempotency_key = 'c4000000-0000-4000-8000-000000000007';
 update app_private.scan_provider_configs
 set enabled = false
-where provider = 'gemini' and model_id = 'gemini-test-model' and price_version = 'test-price-v1';
+where provider = 'gemini'
+  and model_id = 'gemini-test-model'
+  and price_version = 'test-price-v1';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000002', true);
