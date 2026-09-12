@@ -101,10 +101,7 @@ test("freezes an accepted membership result", async () => {
     error: null,
   });
 
-  const result = await executeSupabaseWorkspaceAuthorization(
-    REQUEST,
-    query,
-  );
+  const result = await executeSupabaseWorkspaceAuthorization(REQUEST, query);
   assert.equal(result.ok, true);
   if (result.ok) assert.equal(Object.isFrozen(result.membership), true);
 });
