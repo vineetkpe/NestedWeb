@@ -47,8 +47,7 @@ export async function authorizeWorkspaceMembership(
   gateway: WorkspaceAuthorizationGateway,
 ): Promise<WorkspaceAuthorizationResult> {
   const workspaceId = normalizeWorkspaceId(request.workspaceId);
-  if (workspaceId === null)
-    return { ok: false, code: "invalid_workspace_id" };
+  if (workspaceId === null) return { ok: false, code: "invalid_workspace_id" };
 
   return gateway(Object.freeze({ workspaceId }));
 }
