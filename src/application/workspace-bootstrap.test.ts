@@ -8,9 +8,7 @@ import {
 const VALID_KEY = "30000000-0000-4000-8000-000000000001";
 const WORKSPACE_ID = "10000000-0000-4000-8000-000000000001";
 
-function recordingGateway(
-  requests: unknown[],
-): WorkspaceBootstrapGateway {
+function recordingGateway(requests: unknown[]): WorkspaceBootstrapGateway {
   return async (request) => {
     requests.push(request);
     return { ok: true, workspaceId: WORKSPACE_ID };
