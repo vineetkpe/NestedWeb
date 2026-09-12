@@ -48,18 +48,16 @@ function mapDatabaseError(
   return { ok: false, code: "database_error" };
 }
 
-function parseSnapshot(value: unknown): GroundedObservationSnapshotSummary | null {
+function parseSnapshot(
+  value: unknown,
+): GroundedObservationSnapshotSummary | null {
   if (
     !record(value) ||
     typeof value.observationId !== "string" ||
     !UUID_PATTERN.test(value.observationId) ||
-    ![
-      "answered",
-      "refused",
-      "partial",
-      "failed",
-      "cancelled",
-    ].includes(String(value.state)) ||
+    !["answered", "refused", "partial", "failed", "cancelled"].includes(
+      String(value.state),
+    ) ||
     typeof value.citationCount !== "number" ||
     !Number.isSafeInteger(value.citationCount) ||
     value.citationCount < 0 ||
