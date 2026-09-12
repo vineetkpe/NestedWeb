@@ -7,7 +7,6 @@ import { prepareWebsiteTarget } from "../application/website-target.ts";
 import {
   buildPinnedHttpsRequestOptions,
   createNativeEntryCrawler,
-  type PinnedHttpsExchange,
   type PinnedHttpsResponse,
 } from "./native-entry-crawler.ts";
 
