@@ -145,7 +145,7 @@ test("recomputes and snapshots the exact deterministic prompt cohort", async () 
       {
         category: "category-discovery",
         templateVersion: "category@v1",
-        text: "Which tools are available for AI visibility software?",
+        text: 'Which tools and platforms are available for "AI visibility software"?',
         language: "en",
         locale: null,
         state: "planned",
@@ -156,7 +156,7 @@ test("recomputes and snapshots the exact deterministic prompt cohort", async () 
       {
         category: "best-tools-platforms",
         templateVersion: "best-audience@v1",
-        text: "What are the best AI visibility software tools for Agencies?",
+        text: 'What are the best tools for "AI visibility software" for "Agencies"?',
         language: "en",
         locale: null,
         state: "planned",
@@ -168,13 +168,13 @@ test("recomputes and snapshots the exact deterministic prompt cohort", async () 
       {
         category: "buyer-intent",
         templateVersion: "buyer@v1",
-        text: "What should Agencies look for in AI visibility software tools?",
+        text: 'What should "Agencies" look for when choosing tools for "AI visibility software"?',
         language: "en",
         locale: null,
         state: "planned",
         evidenceRefs: [
-          { field: "industry", valueIndex: 0, evidenceIndexes: [0] },
           { field: "targetAudience", valueIndex: 0, evidenceIndexes: [0] },
+          { field: "industry", valueIndex: 0, evidenceIndexes: [0] },
         ],
       },
     ],
