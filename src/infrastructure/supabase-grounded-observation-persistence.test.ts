@@ -145,7 +145,13 @@ test("rejects malformed, mismatched or inconsistent success payloads", async () 
     });
   }
 
-  for (const response of [null, [], {}, { data: successData() }, { error: null }]) {
+  for (const response of [
+    null,
+    [],
+    {},
+    { data: successData() },
+    { error: null },
+  ]) {
     const result = await executeSupabaseGroundedObservationPersistence(
       request,
       async () => response,
