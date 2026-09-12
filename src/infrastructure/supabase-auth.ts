@@ -1,9 +1,7 @@
 import "server-only";
 
 export type AuthBoundaryFailureCode =
-  | "signed_out"
-  | "auth_verification_failed"
-  | "invalid_claims";
+  "signed_out" | "auth_verification_failed" | "invalid_claims";
 
 export type SupabaseIdentity = Readonly<{
   userId: string;
