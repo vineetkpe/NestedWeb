@@ -52,7 +52,9 @@ function workerGateway(events: string[]): ScanWorkerGateway {
       return { ok: true, claim };
     },
     async renew() {
-      const ordinal = events.filter((event) => event.startsWith("renew:")).length;
+      const ordinal = events.filter((event) =>
+        event.startsWith("renew:"),
+      ).length;
       events.push(`renew:${ordinal}`);
       return {
         ok: true,
