@@ -175,6 +175,33 @@ set enabled = true
 where provider = 'gemini'
   and model_id = 'gemini-renewal-gate-test'
   and price_version = 'renewal-gate-v1';
+delete from app_private.scan_provider_metering_configs
+where provider = 'gemini'
+  and model_id = 'gemini-renewal-gate-test'
+  and price_version = 'renewal-gate-v1';
+set local role service_role;
+select throws_ok(
+  $$select public.renew_scan_work_lease(
+    (select (payload ->> 'workspaceId')::uuid from pg_temp.renewal_gate_claims),
+    (select (payload ->> 'scanId')::uuid from pg_temp.renewal_gate_claims),
+    (select (payload ->> 'attemptId')::uuid from pg_temp.renewal_gate_claims),
+    'd5000000-0000-4000-8000-000000000001',
+    (select (payload ->> 'leaseToken')::uuid from pg_temp.renewal_gate_claims),
+    60
+  )$$,
+  'P0001', 'Scan execution disabled',
+  'missing metering config stops renewal before paid work'
+);
+
+reset role;
+insert into app_private.scan_provider_metering_configs (
+  provider, model_id, price_version,
+  input_microunits_per_million_tokens,
+  output_microunits_per_million_tokens,
+  search_microunits_per_thousand_queries
+) values (
+  'gemini', 'gemini-renewal-gate-test', 'renewal-gate-v1', 1, 1, 1
+);
 set local role service_role;
 select is(
   public.renew_scan_work_lease(
