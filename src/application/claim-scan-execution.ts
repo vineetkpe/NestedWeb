@@ -131,7 +131,11 @@ export async function claimAndExecuteScanQueries(
     };
 
   const observationIds: string[] = [];
-  for (let queryOrdinal = 0; queryOrdinal < claim.queries.length; queryOrdinal += 1) {
+  for (
+    let queryOrdinal = 0;
+    queryOrdinal < claim.queries.length;
+    queryOrdinal += 1
+  ) {
     const renewed = await renewScanWorkLease(
       {
         workspaceId: claim.workspaceId,
