@@ -101,6 +101,8 @@ function mapDatabaseError(error: Record<string, unknown>) {
     return { ok: false as const, code: "lease_not_found" as const };
   if (error.code === "P0001" && error.message === "Scan lease expired")
     return { ok: false as const, code: "lease_expired" as const };
+  if (error.code === "P0001" && error.message === "Scan execution disabled")
+    return { ok: false as const, code: "execution_disabled" as const };
   return { ok: false as const, code: "database_error" as const };
 }
 
@@ -112,7 +114,8 @@ function parseEnvelope(response: unknown):
         | "database_error"
         | "invalid_database_response"
         | "lease_not_found"
-        | "lease_expired";
+        | "lease_expired"
+        | "execution_disabled";
     }> {
   if (
     !record(response) ||
