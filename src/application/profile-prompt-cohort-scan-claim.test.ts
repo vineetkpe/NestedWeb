@@ -175,7 +175,10 @@ test("claims only the exact durable reservation and preserves its execution snap
     result.reservation.reservedMicrounits,
   );
   assert.equal(result.claim.maxAttempts, result.reservation.maxAttempts);
-  assert.equal(result.claim.maxOutputTokens, result.reservation.maxOutputTokens);
+  assert.equal(
+    result.claim.maxOutputTokens,
+    result.reservation.maxOutputTokens,
+  );
 });
 
 test("returns a safe queued state when the exact reservation is not next claimable work", async () => {
