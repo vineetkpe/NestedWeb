@@ -262,7 +262,10 @@ test("one fixture carries durable provenance through exact claim execution and s
   assert.equal(result.state, "execution_attempted");
   if (result.state !== "execution_attempted")
     throw new Error("expected exact claim execution");
-  assert.equal(result.preparation.profile.snapshot.snapshotId, profileSnapshotId);
+  assert.equal(
+    result.preparation.profile.snapshot.snapshotId,
+    profileSnapshotId,
+  );
   assert.equal(result.preparation.cohort.cohortId, cohortId);
   assert.equal(result.preparation.reservation.scanId, scanId);
   assert.equal(result.preparation.reservation.reservationId, reservationId);
