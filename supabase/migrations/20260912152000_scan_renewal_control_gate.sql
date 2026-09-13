@@ -149,8 +149,9 @@ declare
   scan_state text;
   attempt_state text;
   attempt_number integer;
-  reservation_status text;
-  max_attempts integer;
+  reservation app_private.scan_cost_reservations%rowtype;
+  metering_available boolean;
+  unobserved_query_count integer;
 begin
   select scan.state
   into scan_state
@@ -165,23 +166,90 @@ begin
     and attempt.scan_id = old.scan_id
     and attempt.id = old.attempt_id;
 
-  select reservation.status, reservation.max_attempts
-  into reservation_status, max_attempts
-  from app_private.scan_cost_reservations reservation
-  where reservation.workspace_id = old.workspace_id
-    and reservation.scan_id = old.scan_id;
+  select *
+  into reservation
+  from app_private.scan_cost_reservations existing
+  where existing.workspace_id = old.workspace_id
+    and existing.scan_id = old.scan_id;
 
   if scan_state = 'running'
      and attempt_state = 'failed'
-     and reservation_status = 'reserved'
-     and attempt_number >= max_attempts then
-    perform app_private.settle_scan_metering(
-      old.workspace_id,
-      old.scan_id,
-      old.attempt_id,
-      old.worker_id,
-      old.lease_token
-    );
+     and reservation.status = 'reserved'
+     and attempt_number >= reservation.max_attempts then
+    select exists (
+      select 1
+      from app_private.scan_provider_metering_configs config
+      where config.provider = reservation.provider
+        and config.model_id = reservation.model_id
+        and config.price_version = reservation.price_version
+    )
+    into metering_available;
+
+    if metering_available then
+      perform app_private.settle_scan_metering(
+        old.workspace_id,
+        old.scan_id,
+        old.attempt_id,
+        old.worker_id,
+        old.lease_token
+      );
+    else
+      -- A reservation created before C7b can lack a parsed metering-rate row.
+      -- Never strand that reservation or guess zero: charge its entire immutable
+      -- worst-case reservation and record the result as unobserved exposure.
+      select count(*)::integer
+      into unobserved_query_count
+      from public.scan_attempt_queries attempt_query
+      where attempt_query.workspace_id = old.workspace_id
+        and attempt_query.scan_id = old.scan_id;
+
+      if unobserved_query_count > 100 then
+        raise exception 'Too many unobserved scan queries' using errcode = '22023';
+      end if;
+
+      update app_private.scan_cost_reservations
+      set status = 'settled',
+          settlement_key = old.lease_token,
+          settled_microunits = reservation.reserved_microunits
+      where id = reservation.id
+      returning * into reservation;
+
+      insert into public.scan_metering_summaries (
+        workspace_id,
+        scan_id,
+        reservation_id,
+        attempt_id,
+        worker_id,
+        settlement_key,
+        provider,
+        model_id,
+        price_version,
+        currency,
+        cost_basis,
+        observed_usage_count,
+        unobserved_query_count,
+        observed_cost_microunits,
+        unobserved_cost_microunits,
+        settled_microunits
+      ) values (
+        old.workspace_id,
+        old.scan_id,
+        reservation.id,
+        old.attempt_id,
+        old.worker_id,
+        old.lease_token,
+        reservation.provider,
+        reservation.model_id,
+        reservation.price_version,
+        reservation.currency,
+        'gross_list_price',
+        0,
+        unobserved_query_count,
+        0,
+        reservation.reserved_microunits,
+        reservation.reserved_microunits
+      );
+    end if;
   end if;
 
   return old;
