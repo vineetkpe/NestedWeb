@@ -5,10 +5,13 @@ import {
   claimAndExecuteScanQueries,
   type ClaimedLiveProviderFactory,
 } from "./claim-scan-execution.ts";
+import type {
+  GroundedAIProvider,
+  GroundedQueryResponse,
+} from "./grounded-ai-provider.ts";
 import type { GroundedObservationPersistenceGateway } from "./grounded-observation-persistence.ts";
 import type { ScanCompletionGateway } from "./scan-completion.ts";
 import type { ScanWorkClaim, ScanWorkerGateway } from "./scan-worker.ts";
-import type { GroundedAIProvider } from "./grounded-ai-provider.ts";
 
 const workerId = "11111111-1111-4111-8111-111111111111";
 const claim: ScanWorkClaim = Object.freeze({
@@ -85,7 +88,7 @@ function providerFactory(events: string[]): ClaimedLiveProviderFactory {
         maxQueries: 1,
         maxCitations: 50,
       }),
-      async query(input: unknown) {
+      async query(input: unknown): Promise<GroundedQueryResponse> {
         const query = claim.queries.find(
           (candidate) =>
             typeof input === "object" &&
