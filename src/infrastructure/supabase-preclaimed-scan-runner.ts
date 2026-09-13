@@ -1,6 +1,9 @@
 import "server-only";
 
-import type { ClaimedLiveProviderFactory, ClaimScanExecutionResult } from "../application/claim-scan-execution.ts";
+import type {
+  ClaimedLiveProviderFactory,
+  ClaimScanExecutionResult,
+} from "../application/claim-scan-execution.ts";
 import type { GroundedObservationPersistenceGateway } from "../application/grounded-observation-persistence.ts";
 import {
   executePreclaimedScanQueries,
