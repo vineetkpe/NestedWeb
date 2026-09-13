@@ -197,7 +197,8 @@ export async function claimCurrentUserReservedScan(
     .maybeSingle();
   if (project.error !== null)
     return authorizationFailure("authorization_database_error");
-  if (project.data === null) return authorizationFailure("project_access_denied");
+  if (project.data === null)
+    return authorizationFailure("project_access_denied");
 
   const serviceClient = createClient(
     config.supabaseUrl,
