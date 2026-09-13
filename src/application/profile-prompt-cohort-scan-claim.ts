@@ -137,7 +137,10 @@ export async function persistProfilePromptCohortReserveClaimScan(
     return Object.freeze({
       ok: false,
       stage: "claim",
-      failure: { ok: false, code: "reservation_claim_mismatch" },
+      failure: {
+        ok: false as const,
+        code: "reservation_claim_mismatch" as const,
+      },
     });
 
   return Object.freeze({
