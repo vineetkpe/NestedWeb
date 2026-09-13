@@ -7,7 +7,10 @@ import type { GroundedObservationPersistenceGateway } from "./grounded-observati
 import {
   claimScanWork,
   renewScanWorkLease,
+  retryScanWork,
   type ScanLeaseResult,
+  type ScanRetryResult,
+  type ScanRetrySummary,
   type ScanWorkClaim,
   type ScanWorkerGateway,
   type ScanWorkClaimResult,
@@ -58,6 +61,22 @@ export type ClaimScanExecutionResult =
       stage: "query";
       queryOrdinal: number;
       result: Exclude<ExecuteClaimedQueryResult, { ok: true }>;
+    }>
+  | Readonly<{
+      ok: false;
+      stage: "observation";
+      queryOrdinal: number;
+      observationId: string;
+      state: "failed" | "cancelled";
+      retry: ScanRetrySummary;
+    }>
+  | Readonly<{
+      ok: false;
+      stage: "retry";
+      queryOrdinal: number;
+      observationId: string;
+      state: "failed" | "cancelled";
+      code: Exclude<ScanRetryResult, { ok: true }>["code"];
     }>;
 
 function validLiveLeaseSeconds(value: unknown): value is number {
@@ -98,7 +117,9 @@ function sameLeaseIdentity(
 /**
  * Claims one database-authorized scan and persists every claimed query in order.
  * A fresh lease window is required immediately before each paid provider request.
- * Retry, completion and monetary settlement remain separate orchestration steps.
+ * Durable failed/cancelled observations stop the attempt and enter the existing
+ * database retry contract before any later query can execute. Completion and
+ * monetary settlement remain separate orchestration steps.
  */
 export async function claimAndExecuteScanQueries(
   request: Readonly<{
@@ -171,6 +192,41 @@ export async function claimAndExecuteScanQueries(
     );
     if (!executed.ok)
       return { ok: false, stage: "query", queryOrdinal, result: executed };
+
+    if (
+      executed.snapshot.state === "failed" ||
+      executed.snapshot.state === "cancelled"
+    ) {
+      const retry = await retryScanWork(
+        {
+          workspaceId: claim.workspaceId,
+          scanId: claim.scanId,
+          attemptId: claim.attemptId,
+          workerId: claim.workerId,
+          leaseToken: claim.leaseToken,
+        },
+        workerGateway,
+      );
+      if (!retry.ok)
+        return {
+          ok: false,
+          stage: "retry",
+          queryOrdinal,
+          observationId: executed.snapshot.observationId,
+          state: executed.snapshot.state,
+          code: retry.code,
+        };
+
+      return {
+        ok: false,
+        stage: "observation",
+        queryOrdinal,
+        observationId: executed.snapshot.observationId,
+        state: executed.snapshot.state,
+        retry: retry.retry,
+      };
+    }
+
     observationIds.push(executed.snapshot.observationId);
   }
 
