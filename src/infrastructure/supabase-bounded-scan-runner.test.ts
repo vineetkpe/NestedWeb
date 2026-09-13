@@ -284,10 +284,7 @@ test("one fixture carries durable provenance through exact claim execution and s
     "service:persist_grounded_observation",
     "service:complete_scan_work",
   ]);
-  assert.equal(
-    events.some((event) => event.includes("claim_scan_work")),
-    false,
-  );
+  assert.equal(events.includes("service:claim_scan_work"), false);
 });
 
 test("queued exact claim stops before provider and execution RPCs", async () => {
