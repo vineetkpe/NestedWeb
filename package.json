@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
-    "format:check": "prettier --write src/application/claim-scan-execution.ts src/application/claim-scan-execution.test.ts && git diff -- src/application/claim-scan-execution.ts src/application/claim-scan-execution.test.ts && exit 1",
+    "format:check": "prettier --check .",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
     "test:db": "supabase test db --local",
