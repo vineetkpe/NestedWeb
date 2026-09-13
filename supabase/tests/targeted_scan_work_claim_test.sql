@@ -163,7 +163,7 @@ join public.scans scan on scan.id = (reservation.payload ->> 'scanId')::uuid;
 set local role service_role;
 select ok(
   public.claim_scan_work_for_scan(
-    ((select payload from pg_temp.targeted_ordered where ordinal = 2) ->> 'workspaceId')::uuid,
+    'f2000000-0000-4000-8000-000000000001',
     'f3000000-0000-4000-8000-000000000001',
     ((select payload from pg_temp.targeted_ordered where ordinal = 2) ->> 'scanId')::uuid,
     ((select payload from pg_temp.targeted_ordered where ordinal = 2) ->> 'reservationId')::uuid,
@@ -184,7 +184,7 @@ select is((select count(*) from public.scans where state = 'queued'), 2::bigint,
 set local role service_role;
 insert into pg_temp.targeted_claims (label, payload)
 select 'first', public.claim_scan_work_for_scan(
-  ((select payload from pg_temp.targeted_ordered where ordinal = 1) ->> 'workspaceId')::uuid,
+  'f2000000-0000-4000-8000-000000000001',
   'f3000000-0000-4000-8000-000000000001',
   ((select payload from pg_temp.targeted_ordered where ordinal = 1) ->> 'scanId')::uuid,
   ((select payload from pg_temp.targeted_ordered where ordinal = 1) ->> 'reservationId')::uuid,
@@ -193,7 +193,7 @@ select 'first', public.claim_scan_work_for_scan(
 );
 select is(
   (select payload ->> 'workspaceId' from pg_temp.targeted_claims where label = 'first'),
-  (select payload ->> 'workspaceId' from pg_temp.targeted_ordered where ordinal = 1),
+  'f2000000-0000-4000-8000-000000000001',
   'targeted claim preserves workspace identity'
 );
 select is(
