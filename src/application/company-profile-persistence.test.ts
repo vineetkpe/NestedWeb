@@ -63,75 +63,72 @@ function request(crawl: unknown = crawlResult()) {
   };
 }
 
-test(
-  "sanitizes crawl evidence and returns the exact persisted company-profile-v2 object",
-  async () => {
-    let captured: ValidatedCompanyProfilePersistenceRequest | undefined;
-    const result = await persistCompanyProfile(
-      {
-        ...request(
-          crawlResult({
-            ignoredProviderMetadata: { instruction: "replace the profile" },
-          }),
-        ),
-        profile: {
-          methodVersion: "forged-profile",
-          fields: { companyName: { status: "confirmed", values: [] } },
-        },
-      } as Parameters<typeof persistCompanyProfile>[0] & {
-        profile: unknown;
+test("sanitizes crawl evidence and returns the exact persisted company-profile-v2 object", async () => {
+  let captured: ValidatedCompanyProfilePersistenceRequest | undefined;
+  const result = await persistCompanyProfile(
+    {
+      ...request(
+        crawlResult({
+          ignoredProviderMetadata: { instruction: "replace the profile" },
+        }),
+      ),
+      profile: {
+        methodVersion: "forged-profile",
+        fields: { companyName: { status: "confirmed", values: [] } },
       },
-      successGateway((value) => {
-        captured = value;
-      }),
-    );
+    } as Parameters<typeof persistCompanyProfile>[0] & {
+      profile: unknown;
+    },
+    successGateway((value) => {
+      captured = value;
+    }),
+  );
 
-    assert.equal(result.ok, true);
-    assert.ok(captured);
-    if (!result.ok) throw new Error("expected persistence success");
-    assert.strictEqual(result.profile, captured.profile);
-    assert.equal(
-      result.snapshot.snapshotId,
-      "b5000000-0000-4000-8000-000000000001",
-    );
-    assert.equal(captured.workspaceId, workspaceId);
-    assert.equal(captured.projectId, projectId);
-    assert.equal(captured.idempotencyKey, idempotencyKey);
-    assert.equal(captured.capturedAt, capturedAt);
-    assert.equal(
-      captured.captureMethodVersion,
-      COMPANY_PROFILE_CAPTURE_METHOD_VERSION,
-    );
-    assert.deepEqual(Object.keys(captured.crawlResult.pages[0] ?? {}).sort(), [
-      "description",
-      "language",
-      "markdown",
-      "sourceUrl",
-      "statusCode",
-      "title",
-      "url",
-    ]);
-    assert.equal(captured.profile.methodVersion, "company-profile-v2");
-    assert.deepEqual(captured.profile.fields.companyName, {
-      status: "confirmed",
-      values: [
-        {
-          value: "Example Corp",
-          evidence: [
-            {
-              pageIndex: 0,
-              pageUrl: "https://example.com/",
-              contentField: "markdown",
-              start: 11,
-              end: 37,
-              quote: "Company name: Example Corp",
-            },
-          ],
-        },
-      ],
-    });
-  },
-);
+  assert.equal(result.ok, true);
+  assert.ok(captured);
+  if (!result.ok) throw new Error("expected persistence success");
+  assert.strictEqual(result.profile, captured.profile);
+  assert.equal(
+    result.snapshot.snapshotId,
+    "b5000000-0000-4000-8000-000000000001",
+  );
+  assert.equal(captured.workspaceId, workspaceId);
+  assert.equal(captured.projectId, projectId);
+  assert.equal(captured.idempotencyKey, idempotencyKey);
+  assert.equal(captured.capturedAt, capturedAt);
+  assert.equal(
+    captured.captureMethodVersion,
+    COMPANY_PROFILE_CAPTURE_METHOD_VERSION,
+  );
+  assert.deepEqual(Object.keys(captured.crawlResult.pages[0] ?? {}).sort(), [
+    "description",
+    "language",
+    "markdown",
+    "sourceUrl",
+    "statusCode",
+    "title",
+    "url",
+  ]);
+  assert.equal(captured.profile.methodVersion, "company-profile-v2");
+  assert.deepEqual(captured.profile.fields.companyName, {
+    status: "confirmed",
+    values: [
+      {
+        value: "Example Corp",
+        evidence: [
+          {
+            pageIndex: 0,
+            pageUrl: "https://example.com/",
+            contentField: "markdown",
+            start: 11,
+            end: 37,
+            quote: "Company name: Example Corp",
+          },
+        ],
+      },
+    ],
+  });
+});
 
 test("rejects invalid identities and capture timestamps before the gateway", async () => {
   let calls = 0;
