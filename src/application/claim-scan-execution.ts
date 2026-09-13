@@ -6,8 +6,8 @@ import {
 import type { GroundedObservationPersistenceGateway } from "./grounded-observation-persistence.ts";
 import {
   completeScanWork,
+  type CompleteScanWorkResult,
   type ScanCompletionGateway,
-  type ScanCompletionGatewayResult,
   type ScanCompletionSummary,
 } from "./scan-completion.ts";
 import {
@@ -96,7 +96,7 @@ export type ClaimScanExecutionResult =
   | Readonly<{
       ok: false;
       stage: "completion";
-      code: Exclude<ScanCompletionGatewayResult, { ok: true }>["code"];
+      code: Exclude<CompleteScanWorkResult, { ok: true }>["code"];
     }>;
 
 function validLiveLeaseSeconds(value: unknown): value is number {
