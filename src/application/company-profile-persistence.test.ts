@@ -63,7 +63,7 @@ function request(crawl: unknown = crawlResult()) {
   };
 }
 
-test("sanitizes crawl evidence and recomputes company-profile-v2 before persistence", async () => {
+test("sanitizes crawl evidence and returns the exact persisted company-profile-v2 object", async () => {
   let captured: ValidatedCompanyProfilePersistenceRequest | undefined;
   const result = await persistCompanyProfile(
     {
@@ -86,6 +86,12 @@ test("sanitizes crawl evidence and recomputes company-profile-v2 before persiste
 
   assert.equal(result.ok, true);
   assert.ok(captured);
+  if (!result.ok) throw new Error("expected persistence success");
+  assert.strictEqual(result.profile, captured.profile);
+  assert.equal(
+    result.snapshot.snapshotId,
+    "b5000000-0000-4000-8000-000000000001",
+  );
   assert.equal(captured.workspaceId, workspaceId);
   assert.equal(captured.projectId, projectId);
   assert.equal(captured.idempotencyKey, idempotencyKey);

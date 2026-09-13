@@ -49,8 +49,15 @@ export type CompanyProfilePersistenceGateway = (
   request: ValidatedCompanyProfilePersistenceRequest,
 ) => Promise<CompanyProfilePersistenceGatewayResult>;
 
+export type PersistCompanyProfileSuccess = Readonly<{
+  ok: true;
+  snapshot: CompanyProfileSnapshotSummary;
+  profile: CompanyProfile;
+}>;
+
 export type PersistCompanyProfileResult =
-  | CompanyProfilePersistenceGatewayResult
+  | PersistCompanyProfileSuccess
+  | Exclude<CompanyProfilePersistenceGatewayResult, { ok: true }>
   | Readonly<{
       ok: false;
       code:
@@ -149,6 +156,8 @@ function snapshotCrawlResult(
  * Persists only a bounded native entry-page capture. The Company Profile is
  * recomputed here from the sanitized crawl snapshot, so callers cannot supply
  * or alter interpreted facts/evidence independently of the stored source.
+ * On success, the exact profile object passed to persistence is returned for
+ * the next provenance-bound stage; it is not recomputed after persistence.
  */
 export async function persistCompanyProfile(
   request: PersistCompanyProfileRequest,
@@ -181,7 +190,7 @@ export async function persistCompanyProfile(
   const extracted = extractCompanyProfile(crawlResult);
   if (!extracted.ok) return extracted;
 
-  return gateway(
+  const persisted = await gateway(
     Object.freeze({
       workspaceId,
       projectId,
@@ -192,4 +201,11 @@ export async function persistCompanyProfile(
       profile: extracted.profile,
     }),
   );
+  if (!persisted.ok) return persisted;
+
+  return Object.freeze({
+    ok: true,
+    snapshot: persisted.snapshot,
+    profile: extracted.profile,
+  });
 }
