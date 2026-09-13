@@ -310,7 +310,10 @@ test("cancelled observations use the same bounded retry transition", async () =>
   const result = await claimAndExecuteScanQueries(
     { workerId, leaseSeconds },
     successfulGateway(),
-    () => liveProvider(undefined, (queryOrdinal) => failedObservation(queryOrdinal, "cancelled")),
+    () =>
+      liveProvider(undefined, (queryOrdinal) =>
+        failedObservation(queryOrdinal, "cancelled"),
+      ),
     persistenceGateway(),
   );
 
