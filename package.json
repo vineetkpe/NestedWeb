@@ -21,7 +21,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "check": "npm run format:check && npm run lint && npm run typecheck",
-    "verify": "prettier --write src/infrastructure/supabase-bounded-scan-runner.ts src/infrastructure/supabase-bounded-scan-runner.test.ts && git diff -- src/infrastructure/supabase-bounded-scan-runner.ts src/infrastructure/supabase-bounded-scan-runner.test.ts && npm run check && npm run build && npm test"
+    "verify": "npm run check && npm run build && npm test"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
