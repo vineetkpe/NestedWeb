@@ -51,7 +51,11 @@ function setupFailure(
 }
 
 function parseSupabaseUrl(value: unknown): string | null {
-  if (typeof value !== "string" || value !== value.trim() || value.length > 300)
+  if (
+    typeof value !== "string" ||
+    value !== value.trim() ||
+    value.length > 300
+  )
     return null;
   let url: URL;
   try {
@@ -110,7 +114,10 @@ function readWorkerConfig(
   )
     return setupFailure("invalid_gemini_credential");
 
-  if (env.NESTEDWEB_SCAN_WORKER_ID === undefined || env.NESTEDWEB_SCAN_WORKER_ID === "")
+  if (
+    env.NESTEDWEB_SCAN_WORKER_ID === undefined ||
+    env.NESTEDWEB_SCAN_WORKER_ID === ""
+  )
     return setupFailure("missing_worker_id");
   if (
     typeof env.NESTEDWEB_SCAN_WORKER_ID !== "string" ||
