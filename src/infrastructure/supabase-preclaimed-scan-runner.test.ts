@@ -76,8 +76,7 @@ function provider(): GroundedAIProvider {
         modelVersion: claim.modelId,
         providerResponseId: "preclaimed-response",
         observedAt: "2026-09-13T20:00:00.000Z",
-        rawResponse:
-          '{"candidates":[],"usageMetadata":{"promptTokenCount":1}}',
+        rawResponse: '{"candidates":[],"usageMetadata":{"promptTokenCount":1}}',
         responseDigest:
           "sha256:e16c0e3fd79f4032bfc55fddcd2048e1f4907089e6f4cde143514f01c95bd9c5",
         rawResponseState: "complete",
