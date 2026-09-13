@@ -33,8 +33,7 @@ type ScanWorkerServerSetupFailure = Readonly<{
 }>;
 
 export type RunConfiguredScanWorkerResult =
-  | ClaimScanExecutionResult
-  | ScanWorkerServerSetupFailure;
+  ClaimScanExecutionResult | ScanWorkerServerSetupFailure;
 
 type WorkerEnvironment = Readonly<Record<string, unknown>>;
 
