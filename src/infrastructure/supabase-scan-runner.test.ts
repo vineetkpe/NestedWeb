@@ -63,112 +63,117 @@ function provider(): GroundedAIProvider {
   });
 }
 
-test("server RPC runner persists claimed evidence and always finalizes metering", async () => {
-  const calls: Array<Readonly<{ name: string; args: Record<string, unknown> }>> = [];
-  const rpc: SupabaseScanWorkerRpc = async (name, args) => {
-    calls.push({ name, args: { ...args } });
-    if (name === "claim_scan_work")
-      return {
-        data: {
-          workspaceId,
-          scanId,
-          projectId,
-          reservationId,
-          attemptId,
-          attemptNumber: 1,
-          workerId,
-          leaseToken,
-          leaseExpiresAt: "2026-09-13T04:01:00.000Z",
+test(
+  "server RPC runner persists claimed evidence and always finalizes metering",
+  async () => {
+    const calls: Array<
+      Readonly<{ name: string; args: Record<string, unknown> }>
+    > = [];
+    const rpc: SupabaseScanWorkerRpc = async (name, args) => {
+      calls.push({ name, args: { ...args } });
+      if (name === "claim_scan_work")
+        return {
+          data: {
+            workspaceId,
+            scanId,
+            projectId,
+            reservationId,
+            attemptId,
+            attemptNumber: 1,
+            workerId,
+            leaseToken,
+            leaseExpiresAt: "2026-09-13T04:01:00.000Z",
+            provider: "gemini",
+            modelId: "gemini-runner-test",
+            priceVersion: "runner-price-v1",
+            currency: "USD",
+            reservedMicrounits: "100",
+            maxAttempts: 2,
+            maxOutputTokens: 2048,
+            queries: [
+              {
+                queryOrdinal: 0,
+                queryId: "runner-query",
+                queryVersion: "category@v1",
+                queryText: "Which tools are available?",
+                observationId,
+              },
+            ],
+          },
+          error: null,
+        };
+      if (name === "renew_scan_work_lease")
+        return {
+          data: {
+            workspaceId,
+            scanId,
+            attemptId,
+            workerId,
+            leaseToken,
+            leaseExpiresAt: "2026-09-13T04:01:30.000Z",
+          },
+          error: null,
+        };
+      if (name === "persist_grounded_observation")
+        return {
+          data: {
+            observationId,
+            state: "answered",
+            citationCount: 0,
+            replayed: false,
+          },
+          error: null,
+        };
+      if (name === "complete_scan_work")
+        return {
+          data: {
+            workspaceId,
+            scanId,
+            attemptId,
+            state: "completed",
+            reservationStatus: "settled",
+            settledMicrounits: "1",
+            costBasis: "gross_list_price",
+            replayed: false,
+          },
+          error: null,
+        };
+      throw new Error(`unexpected RPC ${name}`);
+    };
+
+    const result = await executeSupabaseScanWorkerOnce(
+      { workerId, leaseSeconds: 60 },
+      rpc,
+      (config) => {
+        assert.deepEqual(config, {
           provider: "gemini",
           modelId: "gemini-runner-test",
-          priceVersion: "runner-price-v1",
-          currency: "USD",
-          reservedMicrounits: "100",
-          maxAttempts: 2,
           maxOutputTokens: 2048,
-          queries: [
-            {
-              queryOrdinal: 0,
-              queryId: "runner-query",
-              queryVersion: "category@v1",
-              queryText: "Which tools are available?",
-              observationId,
-            },
-          ],
-        },
-        error: null,
-      };
-    if (name === "renew_scan_work_lease")
-      return {
-        data: {
-          workspaceId,
-          scanId,
-          attemptId,
-          workerId,
-          leaseToken,
-          leaseExpiresAt: "2026-09-13T04:01:30.000Z",
-        },
-        error: null,
-      };
-    if (name === "persist_grounded_observation")
-      return {
-        data: {
-          observationId,
-          state: "answered",
-          citationCount: 0,
-          replayed: false,
-        },
-        error: null,
-      };
-    if (name === "complete_scan_work")
-      return {
-        data: {
-          workspaceId,
-          scanId,
-          attemptId,
-          state: "completed",
-          reservationStatus: "settled",
-          settledMicrounits: "1",
-          costBasis: "gross_list_price",
-          replayed: false,
-        },
-        error: null,
-      };
-    throw new Error(`unexpected RPC ${name}`);
-  };
+        });
+        return provider();
+      },
+    );
 
-  const result = await executeSupabaseScanWorkerOnce(
-    { workerId, leaseSeconds: 60 },
-    rpc,
-    (config) => {
-      assert.deepEqual(config, {
-        provider: "gemini",
-        modelId: "gemini-runner-test",
-        maxOutputTokens: 2048,
-      });
-      return provider();
-    },
-  );
-
-  assert.equal(result.ok, true);
-  if (!result.ok) return;
-  assert.equal(result.state, "completed");
-  assert.deepEqual(
-    calls.map((call) => call.name),
-    [
-      "claim_scan_work",
-      "renew_scan_work_lease",
-      "persist_grounded_observation",
-      "complete_scan_work",
-    ],
-  );
-  const completion = calls.at(-1)!;
-  assert.deepEqual(completion.args, {
-    p_workspace_id: workspaceId,
-    p_scan_id: scanId,
-    p_attempt_id: attemptId,
-    p_worker_id: workerId,
-    p_lease_token: leaseToken,
-  });
-  assert.equal(Object.hasOwn(completion.args, "settled_microunits"), false);
-});
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.state, "completed");
+    assert.deepEqual(
+      calls.map((call) => call.name),
+      [
+        "claim_scan_work",
+        "renew_scan_work_lease",
+        "persist_grounded_observation",
+        "complete_scan_work",
+      ],
+    );
+    const completion = calls.at(-1)!;
+    assert.deepEqual(completion.args, {
+      p_workspace_id: workspaceId,
+      p_scan_id: scanId,
+      p_attempt_id: attemptId,
+      p_worker_id: workerId,
+      p_lease_token: leaseToken,
+    });
+    assert.equal(Object.hasOwn(completion.args, "settled_microunits"), false);
+  },
+);
