@@ -5,6 +5,12 @@ import {
 } from "./execute-claimed-query.ts";
 import type { GroundedObservationPersistenceGateway } from "./grounded-observation-persistence.ts";
 import {
+  completeScanWork,
+  type ScanCompletionGateway,
+  type ScanCompletionGatewayResult,
+  type ScanCompletionSummary,
+} from "./scan-completion.ts";
+import {
   claimScanWork,
   renewScanWorkLease,
   retryScanWork,
@@ -35,6 +41,15 @@ export type ClaimScanExecutionResult =
       scanId: string;
       attemptId: string;
       observationIds: readonly string[];
+    }>
+  | Readonly<{
+      ok: true;
+      state: "completed" | "partial";
+      workspaceId: string;
+      scanId: string;
+      attemptId: string;
+      observationIds: readonly string[];
+      completion: ScanCompletionSummary;
     }>
   | Readonly<{
       ok: false;
@@ -77,6 +92,11 @@ export type ClaimScanExecutionResult =
       observationId: string;
       state: "failed" | "cancelled";
       code: Exclude<ScanRetryResult, { ok: true }>["code"];
+    }>
+  | Readonly<{
+      ok: false;
+      stage: "completion";
+      code: Exclude<ScanCompletionGatewayResult, { ok: true }>["code"];
     }>;
 
 function validLiveLeaseSeconds(value: unknown): value is number {
@@ -118,8 +138,9 @@ function sameLeaseIdentity(
  * Claims one database-authorized scan and persists every claimed query in order.
  * A fresh lease window is required immediately before each paid provider request.
  * Durable failed/cancelled observations stop the attempt and enter the existing
- * database retry contract before any later query can execute. Completion and
- * monetary settlement remain separate orchestration steps.
+ * database retry contract before any later query can execute. When a completion
+ * gateway is supplied, the database alone performs final metering/settlement and
+ * releases the lease after all durable terminal evidence has been persisted.
  */
 export async function claimAndExecuteScanQueries(
   request: Readonly<{
@@ -129,6 +150,7 @@ export async function claimAndExecuteScanQueries(
   workerGateway: ScanWorkerGateway,
   providerFactory: ClaimedLiveProviderFactory,
   persistenceGateway: GroundedObservationPersistenceGateway,
+  completionGateway?: ScanCompletionGateway,
   signal?: AbortSignal,
 ): Promise<ClaimScanExecutionResult> {
   if (!validLiveLeaseSeconds(request.leaseSeconds))
@@ -230,12 +252,37 @@ export async function claimAndExecuteScanQueries(
     observationIds.push(executed.snapshot.observationId);
   }
 
+  const frozenObservationIds = Object.freeze(observationIds);
+  if (!completionGateway)
+    return {
+      ok: true,
+      state: "persisted",
+      workspaceId: claim.workspaceId,
+      scanId: claim.scanId,
+      attemptId: claim.attemptId,
+      observationIds: frozenObservationIds,
+    };
+
+  const completed = await completeScanWork(
+    {
+      workspaceId: claim.workspaceId,
+      scanId: claim.scanId,
+      attemptId: claim.attemptId,
+      workerId: claim.workerId,
+      leaseToken: claim.leaseToken,
+    },
+    completionGateway,
+  );
+  if (!completed.ok)
+    return { ok: false, stage: "completion", code: completed.code };
+
   return {
     ok: true,
-    state: "persisted",
+    state: completed.completion.state,
     workspaceId: claim.workspaceId,
     scanId: claim.scanId,
     attemptId: claim.attemptId,
-    observationIds: Object.freeze(observationIds),
+    observationIds: frozenObservationIds,
+    completion: completed.completion,
   };
 }
