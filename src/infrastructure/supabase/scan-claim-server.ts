@@ -1,45 +1,39 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
-import {
-  persistProfilePromptCohortReserveClaimScan,
-  type PersistProfilePromptCohortReserveClaimScanRequest,
-  type PersistProfilePromptCohortReserveClaimScanResult,
+import type {
+  PersistProfilePromptCohortReserveClaimScanRequest,
+  PersistProfilePromptCohortReserveClaimScanResult,
 } from "../../application/profile-prompt-cohort-scan-claim.ts";
 import {
   AuthBoundaryError,
   type AuthBoundaryFailureCode,
   requireSupabaseIdentity,
 } from "../supabase-auth.ts";
-import { executeSupabaseCompanyProfilePersistence } from "../supabase-company-profile-persistence.ts";
-import { executeSupabasePromptCohortPersistence } from "../supabase-prompt-cohort-persistence.ts";
-import { executeSupabaseScanReservation } from "../supabase-scan-reservation.ts";
-import { executeSupabaseTargetedScanClaim } from "../supabase-targeted-scan-claim.ts";
+import {
+  executeSupabaseReservedScanClaim,
+  type SupabaseScanClaimActorRpc,
+  type SupabaseScanClaimActorRpcName,
+  type SupabaseScanClaimServiceRpc,
+  type SupabaseScanClaimServiceRpcName,
+} from "./reserved-scan-claim-runtime.ts";
 import {
   requireSupabasePublicConfig,
   SupabaseConfigurationError,
 } from "./config.ts";
 import { createSupabaseServerClient } from "./server.ts";
 
+export {
+  executeSupabaseReservedScanClaim,
+  type SupabaseScanClaimActorRpc,
+  type SupabaseScanClaimActorRpcName,
+  type SupabaseScanClaimServiceRpc,
+  type SupabaseScanClaimServiceRpcName,
+};
+
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SECRET_KEY_PATTERN = /^sb_secret_[A-Za-z0-9._-]{10,500}$/;
-
-export type SupabaseScanClaimActorRpcName = "reserve_scan_from_cohort";
-export type SupabaseScanClaimServiceRpcName =
-  | "persist_company_profile_snapshot"
-  | "persist_prompt_cohort"
-  | "claim_scan_work_for_scan";
-
-export type SupabaseScanClaimActorRpc = (
-  name: SupabaseScanClaimActorRpcName,
-  args: unknown,
-) => Promise<unknown>;
-
-export type SupabaseScanClaimServiceRpc = (
-  name: SupabaseScanClaimServiceRpcName,
-  args: unknown,
-) => Promise<unknown>;
 
 type ServerEnvironment = Readonly<Record<string, unknown>>;
 
@@ -118,37 +112,6 @@ function readServerConfig(
 function normalizeUuid(value: unknown): string | null {
   if (typeof value !== "string" || value !== value.trim()) return null;
   return UUID_PATTERN.test(value) ? value.toLowerCase() : null;
-}
-
-/**
- * Testable Supabase composition for C8e. Service-only provenance writes and the
- * exact claim use the service channel; reservation deliberately stays on the
- * authenticated actor channel so Postgres re-checks membership/budget there.
- */
-export async function executeSupabaseReservedScanClaim(
-  request: PersistProfilePromptCohortReserveClaimScanRequest,
-  actorRpc: SupabaseScanClaimActorRpc,
-  serviceRpc: SupabaseScanClaimServiceRpc,
-): Promise<PersistProfilePromptCohortReserveClaimScanResult> {
-  return persistProfilePromptCohortReserveClaimScan(
-    request,
-    (validated) =>
-      executeSupabaseCompanyProfilePersistence(validated, (args) =>
-        serviceRpc("persist_company_profile_snapshot", args),
-      ),
-    (validated) =>
-      executeSupabasePromptCohortPersistence(validated, (args) =>
-        serviceRpc("persist_prompt_cohort", args),
-      ),
-    (validated) =>
-      executeSupabaseScanReservation(validated, (args) =>
-        actorRpc("reserve_scan_from_cohort", args),
-      ),
-    (validated) =>
-      executeSupabaseTargetedScanClaim(validated, (args) =>
-        serviceRpc("claim_scan_work_for_scan", args),
-      ),
-  );
 }
 
 /**
