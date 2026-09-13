@@ -26,13 +26,15 @@ export type ScanWorkerServerSetupFailureCode =
   | "invalid_worker_id"
   | "invalid_lease_seconds";
 
+type ScanWorkerServerSetupFailure = Readonly<{
+  ok: false;
+  stage: "server_setup";
+  code: ScanWorkerServerSetupFailureCode;
+}>;
+
 export type RunConfiguredScanWorkerResult =
   | ClaimScanExecutionResult
-  | Readonly<{
-      ok: false;
-      stage: "server_setup";
-      code: ScanWorkerServerSetupFailureCode;
-    }>;
+  | ScanWorkerServerSetupFailure;
 
 type WorkerEnvironment = Readonly<Record<string, unknown>>;
 
@@ -46,16 +48,12 @@ type WorkerConfig = Readonly<{
 
 function setupFailure(
   code: ScanWorkerServerSetupFailureCode,
-): RunConfiguredScanWorkerResult {
+): ScanWorkerServerSetupFailure {
   return { ok: false, stage: "server_setup", code };
 }
 
 function parseSupabaseUrl(value: unknown): string | null {
-  if (
-    typeof value !== "string" ||
-    value !== value.trim() ||
-    value.length > 300
-  )
+  if (typeof value !== "string" || value !== value.trim() || value.length > 300)
     return null;
   let url: URL;
   try {
@@ -89,7 +87,7 @@ function parseLeaseSeconds(value: unknown): number | null {
 
 function readWorkerConfig(
   env: WorkerEnvironment,
-): WorkerConfig | RunConfiguredScanWorkerResult {
+): WorkerConfig | ScanWorkerServerSetupFailure {
   if (env.NESTEDWEB_LIVE_SCAN_WORKER_ENABLED !== "true")
     return setupFailure("live_execution_disabled");
 
@@ -139,8 +137,8 @@ function readWorkerConfig(
 }
 
 function isSetupFailure(
-  value: WorkerConfig | RunConfiguredScanWorkerResult,
-): value is Extract<RunConfiguredScanWorkerResult, { stage: "server_setup" }> {
+  value: WorkerConfig | ScanWorkerServerSetupFailure,
+): value is ScanWorkerServerSetupFailure {
   return "stage" in value;
 }
 
