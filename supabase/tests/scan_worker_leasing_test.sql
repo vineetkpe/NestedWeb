@@ -80,6 +80,12 @@ insert into app_private.scan_provider_configs (
   worst_case_cost_per_query_microunits, max_output_tokens,
   max_global_active_scans, enabled
 ) values ('gemini', 'gemini-worker-test', 'worker-price-v1', 'USD', 10, 2048, 10, true);
+insert into app_private.scan_provider_metering_configs (
+  provider, model_id, price_version,
+  input_microunits_per_million_tokens,
+  output_microunits_per_million_tokens,
+  search_microunits_per_thousand_queries
+) values ('gemini', 'gemini-worker-test', 'worker-price-v1', 1, 1, 1);
 insert into app_private.workspace_scan_controls (
   workspace_id, provider, model_id, price_version, enabled,
   max_queries_per_scan, max_attempts_per_scan, max_concurrent_scans,
