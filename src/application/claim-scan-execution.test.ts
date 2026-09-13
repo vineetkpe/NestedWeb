@@ -11,7 +11,10 @@ import {
   type ClaimedLiveProviderFactory,
 } from "./claim-scan-execution.ts";
 import type { ScanWorkClaim, ScanWorkerGateway } from "./scan-worker.ts";
-import type { RawObservation } from "../domain/raw-observation.ts";
+import type {
+  ObservationFailureCode,
+  RawObservation,
+} from "../domain/raw-observation.ts";
 
 const workerId = "11111111-1111-4111-8111-111111111111";
 const leaseSeconds = 30;
@@ -78,8 +81,39 @@ function observation(queryOrdinal: number): RawObservation {
   });
 }
 
+function failedObservation(
+  queryOrdinal: number,
+  failureCode: ObservationFailureCode,
+): RawObservation {
+  const query = claim.queries[queryOrdinal]!;
+  return Object.freeze({
+    observationId: query.observationId,
+    queryId: query.queryId,
+    queryVersion: query.queryVersion,
+    queryText: query.queryText,
+    provider: "gemini",
+    surface: "api",
+    captureVersion: "gemini-generate-content-v1",
+    captureMode: "injected_transport",
+    requestedModel: claim.modelId,
+    modelVersion: null,
+    providerResponseId: null,
+    observedAt: "2026-09-13T03:00:00.000Z",
+    rawResponse: null,
+    responseDigest: null,
+    rawResponseState: "not_received",
+    outcome: "failed",
+    failureCode,
+    answerText: null,
+    finishReason: null,
+    groundingMetadata: null,
+    citations: Object.freeze([]),
+  });
+}
+
 function successfulGateway(
   onRenew?: (call: number) => void,
+  onRetry?: () => void,
 ): ScanWorkerGateway {
   let renewCalls = 0;
   return Object.freeze({
@@ -110,14 +144,34 @@ function successfulGateway(
         },
       };
     },
-    async retry() {
-      throw new Error("retry is out of scope");
+    async retry(request) {
+      onRetry?.();
+      assert.deepEqual(request, {
+        workspaceId: claim.workspaceId,
+        scanId: claim.scanId,
+        attemptId: claim.attemptId,
+        workerId: claim.workerId,
+        leaseToken: claim.leaseToken,
+      });
+      return {
+        ok: true,
+        retry: {
+          workspaceId: claim.workspaceId,
+          scanId: claim.scanId,
+          attemptId: claim.attemptId,
+          attemptNumber: claim.attemptNumber,
+          maxAttempts: claim.maxAttempts,
+          nextState: "queued",
+          retryScheduled: true,
+        },
+      };
     },
   });
 }
 
 function liveProvider(
   onQuery?: (queryOrdinal: number) => void,
+  makeObservation: (queryOrdinal: number) => RawObservation = observation,
 ): GroundedAIProvider {
   return Object.freeze({
     capabilities: Object.freeze({
@@ -145,7 +199,7 @@ function liveProvider(
         queryText: query.queryText,
       });
       onQuery?.(queryOrdinal);
-      return { ok: true, observation: observation(queryOrdinal) };
+      return { ok: true, observation: makeObservation(queryOrdinal) };
     },
   });
 }
@@ -157,11 +211,16 @@ function persistenceGateway(
     const query = claim.queries[request.queryOrdinal]!;
     assert.equal(request.observation.observationId, query.observationId);
     onPersist?.(request.queryOrdinal);
+    const state =
+      request.observation.outcome === "failed" &&
+      request.observation.failureCode === "cancelled"
+        ? "cancelled"
+        : request.observation.outcome;
     return {
       ok: true,
       snapshot: {
         observationId: request.observation.observationId,
-        state: "answered",
+        state,
         citationCount: 0,
         replayed: false,
       },
@@ -210,6 +269,108 @@ test("renews before and persists every claimed query in ordinal order", async ()
   assert.equal(factoryCalls, 1);
 });
 
+test("durable failed observations retry the attempt before later paid queries", async () => {
+  const events: string[] = [];
+  const result = await claimAndExecuteScanQueries(
+    { workerId, leaseSeconds },
+    successfulGateway(
+      (call) => events.push(`renew:${call - 1}`),
+      () => events.push("retry"),
+    ),
+    () =>
+      liveProvider(
+        (queryOrdinal) => events.push(`query:${queryOrdinal}`),
+        (queryOrdinal) => failedObservation(queryOrdinal, "rate_limited"),
+      ),
+    persistenceGateway((queryOrdinal) =>
+      events.push(`persist:${queryOrdinal}`),
+    ),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    stage: "observation",
+    queryOrdinal: 0,
+    observationId: claim.queries[0]!.observationId,
+    state: "failed",
+    retry: {
+      workspaceId: claim.workspaceId,
+      scanId: claim.scanId,
+      attemptId: claim.attemptId,
+      attemptNumber: claim.attemptNumber,
+      maxAttempts: claim.maxAttempts,
+      nextState: "queued",
+      retryScheduled: true,
+    },
+  });
+  assert.deepEqual(events, ["renew:0", "query:0", "persist:0", "retry"]);
+});
+
+test("cancelled observations use the same bounded retry transition", async () => {
+  const result = await claimAndExecuteScanQueries(
+    { workerId, leaseSeconds },
+    successfulGateway(),
+    () => liveProvider(undefined, (queryOrdinal) => failedObservation(queryOrdinal, "cancelled")),
+    persistenceGateway(),
+  );
+
+  assert.equal(result.ok, false);
+  if (result.ok || result.stage !== "observation")
+    throw new Error("expected handled cancelled observation");
+  assert.equal(result.queryOrdinal, 0);
+  assert.equal(result.observationId, claim.queries[0]!.observationId);
+  assert.equal(result.state, "cancelled");
+  assert.equal(result.retry.retryScheduled, true);
+});
+
+test("retry failures are surfaced instead of reporting a handled observation", async () => {
+  let queryCalls = 0;
+  const workerGateway: ScanWorkerGateway = Object.freeze({
+    async claim() {
+      return { ok: true, claim };
+    },
+    async renew(request) {
+      return {
+        ok: true,
+        lease: {
+          workspaceId: request.workspaceId,
+          scanId: request.scanId,
+          attemptId: request.attemptId,
+          workerId: request.workerId,
+          leaseToken: request.leaseToken,
+          leaseExpiresAt: "2026-09-13T03:01:00.000Z",
+        },
+      };
+    },
+    async retry() {
+      return { ok: false, code: "database_error" };
+    },
+  });
+
+  const result = await claimAndExecuteScanQueries(
+    { workerId, leaseSeconds },
+    workerGateway,
+    () =>
+      liveProvider(
+        () => {
+          queryCalls += 1;
+        },
+        (queryOrdinal) => failedObservation(queryOrdinal, "network_error"),
+      ),
+    persistenceGateway(),
+  );
+
+  assert.deepEqual(result, {
+    ok: false,
+    stage: "retry",
+    queryOrdinal: 0,
+    observationId: claim.queries[0]!.observationId,
+    state: "failed",
+    code: "database_error",
+  });
+  assert.equal(queryCalls, 1);
+});
+
 test("a renewal failure stops before the next paid query", async () => {
   let renewCalls = 0;
   let queryCalls = 0;
@@ -234,7 +395,7 @@ test("a renewal failure stops before the next paid query", async () => {
       };
     },
     async retry() {
-      throw new Error("retry is out of scope");
+      throw new Error("retry must not run after renewal failure");
     },
   });
 
