@@ -16,8 +16,12 @@ import {
   ResponseTooLarge,
 } from "./provider-response-body.ts";
 
-/** Trusted server-only seam. Never log this request or pass ordinary fetch here
- * before ADR-011's authorization, cost and deployment prerequisites are met. */
+const GEMINI_ORIGIN = "https://generativelanguage.googleapis.com";
+const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
+const MAX_CONFIGURED_OUTPUT_TOKENS = 65536;
+
+/** Trusted server-only seam. Requests are constructed internally; callers never
+ * provide a destination URL, headers, body shape, redirect policy, or method. */
 export type GeminiExchange = (
   request: Readonly<{
     url: string;
@@ -36,16 +40,67 @@ type Setup =
   | { ok: true; provider: GroundedAIProvider }
   | {
       ok: false;
-      code: "missing_credential" | "invalid_credential" | "invalid_model";
+      code:
+        | "missing_credential"
+        | "invalid_credential"
+        | "invalid_model"
+        | "invalid_max_output_tokens";
     };
 
-export function createGeminiProvider(options: {
+type CommonOptions = Readonly<{
   model: string;
   env?: Readonly<Record<string, unknown>>;
-  exchange?: GeminiExchange;
+  maxOutputTokens?: number;
   /** Trusted execution clock, never profile/provider/client metadata. */
   now?: () => string;
-}): Setup {
+}>;
+
+type FixtureOptions = CommonOptions &
+  Readonly<{
+    exchange?: GeminiExchange;
+  }>;
+
+async function nativeGeminiExchange(
+  request: Parameters<GeminiExchange>[0],
+): Promise<Response> {
+  let url: URL;
+  try {
+    url = new URL(request.url);
+  } catch {
+    throw new Error("Invalid Gemini destination");
+  }
+  if (
+    url.origin !== GEMINI_ORIGIN ||
+    url.username !== "" ||
+    url.password !== "" ||
+    url.search !== "" ||
+    url.hash !== "" ||
+    !/^\/v1beta\/models\/gemini-[a-z0-9.-]{1,80}:generateContent$/.test(
+      url.pathname,
+    ) ||
+    request.init.method !== "POST" ||
+    request.init.redirect !== "error" ||
+    request.init.cache !== "no-store"
+  )
+    throw new Error("Invalid Gemini destination");
+
+  return fetch(request.url, {
+    method: "POST",
+    headers: request.init.headers,
+    body: request.init.body,
+    signal: request.init.signal,
+    redirect: "error",
+    cache: "no-store",
+    credentials: "omit",
+    referrerPolicy: "no-referrer",
+  });
+}
+
+function buildGeminiProvider(
+  options: CommonOptions,
+  exchange: GeminiExchange | undefined,
+  liveExecution: boolean,
+): Setup {
   const key = (options.env ?? process.env).GEMINI_API_KEY;
   if (key === undefined || key === "")
     return { ok: false, code: "missing_credential" };
@@ -58,7 +113,14 @@ export function createGeminiProvider(options: {
     model.includes(key)
   )
     return { ok: false, code: "invalid_model" };
-  const exchange = options.exchange;
+  const maxOutputTokens = options.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
+  if (
+    !Number.isSafeInteger(maxOutputTokens) ||
+    maxOutputTokens < 1 ||
+    maxOutputTokens > MAX_CONFIGURED_OUTPUT_TOKENS
+  )
+    return { ok: false, code: "invalid_max_output_tokens" };
+
   const now = options.now ?? (() => new Date().toISOString());
   let busy = false;
   return {
@@ -68,7 +130,7 @@ export function createGeminiProvider(options: {
         provider: "gemini",
         surface: "api",
         grounding: "google_search",
-        liveExecution: false,
+        liveExecution,
         maxQueries: 1,
         maxCitations: 50,
       }),
@@ -126,6 +188,8 @@ export function createGeminiProvider(options: {
               provider: "gemini",
               surface: "api",
               captureVersion: "gemini-generate-content-v1",
+              // The durable capture mode records use of the reviewed exchange
+              // seam. capabilities.liveExecution distinguishes the native path.
               captureMode: attempted ? "injected_transport" : "not_executed",
               requestedModel: model,
               observedAt,
@@ -161,7 +225,7 @@ export function createGeminiProvider(options: {
         const run = async (): Promise<ObservationFailureCode | null> => {
           attempted = true;
           const response = await exchange({
-            url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+            url: `${GEMINI_ORIGIN}/v1beta/models/${model}:generateContent`,
             init: {
               method: "POST",
               redirect: "error",
@@ -176,7 +240,7 @@ export function createGeminiProvider(options: {
                   { role: "user", parts: [{ text: request.queryText }] },
                 ],
                 tools: [{ google_search: {} }],
-                generationConfig: { candidateCount: 1, maxOutputTokens: 4096 },
+                generationConfig: { candidateCount: 1, maxOutputTokens },
               }),
             },
           });
@@ -234,4 +298,20 @@ export function createGeminiProvider(options: {
       },
     }),
   };
+}
+
+/**
+ * Closed-by-default fixture/provider boundary. Passing an exchange is explicit
+ * test or trusted integration injection; omitting it can never use the network.
+ */
+export function createGeminiProvider(options: FixtureOptions): Setup {
+  return buildGeminiProvider(options, options.exchange, false);
+}
+
+/**
+ * Explicit live server-only provider. The destination, method, redirect policy,
+ * grounding tool, body shape and credential header are fixed internally.
+ */
+export function createLiveGeminiProvider(options: CommonOptions): Setup {
+  return buildGeminiProvider(options, nativeGeminiExchange, true);
 }

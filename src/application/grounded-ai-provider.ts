@@ -16,7 +16,7 @@ export interface GroundedAIProvider {
     provider: "gemini";
     surface: "api";
     grounding: "google_search";
-    liveExecution: false;
+    liveExecution: boolean;
     maxQueries: 1;
     maxCitations: 50;
   }>;

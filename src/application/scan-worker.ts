@@ -54,6 +54,7 @@ export type ScanRetrySummary = Readonly<{
 export type ScanWorkerGatewayFailureCode =
   | "lease_not_found"
   | "lease_expired"
+  | "execution_disabled"
   | "database_error"
   | "invalid_database_response";
 
