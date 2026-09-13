@@ -46,10 +46,13 @@ function claimData(overrides: Record<string, unknown> = {}) {
 
 test("targeted adapter sends only exact targeted RPC fields and reuses strict claim parsing", async () => {
   let captured: unknown;
-  const result = await executeSupabaseTargetedScanClaim(request, async (args) => {
-    captured = args;
-    return { data: claimData(), error: null };
-  });
+  const result = await executeSupabaseTargetedScanClaim(
+    request,
+    async (args) => {
+      captured = args;
+      return { data: claimData(), error: null };
+    },
+  );
 
   assert.deepEqual(captured, {
     p_workspace_id: request.workspaceId,
