@@ -1,4 +1,3 @@
-import type { GroundedAIProvider } from "./grounded-ai-provider.ts";
 import type { GroundedObservationPersistenceGateway } from "./grounded-observation-persistence.ts";
 import {
   claimAndExecuteScanQueries,
