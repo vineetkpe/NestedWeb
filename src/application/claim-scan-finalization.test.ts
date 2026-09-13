@@ -126,7 +126,9 @@ function providerFactory(events: string[]): ClaimedLiveProviderFactory {
   };
 }
 
-function persistenceGateway(events: string[]): GroundedObservationPersistenceGateway {
+function persistenceGateway(
+  events: string[],
+): GroundedObservationPersistenceGateway {
   return async (request) => {
     events.push(`persist:${request.queryOrdinal}`);
     return {
@@ -187,7 +189,10 @@ test("completes only after every claimed query has durable evidence", async () =
   assert.equal(result.ok, true);
   if (!result.ok || result.state !== "completed")
     throw new Error("expected completed scan");
-  assert.deepEqual(result.observationIds, claim.queries.map((query) => query.observationId));
+  assert.deepEqual(
+    result.observationIds,
+    claim.queries.map((query) => query.observationId),
+  );
   assert.equal(result.completion.settledMicrounits, "26");
 });
 
@@ -212,4 +217,4 @@ test("completion database failures are surfaced without inventing settlement", a
     code: "metering_unavailable",
   });
   assert.equal(events.at(-1), "complete");
-}
+});
