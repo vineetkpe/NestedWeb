@@ -116,6 +116,16 @@ begin
     raise exception 'Scan execution disabled' using errcode = 'P0001';
   end if;
 
+  perform 1
+  from app_private.scan_provider_metering_configs config
+  where config.provider = reservation.provider
+    and config.model_id = reservation.model_id
+    and config.price_version = reservation.price_version
+  for share;
+  if not found then
+    raise exception 'Scan execution disabled' using errcode = 'P0001';
+  end if;
+
   next_expiry := now_at + make_interval(secs => p_lease_seconds);
   update app_private.scan_worker_leases
   set heartbeat_at = now_at,
