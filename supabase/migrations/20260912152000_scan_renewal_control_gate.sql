@@ -138,3 +138,58 @@ revoke all on function app_private.renew_scan_work_lease(uuid, uuid, uuid, uuid,
   from public, anon, authenticated, service_role;
 grant execute on function app_private.renew_scan_work_lease(uuid, uuid, uuid, uuid, uuid, integer)
   to service_role;
+
+create function app_private.settle_terminal_scan_lease_before_delete()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  scan_state text;
+  attempt_state text;
+  attempt_number integer;
+  reservation_status text;
+  max_attempts integer;
+begin
+  select scan.state
+  into scan_state
+  from public.scans scan
+  where scan.workspace_id = old.workspace_id
+    and scan.id = old.scan_id;
+
+  select attempt.state, attempt.attempt_number
+  into attempt_state, attempt_number
+  from public.scan_attempts attempt
+  where attempt.workspace_id = old.workspace_id
+    and attempt.scan_id = old.scan_id
+    and attempt.id = old.attempt_id;
+
+  select reservation.status, reservation.max_attempts
+  into reservation_status, max_attempts
+  from app_private.scan_cost_reservations reservation
+  where reservation.workspace_id = old.workspace_id
+    and reservation.scan_id = old.scan_id;
+
+  if scan_state = 'running'
+     and attempt_state = 'failed'
+     and reservation_status = 'reserved'
+     and attempt_number >= max_attempts then
+    perform app_private.settle_scan_metering(
+      old.workspace_id,
+      old.scan_id,
+      old.attempt_id,
+      old.worker_id,
+      old.lease_token
+    );
+  end if;
+
+  return old;
+end;
+$$;
+revoke all on function app_private.settle_terminal_scan_lease_before_delete()
+  from public, anon, authenticated, service_role;
+
+create trigger scan_worker_leases_settle_terminal_before_delete
+before delete on app_private.scan_worker_leases
+for each row execute function app_private.settle_terminal_scan_lease_before_delete();
