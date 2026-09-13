@@ -78,7 +78,9 @@ function observation(queryOrdinal: number): RawObservation {
   });
 }
 
-function successfulGateway(onRenew?: (call: number) => void): ScanWorkerGateway {
+function successfulGateway(
+  onRenew?: (call: number) => void,
+): ScanWorkerGateway {
   let renewCalls = 0;
   return Object.freeze({
     async claim(request) {
@@ -114,7 +116,9 @@ function successfulGateway(onRenew?: (call: number) => void): ScanWorkerGateway 
   });
 }
 
-function liveProvider(onQuery?: (queryOrdinal: number) => void): GroundedAIProvider {
+function liveProvider(
+  onQuery?: (queryOrdinal: number) => void,
+): GroundedAIProvider {
   return Object.freeze({
     capabilities: Object.freeze({
       provider: "gemini",
@@ -182,7 +186,9 @@ test("renews before and persists every claimed query in ordinal order", async ()
     { workerId, leaseSeconds },
     successfulGateway((call) => events.push(`renew:${call - 1}`)),
     factory,
-    persistenceGateway((queryOrdinal) => events.push(`persist:${queryOrdinal}`)),
+    persistenceGateway((queryOrdinal) =>
+      events.push(`persist:${queryOrdinal}`),
+    ),
   );
 
   assert.deepEqual(result, {
@@ -235,9 +241,10 @@ test("a renewal failure stops before the next paid query", async () => {
   const result = await claimAndExecuteScanQueries(
     { workerId, leaseSeconds },
     workerGateway,
-    () => liveProvider(() => {
-      queryCalls += 1;
-    }),
+    () =>
+      liveProvider(() => {
+        queryCalls += 1;
+      }),
     persistenceGateway(() => {
       persistenceCalls += 1;
     }),
