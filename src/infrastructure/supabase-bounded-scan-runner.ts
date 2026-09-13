@@ -16,11 +16,10 @@ import {
   executeSupabaseReservedScanClaim,
   type SupabaseScanClaimActorRpc,
   type SupabaseScanClaimServiceRpcName,
-} from "./supabase/scan-claim-server.ts";
+} from "./supabase/reserved-scan-claim-runtime.ts";
 
 export type SupabaseBoundedScanServiceRpcName =
-  | SupabaseScanClaimServiceRpcName
-  | SupabasePreclaimedScanRpcName;
+  SupabaseScanClaimServiceRpcName | SupabasePreclaimedScanRpcName;
 
 export type SupabaseBoundedScanServiceRpc = (
   name: SupabaseBoundedScanServiceRpcName,
