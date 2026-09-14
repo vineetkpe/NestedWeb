@@ -35,10 +35,7 @@ function request(): SupabaseProjectBoundedScanRequest {
 }
 
 function projectQuery(events: string[]) {
-  return async (
-    requestedWorkspaceId: string,
-    requestedProjectId: string,
-  ) => {
+  return async (requestedWorkspaceId: string, requestedProjectId: string) => {
     events.push("project:query");
     assert.equal(requestedWorkspaceId, workspaceId);
     assert.equal(requestedProjectId, projectId);
@@ -310,7 +307,8 @@ test("authorized durable project domain carries through crawl and exact durable 
   );
 
   assert.equal(result.state, "scan_attempted");
-  if (result.state !== "scan_attempted") throw new Error("expected scan attempt");
+  if (result.state !== "scan_attempted")
+    throw new Error("expected scan attempt");
   assert.strictEqual(result.crawlResult, crawlResult);
   assert.equal(result.project.trackedDomain, "example.com");
   assert.equal(result.target.hostname, "example.com");
@@ -318,7 +316,8 @@ test("authorized durable project domain carries through crawl and exact durable 
   if (result.scan.state !== "execution_attempted")
     throw new Error("expected exact claim execution");
   assert.equal(result.scan.execution.ok, true);
-  if (!result.scan.execution.ok) throw new Error("expected completed execution");
+  if (!result.scan.execution.ok)
+    throw new Error("expected completed execution");
   assert.equal(result.scan.execution.state, "completed");
   assert.deepEqual(result.scan.execution.observationIds, [observationId]);
   assert.deepEqual(events, [
