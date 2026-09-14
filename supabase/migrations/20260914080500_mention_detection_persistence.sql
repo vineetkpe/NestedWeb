@@ -327,7 +327,7 @@ declare
   mention_count integer;
   ambiguous_count integer;
   answer_utf16_length integer;
-  request_fingerprint text;
+  detection_fingerprint text;
   inserted_fingerprint text;
   existing_fingerprint text;
   existing_occurrence_count integer;
@@ -407,7 +407,7 @@ begin
     raise exception 'Invalid mention detection payload' using errcode = '22023';
   end if;
 
-  request_fingerprint := encode(
+  detection_fingerprint := encode(
     extensions.digest(convert_to(p_detection::text, 'UTF8'), 'sha256'),
     'hex'
   );
@@ -431,7 +431,7 @@ begin
     p_catalog_id,
     'mention-detection-v1',
     'entity-alias-v1',
-    request_fingerprint,
+    detection_fingerprint,
     answer_utf16_length,
     occurrence_count,
     mention_count,
@@ -465,7 +465,7 @@ begin
       and run.method_version = 'mention-detection-v1'
     for update;
 
-    if existing_fingerprint is distinct from request_fingerprint then
+    if existing_fingerprint is distinct from detection_fingerprint then
       raise exception 'Mention detection replay conflicts with stored evidence'
         using errcode = '22023';
     end if;
