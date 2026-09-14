@@ -94,71 +94,74 @@ const request = {
   catalogId: CATALOG_ID,
 };
 
-test("reads exact persisted inputs, preserves mention/ambiguity evidence, and persists once", async () => {
-  let persistenceCalls = 0;
-  const persistGateway: MentionDetectionPersistenceGateway = async (
-    workspaceId,
-    observationId,
-    catalogId,
-    detection,
-  ) => {
-    persistenceCalls += 1;
-    assert.equal(workspaceId, WORKSPACE_ID);
-    assert.equal(observationId, OBSERVATION_ID);
-    assert.equal(catalogId, CATALOG_ID);
-    assert.equal(detection.answerUtf16Length, 16);
-    assert.equal(detection.occurrences.length, 2);
-    assert.deepEqual(detection.occurrences[0], {
-      occurrenceOrdinal: 0,
-      state: "mention",
-      entityId: COMPANY_ID,
-      entityKind: "company",
-      aliasId: COMPANY_ALIAS_ID,
-      aliasText: "Acme",
-      normalizedAlias: "acme",
-      source: { startUtf16: 0, endUtf16: 4, text: "Acme" },
-    });
-    const ambiguous = detection.occurrences[1];
-    assert.equal(ambiguous?.state, "ambiguous");
-    if (ambiguous?.state === "ambiguous") {
-      assert.deepEqual(ambiguous.source, {
-        startUtf16: 9,
-        endUtf16: 15,
-        text: "Shared",
+test(
+  "reads exact persisted inputs, preserves mention/ambiguity evidence, and persists once",
+  async () => {
+    let persistenceCalls = 0;
+    const persistGateway: MentionDetectionPersistenceGateway = async (
+      workspaceId,
+      observationId,
+      catalogId,
+      detection,
+    ) => {
+      persistenceCalls += 1;
+      assert.equal(workspaceId, WORKSPACE_ID);
+      assert.equal(observationId, OBSERVATION_ID);
+      assert.equal(catalogId, CATALOG_ID);
+      assert.equal(detection.answerUtf16Length, 16);
+      assert.equal(detection.occurrences.length, 2);
+      assert.deepEqual(detection.occurrences[0], {
+        occurrenceOrdinal: 0,
+        state: "mention",
+        entityId: COMPANY_ID,
+        entityKind: "company",
+        aliasId: COMPANY_ALIAS_ID,
+        aliasText: "Acme",
+        normalizedAlias: "acme",
+        source: { startUtf16: 0, endUtf16: 4, text: "Acme" },
       });
-      assert.deepEqual(
-        ambiguous.candidates.map((candidate) => candidate.aliasId),
-        [PRODUCT_ALIAS_ID, SECOND_PRODUCT_ALIAS_ID],
-      );
-    }
-    return {
+      const ambiguous = detection.occurrences[1];
+      assert.equal(ambiguous?.state, "ambiguous");
+      if (ambiguous?.state === "ambiguous") {
+        assert.deepEqual(ambiguous.source, {
+          startUtf16: 9,
+          endUtf16: 15,
+          text: "Shared",
+        });
+        assert.deepEqual(
+          ambiguous.candidates.map((candidate) => candidate.aliasId),
+          [PRODUCT_ALIAS_ID, SECOND_PRODUCT_ALIAS_ID],
+        );
+      }
+      return {
+        ok: true,
+        replayed: false,
+        occurrenceCount: 2,
+        mentionCount: 1,
+        ambiguousCount: 1,
+      };
+    };
+
+    const result = await detectPersistedMentions(
+      request,
+      readGateway("Acme and Shared."),
+      persistGateway,
+    );
+
+    assert.deepEqual(result, {
       ok: true,
-      replayed: false,
+      projectId: PROJECT_ID,
+      observationId: OBSERVATION_ID,
+      catalogId: CATALOG_ID,
+      methodVersion: "mention-detection-v1",
       occurrenceCount: 2,
       mentionCount: 1,
       ambiguousCount: 1,
-    };
-  };
-
-  const result = await detectPersistedMentions(
-    request,
-    readGateway("Acme and Shared."),
-    persistGateway,
-  );
-
-  assert.deepEqual(result, {
-    ok: true,
-    projectId: PROJECT_ID,
-    observationId: OBSERVATION_ID,
-    catalogId: CATALOG_ID,
-    methodVersion: "mention-detection-v1",
-    occurrenceCount: 2,
-    mentionCount: 1,
-    ambiguousCount: 1,
-    replayed: false,
-  });
-  assert.equal(persistenceCalls, 1);
-});
+      replayed: false,
+    });
+    assert.equal(persistenceCalls, 1);
+  },
+);
 
 test("persists a valid zero-mention result rather than treating it as missing evidence", async () => {
   const persistGateway: MentionDetectionPersistenceGateway = async (
