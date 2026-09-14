@@ -92,6 +92,17 @@ function authorizationFailure(
   });
 }
 
+function cancelled(): Extract<
+  ExecuteSupabaseProjectBoundedScanResult,
+  { stage: "cancelled" }
+> {
+  return Object.freeze({
+    state: "not_executed" as const,
+    stage: "cancelled" as const,
+    failure: Object.freeze({ ok: false as const, code: "cancelled" as const }),
+  });
+}
+
 function envString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
@@ -132,6 +143,8 @@ export async function executeVerifiedProjectBoundedScan(
 ): Promise<
   ExecuteSupabaseProjectBoundedScanResult | ProjectBoundedScanAuthorizationFailure
 > {
+  if (signal?.aborted) return cancelled();
+
   try {
     await requireSupabaseIdentity(dependencies.verifier);
   } catch (error) {
@@ -139,6 +152,7 @@ export async function executeVerifiedProjectBoundedScan(
       return authorizationFailure(error.code);
     return authorizationFailure("auth_verification_failed");
   }
+  if (signal?.aborted) return cancelled();
 
   return executeSupabaseProjectBoundedScan(
     request,
@@ -169,6 +183,8 @@ export async function runCurrentUserProjectBoundedScan(
     signal?: AbortSignal;
   }> = {},
 ): Promise<RunCurrentUserProjectBoundedScanResult> {
+  if (options.signal?.aborted) return cancelled();
+
   const env = options.env ?? process.env;
   const config = readServerConfig(env);
   if ("failure" in config) return config;
