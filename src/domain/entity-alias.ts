@@ -89,7 +89,11 @@ export function normalizeEntityAlias(value: string): string | null {
 export function prepareEntityAliasCatalog(
   value: unknown,
 ): PreparedEntityAliasCatalog | null {
-  if (!Array.isArray(value) || value.length < 1 || value.length > MAX_ENTITY_COUNT)
+  if (
+    !Array.isArray(value) ||
+    value.length < 1 ||
+    value.length > MAX_ENTITY_COUNT
+  )
     return null;
 
   const provisional: Array<{
@@ -109,7 +113,8 @@ export function prepareEntityAliasCatalog(
     if (
       !record(candidate) ||
       !hasExactKeys(candidate, ["entityKind", "canonicalName", "aliases"]) ||
-      (candidate.entityKind !== "company" && candidate.entityKind !== "product") ||
+      (candidate.entityKind !== "company" &&
+        candidate.entityKind !== "product") ||
       !validDisplayName(candidate.canonicalName) ||
       !Array.isArray(candidate.aliases) ||
       candidate.aliases.length < 1 ||
@@ -180,7 +185,8 @@ export function prepareEntityAliasCatalog(
               aliasText: alias.aliasText,
               normalizedAlias: alias.normalizedAlias,
               matchState:
-                (ownersByNormalizedAlias.get(alias.normalizedAlias)?.size ?? 0) > 1
+                (ownersByNormalizedAlias.get(alias.normalizedAlias)?.size ??
+                  0) > 1
                   ? ("ambiguous" as const)
                   : ("eligible" as const),
             }),
