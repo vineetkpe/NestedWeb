@@ -79,7 +79,7 @@ function crawler(events: string[]): Crawler {
       scope: "entry_page" as const,
       maxPages: 1 as const,
     }),
-    async crawl(target) {
+    async crawl(target: Parameters<Crawler["crawl"]>[0]) {
       events.push("crawler:crawl");
       assert.equal(target.hostname, "example.com");
       assert.equal(target.origin, "https://example.com");
