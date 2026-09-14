@@ -16,8 +16,7 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type SupabaseCitationNormalizationRpcName =
-  | "list_raw_citations_for_normalization"
-  | "persist_citation_url_normalization";
+  "list_raw_citations_for_normalization" | "persist_citation_url_normalization";
 
 export type SupabaseCitationNormalizationRpc = (
   name: SupabaseCitationNormalizationRpcName,
@@ -28,14 +27,26 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function hasExactKeys(value: Record<string, unknown>, expected: string[]): boolean {
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: string[],
+): boolean {
   const keys = Object.keys(value);
-  return keys.length === expected.length && expected.every((key) => Object.hasOwn(value, key));
+  return (
+    keys.length === expected.length &&
+    expected.every((key) => Object.hasOwn(value, key))
+  );
 }
 
-function parseEnvelope(value: unknown):
+function parseEnvelope(
+  value: unknown,
+):
   | Readonly<{ ok: true; data: unknown }>
-  | Readonly<{ ok: false; error: Record<string, unknown> | null; invalid: boolean }> {
+  | Readonly<{
+      ok: false;
+      error: Record<string, unknown> | null;
+      invalid: boolean;
+    }> {
   if (
     !record(value) ||
     !Object.hasOwn(value, "data") ||
@@ -107,7 +118,8 @@ async function readPersistedCitations(
 
   const envelope = parseEnvelope(response);
   if (!envelope.ok) {
-    if (envelope.invalid) return { ok: false, code: "invalid_database_response" };
+    if (envelope.invalid)
+      return { ok: false, code: "invalid_database_response" };
     if (
       envelope.error?.code === "P0001" &&
       envelope.error.message === "Raw observation not found"
@@ -129,7 +141,8 @@ function mapPersistenceError(
     return { ok: false, code: "raw_citation_not_found" };
   if (
     error?.code === "22023" &&
-    error.message === "Citation normalization replay conflicts with stored evidence"
+    error.message ===
+      "Citation normalization replay conflicts with stored evidence"
   )
     return { ok: false, code: "idempotency_conflict" };
   return { ok: false, code: "database_error" };
@@ -156,7 +169,8 @@ async function persistCitationNormalization(
 
   const envelope = parseEnvelope(response);
   if (!envelope.ok) {
-    if (envelope.invalid) return { ok: false, code: "invalid_database_response" };
+    if (envelope.invalid)
+      return { ok: false, code: "invalid_database_response" };
     return mapPersistenceError(envelope.error);
   }
 
@@ -194,8 +208,10 @@ export function executeSupabaseCitationNormalization(
   request: NormalizePersistedCitationsRequest,
   rpc: SupabaseCitationNormalizationRpc,
 ): Promise<NormalizePersistedCitationsResult> {
-  const readGateway: CitationNormalizationReadGateway = (workspaceId, observationId) =>
-    readPersistedCitations(workspaceId, observationId, rpc);
+  const readGateway: CitationNormalizationReadGateway = (
+    workspaceId,
+    observationId,
+  ) => readPersistedCitations(workspaceId, observationId, rpc);
   const persistenceGateway: CitationNormalizationPersistenceGateway = (
     workspaceId,
     observationId,
