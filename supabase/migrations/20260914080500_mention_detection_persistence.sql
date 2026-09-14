@@ -321,7 +321,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  project_id uuid;
+  resolved_project_id uuid;
   answer_text_value text;
   occurrence_count integer;
   mention_count integer;
@@ -382,7 +382,7 @@ begin
   end if;
 
   select observation.project_id, observation.answer_text
-    into project_id, answer_text_value
+    into resolved_project_id, answer_text_value
   from public.raw_observations observation
   join public.entity_alias_catalogs catalog
     on catalog.workspace_id = observation.workspace_id
@@ -426,7 +426,7 @@ begin
     ambiguous_count
   ) values (
     p_workspace_id,
-    project_id,
+    resolved_project_id,
     p_observation_id,
     p_catalog_id,
     'mention-detection-v1',
@@ -459,7 +459,7 @@ begin
       existing_ambiguous_count
     from public.mention_detection_runs run
     where run.workspace_id = p_workspace_id
-      and run.project_id = project_id
+      and run.project_id = resolved_project_id
       and run.observation_id = p_observation_id
       and run.catalog_id = p_catalog_id
       and run.method_version = 'mention-detection-v1'
@@ -563,7 +563,7 @@ begin
        and alias.catalog_id = entity.catalog_id
        and alias.entity_ordinal = entity.entity_ordinal
       where entity.workspace_id = p_workspace_id
-        and entity.project_id = project_id
+        and entity.project_id = resolved_project_id
         and entity.catalog_id = p_catalog_id
         and entity.entity_id = entity_id_value
         and entity.entity_kind = entity_kind_value
@@ -594,7 +594,7 @@ begin
         alias_text
       ) values (
         p_workspace_id,
-        project_id,
+        resolved_project_id,
         p_observation_id,
         p_catalog_id,
         'mention-detection-v1',
@@ -647,7 +647,7 @@ begin
        and alias.catalog_id = entity.catalog_id
        and alias.entity_ordinal = entity.entity_ordinal
       where entity.workspace_id = p_workspace_id
-        and entity.project_id = project_id
+        and entity.project_id = resolved_project_id
         and entity.catalog_id = p_catalog_id
         and alias.normalized_alias = normalized_alias_value
         and alias.match_state = 'ambiguous';
@@ -672,7 +672,7 @@ begin
         normalized_alias
       ) values (
         p_workspace_id,
-        project_id,
+        resolved_project_id,
         p_observation_id,
         p_catalog_id,
         'mention-detection-v1',
@@ -702,7 +702,7 @@ begin
           alias_text
         ) values (
           p_workspace_id,
-          project_id,
+          resolved_project_id,
           p_observation_id,
           p_catalog_id,
           'mention-detection-v1',
