@@ -60,7 +60,7 @@ test("maps bounded read and persistence RPCs without deduplicating occurrences",
     }
 
     const citationId = args.p_citation_id;
-    assert.equal(typeof citationId, "string");
+    assert.ok(typeof citationId === "string");
     const normalization = args.p_normalization;
     assert.ok(
       typeof normalization === "object" &&
