@@ -21,8 +21,7 @@ const MAX_TOTAL_ALIAS_COUNT = 200;
 const MAX_NAME_LENGTH = 120;
 
 export type SupabaseMentionDetectionRpcName =
-  | "read_mention_detection_input"
-  | "persist_mention_detection";
+  "read_mention_detection_input" | "persist_mention_detection";
 
 export type SupabaseMentionDetectionRpc = (
   name: SupabaseMentionDetectionRpcName,
@@ -50,7 +49,10 @@ function validUuid(value: unknown): value is string {
   return typeof value === "string" && UUID_PATTERN.test(value);
 }
 
-function validBoundedString(value: unknown, maxLength: number): value is string {
+function validBoundedString(
+  value: unknown,
+  maxLength: number,
+): value is string {
   return (
     typeof value === "string" &&
     value.length >= 1 &&
@@ -193,12 +195,18 @@ function parseReadInput(
 ): PersistedMentionDetectionInput | null {
   if (
     !record(value) ||
-    !hasExactKeys(value, ["projectId", "observationId", "answerText", "catalog"]) ||
+    !hasExactKeys(value, [
+      "projectId",
+      "observationId",
+      "answerText",
+      "catalog",
+    ]) ||
     !validUuid(value.projectId) ||
     !validUuid(value.observationId) ||
     value.observationId.toLowerCase() !== observationId ||
     (value.answerText !== null &&
-      (typeof value.answerText !== "string" || !value.answerText.isWellFormed()))
+      (typeof value.answerText !== "string" ||
+        !value.answerText.isWellFormed()))
   )
     return null;
 
@@ -242,8 +250,7 @@ async function readMentionDetectionInput(
   }
 
   const input = parseReadInput(envelope.data, observationId, catalogId);
-  if (input === null)
-    return { ok: false, code: "invalid_database_response" };
+  if (input === null) return { ok: false, code: "invalid_database_response" };
   return { ok: true, input };
 }
 
@@ -334,13 +341,7 @@ export function executeSupabaseMentionDetection(
     workspaceId,
     observationId,
     catalogId,
-  ) =>
-    readMentionDetectionInput(
-      workspaceId,
-      observationId,
-      catalogId,
-      rpc,
-    );
+  ) => readMentionDetectionInput(workspaceId, observationId, catalogId, rpc);
   const persistenceGateway: MentionDetectionPersistenceGateway = (
     workspaceId,
     observationId,
