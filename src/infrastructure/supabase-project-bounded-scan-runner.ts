@@ -119,7 +119,8 @@ function parseAuthorizedProject(
   if (typeof value.tracked_domain !== "string") return null;
 
   const website = normalizeWebsite(value.tracked_domain);
-  if (!website.ok || website.value.hostname !== value.tracked_domain) return null;
+  if (!website.ok || website.value.hostname !== value.tracked_domain)
+    return null;
 
   return Object.freeze({
     workspaceId,
@@ -133,8 +134,7 @@ async function loadAuthorizedProject(
   projectId: string,
   query: SupabaseAuthorizedProjectQuery,
 ): Promise<
-  | Readonly<{ ok: true; project: AuthorizedProjectScanTarget }>
-  | ProjectFailure
+  Readonly<{ ok: true; project: AuthorizedProjectScanTarget }> | ProjectFailure
 > {
   let response: unknown;
   try {
