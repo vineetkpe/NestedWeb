@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
-    "format:check": "prettier --write src/application/citation-normalization-persistence.ts src/application/citation-normalization-persistence.test.ts src/infrastructure/supabase-citation-normalization.ts src/infrastructure/supabase-citation-normalization.test.ts && git diff -- src/application/citation-normalization-persistence.ts src/application/citation-normalization-persistence.test.ts src/infrastructure/supabase-citation-normalization.ts src/infrastructure/supabase-citation-normalization.test.ts && exit 1",
+    "format:check": "prettier --check .",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
     "test:db": "supabase test db --local",
