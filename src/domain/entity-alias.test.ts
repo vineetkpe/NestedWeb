@@ -21,13 +21,7 @@ test("preserves punctuation and diacritics instead of inventing equivalence", ()
 });
 
 test("rejects outer whitespace, controls, empty and oversized aliases", () => {
-  for (const value of [
-    " Acme",
-    "Acme ",
-    "Acme\nLabs",
-    "",
-    "a".repeat(121),
-  ]) {
+  for (const value of [" Acme", "Acme ", "Acme\nLabs", "", "a".repeat(121)]) {
     assert.equal(normalizeEntityAlias(value), null);
   }
 });
