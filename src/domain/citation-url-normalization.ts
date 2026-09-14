@@ -5,9 +5,7 @@ const FORBIDDEN_LITERAL_CHARACTERS = /[\\<>\s\p{Cc}\p{Cf}]/u;
 const SCHEME_PATTERN = /^[A-Za-z][A-Za-z0-9+.-]*:/;
 
 export type CitationUrlExclusionReason =
-  | "invalid_url"
-  | "unsupported_scheme"
-  | "unsafe_url";
+  "invalid_url" | "unsupported_scheme" | "unsafe_url";
 
 export type CitationUrlNormalizationResult =
   | Readonly<{
