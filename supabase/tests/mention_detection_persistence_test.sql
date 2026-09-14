@@ -364,6 +364,7 @@ select is(
   'first exact mention result persistence is not a replay'
 );
 
+reset role;
 select is((select count(*) from public.mention_detection_runs), 1::bigint,
   'one immutable detection run is persisted');
 select is((select count(*) from public.mention_detection_occurrences), 2::bigint,
@@ -389,6 +390,7 @@ select is((
   from public.mention_detection_ambiguous_candidates
 ), 'Shared,shared', 'ambiguous candidates preserve catalog order and exact alias text');
 
+set local role service_role;
 select is(
   public.persist_mention_detection(
     'a2000000-0000-4000-8000-000000000001',
