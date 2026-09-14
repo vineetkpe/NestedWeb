@@ -62,8 +62,12 @@ test("maps bounded read and persistence RPCs without deduplicating occurrences",
     const citationId = args.p_citation_id;
     assert.equal(typeof citationId, "string");
     const normalization = args.p_normalization;
-    assert.equal(typeof normalization, "object");
-    const state = (normalization as { state?: unknown }).state;
+    assert.ok(
+      typeof normalization === "object" &&
+        normalization !== null &&
+        "state" in normalization,
+    );
+    const state = normalization.state;
     assert.ok(state === "normalized" || state === "excluded");
     return persistedResponse(citationId, state, citationId.endsWith(":grounding:2"));
   };
