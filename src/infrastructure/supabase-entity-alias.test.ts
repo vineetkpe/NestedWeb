@@ -162,7 +162,10 @@ test("sends only the bounded catalog RPC payload and strictly parses IDs/order",
   if (result.ok) {
     assert.equal(result.catalog.entityCount, 3);
     assert.equal(result.catalog.aliasCount, 4);
-    assert.equal(result.catalog.entities[2]?.aliases[0]?.matchState, "ambiguous");
+    assert.equal(
+      result.catalog.entities[2]?.aliases[0]?.matchState,
+      "ambiguous",
+    );
   }
 });
 
@@ -170,7 +173,10 @@ test("rejects database responses that change normalized evidence or IDs", async 
   const changed = successfulData();
   changed.entities[1]!.aliases[0]!.matchState = "eligible";
 
-  const rpc: SupabaseEntityAliasRpc = async () => ({ data: changed, error: null });
+  const rpc: SupabaseEntityAliasRpc = async () => ({
+    data: changed,
+    error: null,
+  });
   assert.deepEqual(await executeSupabaseEntityAliasPersistence(request, rpc), {
     ok: false,
     code: "invalid_database_response",
@@ -182,10 +188,13 @@ test("maps project authorization and idempotency conflicts", async () => {
     data: null,
     error: { code: "42501", message: "Project access denied" },
   });
-  assert.deepEqual(await executeSupabaseEntityAliasPersistence(request, denied), {
-    ok: false,
-    code: "project_access_denied",
-  });
+  assert.deepEqual(
+    await executeSupabaseEntityAliasPersistence(request, denied),
+    {
+      ok: false,
+      code: "project_access_denied",
+    },
+  );
 
   const conflict: SupabaseEntityAliasRpc = async () => ({
     data: null,
@@ -204,10 +213,13 @@ test("maps thrown RPC failures and malformed envelopes without exposing payloads
   const thrown: SupabaseEntityAliasRpc = async () => {
     throw new Error("secret database detail");
   };
-  assert.deepEqual(await executeSupabaseEntityAliasPersistence(request, thrown), {
-    ok: false,
-    code: "database_error",
-  });
+  assert.deepEqual(
+    await executeSupabaseEntityAliasPersistence(request, thrown),
+    {
+      ok: false,
+      code: "database_error",
+    },
+  );
 
   const malformed: SupabaseEntityAliasRpc = async () => ({ nope: true });
   assert.deepEqual(
