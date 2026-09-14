@@ -217,13 +217,9 @@ test("fails closed when the read provenance does not match the requested observa
     },
   });
 
-  const result = await detectPersistedMentions(
-    request,
-    badRead,
-    async () => {
-      throw new Error("must not persist");
-    },
-  );
+  const result = await detectPersistedMentions(request, badRead, async () => {
+    throw new Error("must not persist");
+  });
   assert.deepEqual(result, {
     ok: false,
     stage: "read",
