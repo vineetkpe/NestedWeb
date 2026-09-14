@@ -56,8 +56,14 @@ test("validates IDs and passes the prepared immutable catalog to the gateway", a
   assert.equal(received.idempotencyKey, IDEMPOTENCY_KEY);
   assert.equal(received.catalog.methodVersion, "entity-alias-v1");
   assert.equal(received.catalog.aliasCount, 5);
-  assert.equal(received.catalog.entities[1]?.aliases[1]?.matchState, "ambiguous");
-  assert.equal(received.catalog.entities[2]?.aliases[0]?.matchState, "ambiguous");
+  assert.equal(
+    received.catalog.entities[1]?.aliases[1]?.matchState,
+    "ambiguous",
+  );
+  assert.equal(
+    received.catalog.entities[2]?.aliases[0]?.matchState,
+    "ambiguous",
+  );
   assert.equal(Object.isFrozen(received.catalog), true);
 });
 
