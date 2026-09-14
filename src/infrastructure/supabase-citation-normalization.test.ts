@@ -69,7 +69,11 @@ test("maps bounded read and persistence RPCs without deduplicating occurrences",
     );
     const state = normalization.state;
     assert.ok(state === "normalized" || state === "excluded");
-    return persistedResponse(citationId, state, citationId.endsWith(":grounding:2"));
+    return persistedResponse(
+      citationId,
+      state,
+      citationId.endsWith(":grounding:2"),
+    );
   };
 
   const result = await executeSupabaseCitationNormalization(
@@ -183,7 +187,8 @@ test("maps persistence conflict and stops further RPCs", async () => {
         data: null,
         error: {
           code: "22023",
-          message: "Citation normalization replay conflicts with stored evidence",
+          message:
+            "Citation normalization replay conflicts with stored evidence",
         },
       };
     },
