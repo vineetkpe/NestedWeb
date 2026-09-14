@@ -149,7 +149,12 @@ function sentenceBounds(
   let sentenceStart = start;
   while (sentenceStart > 0) {
     const character = text[sentenceStart - 1];
-    if (character === "." || character === "!" || character === "?" || character === "\n")
+    if (
+      character === "." ||
+      character === "!" ||
+      character === "?" ||
+      character === "\n"
+    )
       break;
     sentenceStart -= 1;
   }
@@ -157,7 +162,12 @@ function sentenceBounds(
   let sentenceEnd = end;
   while (sentenceEnd < text.length) {
     const character = text[sentenceEnd];
-    if (character === "." || character === "!" || character === "?" || character === "\n")
+    if (
+      character === "." ||
+      character === "!" ||
+      character === "?" ||
+      character === "\n"
+    )
       break;
     sentenceEnd += 1;
   }
