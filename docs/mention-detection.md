@@ -10,4 +10,8 @@ For aliases whose first or last normalized code point is a Unicode letter, numbe
 
 At a normalized source position, overlapping candidates are deterministic: candidates are ordered by longest normalized alias first, then by stable catalog order. Once an occurrence is emitted, scanning resumes after that occurrence, so evidence spans do not overlap. The method is bounded to 200,000 UTF-16 code units of answer text, the D2 catalog limits, and 2,000 occurrences; it fails rather than truncating evidence.
 
-D3a does not persist results or read raw observations itself. A later D3 slice must project a persisted D2 catalog into this exact input contract, read persisted answer text, link results to the exact raw observation/catalog IDs, and persist the exact spans without changing the meaning of `mention` or `ambiguous`.
+D3b binds this pure result to persisted evidence. A service-only reader accepts one exact `(workspaceId, observationId, catalogId)` and returns data only when the raw observation and immutable alias catalog belong to the same project. Direct service-role table reads/writes are not granted. `answer_text = null` is explicit unavailable evidence and is never converted into a zero-mention result.
+
+Persisted mention evidence is append-only and versioned by `mention-detection-v1`. The run stores the exact observation/catalog provenance and detector counts; occurrence rows store exact UTF-16 source spans/text. Positive occurrences must resolve to one exact D2 `eligible` entity/alias pair. Ambiguous occurrences keep no resolved entity and instead persist the complete catalog-ordered candidate set for that normalized alias. Identical replay is idempotent; conflicting replay fails closed.
+
+Mention evidence remains separate from recommendation, selection, sentiment, competitor classification, citation support, and aggregate metrics. Those require later evidence methods and must not be inferred from D3 rows.
