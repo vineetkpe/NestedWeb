@@ -35,18 +35,19 @@ function request(): SupabaseProjectBoundedScanRequest {
 }
 
 function projectQuery(events: string[]) {
-  return async (requestedWorkspaceId: string) => {
+  return async (
+    requestedWorkspaceId: string,
+    requestedProjectId: string,
+  ) => {
     events.push("project:query");
     assert.equal(requestedWorkspaceId, workspaceId);
+    assert.equal(requestedProjectId, projectId);
     return {
-      data: [
-        {
-          id: projectId,
-          workspace_id: workspaceId,
-          name: "Example project",
-          tracked_domain: "example.com",
-        },
-      ],
+      data: {
+        id: projectId,
+        workspace_id: workspaceId,
+        tracked_domain: "example.com",
+      },
       error: null,
     };
   };
@@ -77,7 +78,10 @@ const crawlResult: Extract<CrawlResult, { ok: true }> = Object.freeze({
 
 function crawler(events: string[]): Crawler {
   return Object.freeze({
-    capabilities: Object.freeze({ scope: "entry_page" as const, maxPages: 1 as const }),
+    capabilities: Object.freeze({
+      scope: "entry_page" as const,
+      maxPages: 1 as const,
+    }),
     async crawl(target) {
       events.push("crawler:crawl");
       assert.equal(target.hostname, "example.com");
@@ -186,7 +190,10 @@ test("authorized durable project domain carries through crawl and exact durable 
     }
     if (name === "persist_prompt_cohort") {
       const promptArgs = args as Record<string, unknown>;
-      persistedPrompts = promptArgs.p_prompts as readonly Record<string, unknown>[];
+      persistedPrompts = promptArgs.p_prompts as readonly Record<
+        string,
+        unknown
+      >[];
       return {
         data: {
           cohortId,
@@ -335,16 +342,21 @@ test("missing authorized project stops before DNS, crawl, reservation or provide
   let providerCalls = 0;
   const result = await executeSupabaseProjectBoundedScan(
     request(),
-    async () => {
+    async (requestedWorkspaceId, requestedProjectId) => {
       calls.push("project");
-      return { data: [], error: null };
+      assert.equal(requestedWorkspaceId, workspaceId);
+      assert.equal(requestedProjectId, projectId);
+      return { data: null, error: null };
     },
     async () => {
       calls.push("dns");
       return ["93.184.216.34"];
     },
     Object.freeze({
-      capabilities: Object.freeze({ scope: "entry_page" as const, maxPages: 1 as const }),
+      capabilities: Object.freeze({
+        scope: "entry_page" as const,
+        maxPages: 1 as const,
+      }),
       async crawl() {
         calls.push("crawl");
         return crawlResult;
@@ -366,7 +378,10 @@ test("missing authorized project stops before DNS, crawl, reservation or provide
 
   assert.equal(result.state, "not_executed");
   assert.equal(result.stage, "project");
-  assert.deepEqual(result.failure, { ok: false, code: "project_access_denied" });
+  assert.deepEqual(result.failure, {
+    ok: false,
+    code: "project_access_denied",
+  });
   assert.deepEqual(calls, ["project"]);
   assert.equal(providerCalls, 0);
 });
@@ -382,7 +397,10 @@ test("unsafe DNS result stops before crawl and every durable scan call", async (
       return ["127.0.0.1"];
     },
     Object.freeze({
-      capabilities: Object.freeze({ scope: "entry_page" as const, maxPages: 1 as const }),
+      capabilities: Object.freeze({
+        scope: "entry_page" as const,
+        maxPages: 1 as const,
+      }),
       async crawl() {
         calls.push("crawl");
         return crawlResult;
