@@ -23,7 +23,10 @@ export type CitationNormalizationReadGatewayResult =
     }>
   | Readonly<{
       ok: false;
-      code: "observation_not_found" | "database_error" | "invalid_database_response";
+      code:
+        | "observation_not_found"
+        | "database_error"
+        | "invalid_database_response";
     }>;
 
 export type CitationNormalizationReadGateway = (
@@ -76,7 +79,10 @@ export type NormalizePersistedCitationsResult =
   | Readonly<{
       ok: false;
       stage: "read";
-      code: "observation_not_found" | "database_error" | "invalid_database_response";
+      code:
+        | "observation_not_found"
+        | "database_error"
+        | "invalid_database_response";
     }>
   | Readonly<{
       ok: false;
