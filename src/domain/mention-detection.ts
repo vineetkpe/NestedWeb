@@ -15,7 +15,9 @@ const CONTROL_CHARACTERS = /\p{Cc}/u;
 const WORD_CHARACTER = /^[\p{L}\p{N}\p{M}]$/u;
 const WHITESPACE_CHARACTER = /^\s$/u;
 const COLLAPSIBLE_WHITESPACE = /\s+/gu;
-const GRAPHEME_SEGMENTER = new Intl.Segmenter("und", { granularity: "grapheme" });
+const GRAPHEME_SEGMENTER = new Intl.Segmenter("und", {
+  granularity: "grapheme",
+});
 
 type SourceRange = {
   start: number;
@@ -79,8 +81,7 @@ export type AmbiguousMentionOccurrence = Readonly<{
 }>;
 
 export type MentionDetectionOccurrence =
-  | MentionOccurrence
-  | AmbiguousMentionOccurrence;
+  MentionOccurrence | AmbiguousMentionOccurrence;
 
 export type MentionDetectionResult =
   | Readonly<{
@@ -148,11 +149,7 @@ function codePointAt(value: string, index: number): string | null {
 function codePointBefore(value: string, index: number): string | null {
   if (index <= 0) return null;
   const trailing = value.charCodeAt(index - 1);
-  if (
-    trailing >= 0xdc00 &&
-    trailing <= 0xdfff &&
-    index >= 2
-  ) {
+  if (trailing >= 0xdc00 && trailing <= 0xdfff && index >= 2) {
     const leading = value.charCodeAt(index - 2);
     if (leading >= 0xd800 && leading <= 0xdbff) {
       return value.slice(index - 2, index);
@@ -166,7 +163,10 @@ function isWordCharacter(value: string | null): boolean {
 }
 
 function comparableText(value: string): string {
-  return value.normalize("NFKC").toLowerCase().replace(COLLAPSIBLE_WHITESPACE, " ");
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(COLLAPSIBLE_WHITESPACE, " ");
 }
 
 function normalizeAnswerWithSourceMap(
@@ -248,7 +248,10 @@ function normalizeAnswerWithSourceMap(
   }
 
   const text = outputParts.join("");
-  if (text !== comparableText(answerText) || outputRanges.length !== text.length) {
+  if (
+    text !== comparableText(answerText) ||
+    outputRanges.length !== text.length
+  ) {
     return null;
   }
 
@@ -288,7 +291,8 @@ function parseCatalog(value: unknown): ParsedCatalog | null {
       !validUuid(entityValue.entityId) ||
       entityIds.has(entityValue.entityId.toLowerCase()) ||
       entityValue.entityOrdinal !== entityOrdinal ||
-      (entityValue.entityKind !== "company" && entityValue.entityKind !== "product") ||
+      (entityValue.entityKind !== "company" &&
+        entityValue.entityKind !== "product") ||
       !validDisplayName(entityValue.canonicalName) ||
       !Array.isArray(entityValue.aliases) ||
       entityValue.aliases.length < 1 ||
@@ -318,7 +322,8 @@ function parseCatalog(value: unknown): ParsedCatalog | null {
         aliasValue.aliasOrdinal !== aliasOrdinal ||
         typeof aliasValue.aliasText !== "string" ||
         typeof aliasValue.normalizedAlias !== "string" ||
-        (aliasValue.matchState !== "eligible" && aliasValue.matchState !== "ambiguous")
+        (aliasValue.matchState !== "eligible" &&
+          aliasValue.matchState !== "ambiguous")
       )
         return null;
 
@@ -356,24 +361,32 @@ function parseCatalog(value: unknown): ParsedCatalog | null {
   for (const [normalizedAlias, groupAliases] of aliasesByNormalized) {
     const ownerIds = new Set(groupAliases.map((alias) => alias.entityId));
     const expectedState = ownerIds.size > 1 ? "ambiguous" : "eligible";
-    if (groupAliases.some((alias) => alias.matchState !== expectedState)) return null;
+    if (groupAliases.some((alias) => alias.matchState !== expectedState))
+      return null;
     if (expectedState === "eligible" && groupAliases.length !== 1) return null;
 
-    const sortedAliases = [...groupAliases].sort((left, right) => left.order - right.order);
+    const sortedAliases = [...groupAliases].sort(
+      (left, right) => left.order - right.order,
+    );
     groups.push(
       Object.freeze({
         normalizedAlias,
         aliases: Object.freeze(sortedAliases),
         order: sortedAliases[0]?.order ?? Number.MAX_SAFE_INTEGER,
         matchState: expectedState,
-        requiresLeadingBoundary: isWordCharacter(firstCodePoint(normalizedAlias)),
-        requiresTrailingBoundary: isWordCharacter(lastCodePoint(normalizedAlias)),
+        requiresLeadingBoundary: isWordCharacter(
+          firstCodePoint(normalizedAlias),
+        ),
+        requiresTrailingBoundary: isWordCharacter(
+          lastCodePoint(normalizedAlias),
+        ),
       }),
     );
   }
 
   groups.sort((left, right) => {
-    const lengthDifference = right.normalizedAlias.length - left.normalizedAlias.length;
+    const lengthDifference =
+      right.normalizedAlias.length - left.normalizedAlias.length;
     return lengthDifference !== 0 ? lengthDifference : left.order - right.order;
   });
 
@@ -394,10 +407,7 @@ function boundaryMatches(
     isWordCharacter(codePointBefore(text, start))
   )
     return false;
-  if (
-    group.requiresTrailingBoundary &&
-    isWordCharacter(codePointAt(text, end))
-  )
+  if (group.requiresTrailingBoundary && isWordCharacter(codePointAt(text, end)))
     return false;
   return true;
 }
@@ -420,7 +430,8 @@ function buildOccurrence(
     endUtf16: lastRange.end,
     text: answerText.slice(firstRange.start, lastRange.end),
   });
-  if (comparableText(source.text) !== normalizedText.slice(start, end)) return null;
+  if (comparableText(source.text) !== normalizedText.slice(start, end))
+    return null;
 
   if (group.matchState === "eligible") {
     const alias = group.aliases[0];
@@ -489,7 +500,8 @@ export function detectEntityMentions(
   let cursor = 0;
   while (cursor < normalized.text.length) {
     const current = codePointAt(normalized.text, cursor);
-    if (current === null) return { ok: false, code: "normalization_unmappable" };
+    if (current === null)
+      return { ok: false, code: "normalization_unmappable" };
     const candidates = groupsByFirstCodePoint.get(current) ?? [];
     let matchedGroup: AliasGroup | null = null;
 
