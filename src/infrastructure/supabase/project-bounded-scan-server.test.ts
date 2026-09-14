@@ -48,7 +48,10 @@ function dependencies(
       auth: {
         async getClaims() {
           calls.push("auth:getClaims");
-          return { data: claims === undefined ? null : { claims }, error: null };
+          return {
+            data: claims === undefined ? null : { claims },
+            error: null,
+          };
         },
       },
     },
