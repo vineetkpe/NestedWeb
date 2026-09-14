@@ -141,7 +141,8 @@ export async function executeVerifiedProjectBoundedScan(
   dependencies: VerifiedProjectBoundedScanDependencies,
   signal?: AbortSignal,
 ): Promise<
-  ExecuteSupabaseProjectBoundedScanResult | ProjectBoundedScanAuthorizationFailure
+  | ExecuteSupabaseProjectBoundedScanResult
+  | ProjectBoundedScanAuthorizationFailure
 > {
   if (signal?.aborted) return cancelled();
 
