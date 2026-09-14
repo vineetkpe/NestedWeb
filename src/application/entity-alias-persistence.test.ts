@@ -30,9 +30,9 @@ const ENTITIES = [
 ] as const;
 
 test("validates IDs and passes the prepared immutable catalog to the gateway", async () => {
-  let received: ValidatedEntityAliasCatalogPersistenceRequest | null = null;
+  const received: ValidatedEntityAliasCatalogPersistenceRequest[] = [];
   const gateway: EntityAliasCatalogPersistenceGateway = async (request) => {
-    received = request;
+    received.push(request);
     return {
       ok: false,
       code: "database_error",
@@ -50,21 +50,23 @@ test("validates IDs and passes the prepared immutable catalog to the gateway", a
   );
 
   assert.deepEqual(result, { ok: false, code: "database_error" });
-  assert.ok(received !== null);
-  assert.equal(received.workspaceId, WORKSPACE_ID);
-  assert.equal(received.projectId, PROJECT_ID);
-  assert.equal(received.idempotencyKey, IDEMPOTENCY_KEY);
-  assert.equal(received.catalog.methodVersion, "entity-alias-v1");
-  assert.equal(received.catalog.aliasCount, 5);
+  assert.equal(received.length, 1);
+  const captured = received[0];
+  assert.ok(captured !== undefined);
+  assert.equal(captured.workspaceId, WORKSPACE_ID);
+  assert.equal(captured.projectId, PROJECT_ID);
+  assert.equal(captured.idempotencyKey, IDEMPOTENCY_KEY);
+  assert.equal(captured.catalog.methodVersion, "entity-alias-v1");
+  assert.equal(captured.catalog.aliasCount, 5);
   assert.equal(
-    received.catalog.entities[1]?.aliases[1]?.matchState,
+    captured.catalog.entities[1]?.aliases[1]?.matchState,
     "ambiguous",
   );
   assert.equal(
-    received.catalog.entities[2]?.aliases[0]?.matchState,
+    captured.catalog.entities[2]?.aliases[0]?.matchState,
     "ambiguous",
   );
-  assert.equal(Object.isFrozen(received.catalog), true);
+  assert.equal(Object.isFrozen(captured.catalog), true);
 });
 
 test("fails before persistence for malformed identity or alias catalogs", async () => {
