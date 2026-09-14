@@ -21,14 +21,18 @@ const MAX_TOTAL_ALIAS_COUNT = 200;
 const MAX_NAME_LENGTH = 120;
 
 export type SupabaseMentionDetectionRpcName =
-  "read_mention_detection_input" | "persist_mention_detection";
+  | "read_mention_detection_input"
+  | "persist_mention_detection";
 
 export type SupabaseMentionDetectionRpc = (
   name: SupabaseMentionDetectionRpcName,
   args: Readonly<Record<string, unknown>>,
 ) => Promise<unknown>;
 
-type SuccessfulMentionDetection = Extract<MentionDetectionResult, { ok: true }>;
+type SuccessfulMentionDetection = Extract<
+  MentionDetectionResult,
+  { ok: true }
+>;
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -49,10 +53,7 @@ function validUuid(value: unknown): value is string {
   return typeof value === "string" && UUID_PATTERN.test(value);
 }
 
-function validBoundedString(
-  value: unknown,
-  maxLength: number,
-): value is string {
+function validBoundedString(value: unknown, maxLength: number): value is string {
   return (
     typeof value === "string" &&
     value.length >= 1 &&
@@ -205,8 +206,7 @@ function parseReadInput(
     !validUuid(value.observationId) ||
     value.observationId.toLowerCase() !== observationId ||
     (value.answerText !== null &&
-      (typeof value.answerText !== "string" ||
-        !value.answerText.isWellFormed()))
+      (typeof value.answerText !== "string" || !value.answerText.isWellFormed()))
   )
     return null;
 
