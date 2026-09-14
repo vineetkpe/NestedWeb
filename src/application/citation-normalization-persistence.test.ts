@@ -18,7 +18,10 @@ function reader(
 
 test("normalizes every persisted occurrence in ordinal order and preserves duplicates", async () => {
   const events: string[] = [];
-  const readGateway: CitationNormalizationReadGateway = async (workspace, observation) => {
+  const readGateway: CitationNormalizationReadGateway = async (
+    workspace,
+    observation,
+  ) => {
     events.push(`read:${workspace}:${observation}`);
     return {
       ok: true,
@@ -68,7 +71,11 @@ test("normalizes every persisted occurrence in ordinal order and preserves dupli
         exclusionReason: null,
       });
     }
-    return { ok: true, citationId, replayed: citationId.endsWith(":grounding:2") };
+    return {
+      ok: true,
+      citationId,
+      replayed: citationId.endsWith(":grounding:2"),
+    };
   };
 
   const result = await normalizePersistedCitations(
@@ -118,37 +125,38 @@ test("accepts an observation with zero citations without fabricating evidence", 
 });
 
 test("rejects malformed or unbounded database citation responses before persistence", async () => {
-  const invalidSets: ReadonlyArray<ReadonlyArray<PersistedCitationOccurrence>> = [
+  const invalidSets: ReadonlyArray<ReadonlyArray<PersistedCitationOccurrence>> =
     [
-      {
-        citationOrdinal: 1,
-        citationId: "one",
-        citedUrl: "https://example.com/one",
-      },
-      {
-        citationOrdinal: 0,
-        citationId: "two",
-        citedUrl: "https://example.com/two",
-      },
-    ],
-    [
-      {
-        citationOrdinal: 0,
-        citationId: "duplicate",
-        citedUrl: "https://example.com/one",
-      },
-      {
-        citationOrdinal: 1,
-        citationId: "duplicate",
-        citedUrl: "https://example.com/two",
-      },
-    ],
-    Array.from({ length: 51 }, (_, index) => ({
-      citationOrdinal: index,
-      citationId: `citation-${index}`,
-      citedUrl: `https://example.com/${index}`,
-    })),
-  ];
+      [
+        {
+          citationOrdinal: 1,
+          citationId: "one",
+          citedUrl: "https://example.com/one",
+        },
+        {
+          citationOrdinal: 0,
+          citationId: "two",
+          citedUrl: "https://example.com/two",
+        },
+      ],
+      [
+        {
+          citationOrdinal: 0,
+          citationId: "duplicate",
+          citedUrl: "https://example.com/one",
+        },
+        {
+          citationOrdinal: 1,
+          citationId: "duplicate",
+          citedUrl: "https://example.com/two",
+        },
+      ],
+      Array.from({ length: 51 }, (_, index) => ({
+        citationOrdinal: index,
+        citationId: `citation-${index}`,
+        citedUrl: `https://example.com/${index}`,
+      })),
+    ];
 
   for (const citations of invalidSets) {
     let persistenceCalls = 0;
@@ -223,10 +231,11 @@ test("rejects invalid request identities before any gateway call", async () => {
     calls += 1;
     return { ok: true, citations: [] };
   };
-  const persistenceGateway: CitationNormalizationPersistenceGateway = async () => {
-    calls += 1;
-    return { ok: true, citationId: "unused", replayed: false };
-  };
+  const persistenceGateway: CitationNormalizationPersistenceGateway =
+    async () => {
+      calls += 1;
+      return { ok: true, citationId: "unused", replayed: false };
+    };
 
   assert.deepEqual(
     await normalizePersistedCitations(
