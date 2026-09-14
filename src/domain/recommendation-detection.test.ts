@@ -179,8 +179,8 @@ test("fails closed on malformed or ambiguous mention evidence", () => {
 });
 
 test("bounds answer size rather than truncating classification context", () => {
-  assert.deepEqual(
-    detectRecommendationForMention("x".repeat(200_001), {}),
-    { ok: false, code: "invalid_answer_text" },
-  );
+  assert.deepEqual(detectRecommendationForMention("x".repeat(200_001), {}), {
+    ok: false,
+    code: "invalid_answer_text",
+  });
 });
