@@ -239,8 +239,7 @@ async function persistThroughRpc(
   }
 
   const catalog = parseCatalog(envelope.data, request);
-  if (catalog === null)
-    return { ok: false, code: "invalid_database_response" };
+  if (catalog === null) return { ok: false, code: "invalid_database_response" };
 
   return { ok: true, catalog };
 }
