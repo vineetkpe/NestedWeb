@@ -45,71 +45,68 @@ function readData(answerText: string | null = "ACME") {
   };
 }
 
-test(
-  "executes the exact service read then persists the exact D3a result",
-  async () => {
-    const calls: string[] = [];
-    const result = await executeSupabaseMentionDetection(
-      request,
-      async (name, args) => {
-        calls.push(name);
-        if (name === "read_mention_detection_input") {
-          assert.deepEqual(args, {
-            p_workspace_id: WORKSPACE_ID,
-            p_observation_id: OBSERVATION_ID,
-            p_catalog_id: CATALOG_ID,
-          });
-          return { data: readData(), error: null };
-        }
+test("executes the exact service read then persists the exact D3a result", async () => {
+  const calls: string[] = [];
+  const result = await executeSupabaseMentionDetection(
+    request,
+    async (name, args) => {
+      calls.push(name);
+      if (name === "read_mention_detection_input") {
+        assert.deepEqual(args, {
+          p_workspace_id: WORKSPACE_ID,
+          p_observation_id: OBSERVATION_ID,
+          p_catalog_id: CATALOG_ID,
+        });
+        return { data: readData(), error: null };
+      }
 
-        assert.equal(args.p_workspace_id, WORKSPACE_ID);
-        assert.equal(args.p_observation_id, OBSERVATION_ID);
-        assert.equal(args.p_catalog_id, CATALOG_ID);
-        const detection = args.p_detection as {
-          methodVersion: string;
-          catalogId: string;
-          occurrences: Array<{
-            state: string;
-            source: { startUtf16: number; endUtf16: number; text: string };
-          }>;
-        };
-        assert.equal(detection.methodVersion, "mention-detection-v1");
-        assert.equal(detection.catalogId, CATALOG_ID);
-        assert.deepEqual(detection.occurrences, [
-          {
-            occurrenceOrdinal: 0,
-            state: "mention",
-            entityId: COMPANY_ID,
-            entityKind: "company",
-            aliasId: ALIAS_ID,
-            aliasText: "Acme",
-            normalizedAlias: "acme",
-            source: { startUtf16: 0, endUtf16: 4, text: "ACME" },
-          },
-        ]);
-        return {
-          data: {
-            observationId: OBSERVATION_ID,
-            catalogId: CATALOG_ID,
-            methodVersion: "mention-detection-v1",
-            occurrenceCount: 1,
-            mentionCount: 1,
-            ambiguousCount: 0,
-            replayed: false,
-          },
-          error: null,
-        };
-      },
-    );
+      assert.equal(args.p_workspace_id, WORKSPACE_ID);
+      assert.equal(args.p_observation_id, OBSERVATION_ID);
+      assert.equal(args.p_catalog_id, CATALOG_ID);
+      const detection = args.p_detection as {
+        methodVersion: string;
+        catalogId: string;
+        occurrences: Array<{
+          state: string;
+          source: { startUtf16: number; endUtf16: number; text: string };
+        }>;
+      };
+      assert.equal(detection.methodVersion, "mention-detection-v1");
+      assert.equal(detection.catalogId, CATALOG_ID);
+      assert.deepEqual(detection.occurrences, [
+        {
+          occurrenceOrdinal: 0,
+          state: "mention",
+          entityId: COMPANY_ID,
+          entityKind: "company",
+          aliasId: ALIAS_ID,
+          aliasText: "Acme",
+          normalizedAlias: "acme",
+          source: { startUtf16: 0, endUtf16: 4, text: "ACME" },
+        },
+      ]);
+      return {
+        data: {
+          observationId: OBSERVATION_ID,
+          catalogId: CATALOG_ID,
+          methodVersion: "mention-detection-v1",
+          occurrenceCount: 1,
+          mentionCount: 1,
+          ambiguousCount: 0,
+          replayed: false,
+        },
+        error: null,
+      };
+    },
+  );
 
-    assert.deepEqual(calls, [
-      "read_mention_detection_input",
-      "persist_mention_detection",
-    ]);
-    assert.equal(result.ok, true);
-    if (result.ok) assert.equal(result.mentionCount, 1);
-  },
-);
+  assert.deepEqual(calls, [
+    "read_mention_detection_input",
+    "persist_mention_detection",
+  ]);
+  assert.equal(result.ok, true);
+  if (result.ok) assert.equal(result.mentionCount, 1);
+});
 
 test("fails closed on malformed nested read data before persistence", async () => {
   let persistCalled = false;
@@ -175,53 +172,50 @@ test("keeps null answer explicit and never calls the persistence RPC", async () 
   });
 });
 
-test(
-  "maps conflicting persistence replay and rejects malformed success envelopes",
-  async () => {
-    const conflict = await executeSupabaseMentionDetection(
-      request,
-      async (name) => {
-        if (name === "read_mention_detection_input")
-          return { data: readData(), error: null };
-        return {
-          data: null,
-          error: {
-            code: "22023",
-            message: "Mention detection replay conflicts with stored evidence",
-          },
-        };
-      },
-    );
-    assert.deepEqual(conflict, {
-      ok: false,
-      stage: "persist",
-      code: "idempotency_conflict",
-    });
+test("maps conflicting persistence replay and rejects malformed success envelopes", async () => {
+  const conflict = await executeSupabaseMentionDetection(
+    request,
+    async (name) => {
+      if (name === "read_mention_detection_input")
+        return { data: readData(), error: null };
+      return {
+        data: null,
+        error: {
+          code: "22023",
+          message: "Mention detection replay conflicts with stored evidence",
+        },
+      };
+    },
+  );
+  assert.deepEqual(conflict, {
+    ok: false,
+    stage: "persist",
+    code: "idempotency_conflict",
+  });
 
-    const malformed = await executeSupabaseMentionDetection(
-      request,
-      async (name) => {
-        if (name === "read_mention_detection_input")
-          return { data: readData(), error: null };
-        return {
-          data: {
-            observationId: OBSERVATION_ID,
-            catalogId: CATALOG_ID,
-            methodVersion: "mention-detection-v1",
-            occurrenceCount: 1,
-            mentionCount: 1,
-            ambiguousCount: 0,
-            replayed: false,
-            extra: true,
-          },
-          error: null,
-        };
-      },
-    );
-    assert.deepEqual(malformed, {
-      ok: false,
-      stage: "persist",
-      code: "invalid_database_response",
-    });
-  },
-);
+  const malformed = await executeSupabaseMentionDetection(
+    request,
+    async (name) => {
+      if (name === "read_mention_detection_input")
+        return { data: readData(), error: null };
+      return {
+        data: {
+          observationId: OBSERVATION_ID,
+          catalogId: CATALOG_ID,
+          methodVersion: "mention-detection-v1",
+          occurrenceCount: 1,
+          mentionCount: 1,
+          ambiguousCount: 0,
+          replayed: false,
+          extra: true,
+        },
+        error: null,
+      };
+    },
+  );
+  assert.deepEqual(malformed, {
+    ok: false,
+    stage: "persist",
+    code: "invalid_database_response",
+  });
+});
