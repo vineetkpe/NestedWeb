@@ -4,18 +4,14 @@ import {
   normalizePersistedCitations,
   type CitationNormalizationPersistenceGateway,
   type CitationNormalizationReadGateway,
+  type PersistedCitationOccurrence,
 } from "./citation-normalization-persistence.ts";
 
 const workspaceId = "11111111-1111-4111-8111-111111111111";
 const observationId = "22222222-2222-4222-8222-222222222222";
 
 function reader(
-  citations: Awaited<ReturnType<CitationNormalizationReadGateway>> extends {
-    ok: true;
-    citations: infer T;
-  }
-    ? T
-    : never,
+  citations: ReadonlyArray<PersistedCitationOccurrence>,
 ): CitationNormalizationReadGateway {
   return async () => ({ ok: true, citations });
 }
@@ -122,7 +118,7 @@ test("accepts an observation with zero citations without fabricating evidence", 
 });
 
 test("rejects malformed or unbounded database citation responses before persistence", async () => {
-  const invalidSets = [
+  const invalidSets: ReadonlyArray<ReadonlyArray<PersistedCitationOccurrence>> = [
     [
       {
         citationOrdinal: 1,
@@ -194,11 +190,13 @@ test("fails closed on read errors and never starts persistence", async () => {
 
 test("stops on the first persistence failure so replay can resume safely", async () => {
   const persisted: string[] = [];
-  const citations = [0, 1, 2].map((citationOrdinal) => ({
-    citationOrdinal,
-    citationId: `citation-${citationOrdinal}`,
-    citedUrl: `https://example.com/${citationOrdinal}`,
-  }));
+  const citations: ReadonlyArray<PersistedCitationOccurrence> = [0, 1, 2].map(
+    (citationOrdinal) => ({
+      citationOrdinal,
+      citationId: `citation-${citationOrdinal}`,
+      citedUrl: `https://example.com/${citationOrdinal}`,
+    }),
+  );
   const result = await normalizePersistedCitations(
     { workspaceId, observationId },
     reader(citations),
