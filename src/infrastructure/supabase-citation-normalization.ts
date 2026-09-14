@@ -38,9 +38,7 @@ function hasExactKeys(
   );
 }
 
-function parseEnvelope(
-  value: unknown,
-):
+function parseEnvelope(value: unknown):
   | Readonly<{ ok: true; data: unknown }>
   | Readonly<{
       ok: false;
