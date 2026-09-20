@@ -8,6 +8,7 @@ import {
   createCurrentUserProject,
   listCurrentUserProjects,
 } from "../../infrastructure/supabase/projects-server.ts";
+import { runCurrentUserProjectBoundedScan } from "../../infrastructure/supabase/project-bounded-scan-server.ts";
 import { bootstrapCurrentUserWorkspace } from "../../infrastructure/supabase/workspace-bootstrap-server.ts";
 import { ProjectListPanel } from "./project-list-panel.tsx";
 
@@ -15,7 +16,23 @@ export const metadata: Metadata = {
   title: "Workspace setup — AI Visibility OS",
 };
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const setupStatus = getWorkspaceProjectSetupStatus(process.env);
+
+function normalizeUuid(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (
+    trimmed.length === 0 ||
+    trimmed !== value ||
+    !UUID_PATTERN.test(trimmed)
+  ) {
+    return null;
+  }
+  return trimmed.toLowerCase();
+}
 
 async function createWorkspaceAction(formData: FormData) {
   "use server";
@@ -73,8 +90,8 @@ async function createProjectAction(formData: FormData) {
 async function loadProjectsAction(formData: FormData) {
   "use server";
 
-  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
-  if (!setupStatus.available || workspaceId.length === 0) {
+  const workspaceId = normalizeUuid(String(formData.get("workspaceId") ?? ""));
+  if (!setupStatus.available || workspaceId === null) {
     return {
       ok: false,
       message: "Provide a valid workspace ID to load project records.",
@@ -105,8 +122,8 @@ async function loadProjectsAction(formData: FormData) {
 async function prepareProjectScanAction(formData: FormData) {
   "use server";
 
-  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
-  const projectId = String(formData.get("projectId") ?? "").trim();
+  const workspaceId = normalizeUuid(String(formData.get("workspaceId") ?? ""));
+  const projectId = normalizeUuid(String(formData.get("projectId") ?? ""));
 
   const launch = buildProjectScanLaunchRequest({
     workspaceId,
@@ -122,9 +139,60 @@ async function prepareProjectScanAction(formData: FormData) {
     } as const;
   }
 
+  const result = await runCurrentUserProjectBoundedScan(
+    launch.value,
+    () => null,
+  );
+
+  if (result.state === "not_executed") {
+    if (result.stage === "server_setup") {
+      return {
+        ok: false,
+        message:
+          "The project scan cannot start until the required Supabase and provider configuration is present.",
+      } as const;
+    }
+
+    if (result.stage === "authorization") {
+      return {
+        ok: false,
+        message:
+          "This signed-in member is not authorized to run a scan for the selected project.",
+      } as const;
+    }
+
+    if (result.stage === "project") {
+      return {
+        ok: false,
+        message:
+          "The selected project is not accessible in the current workspace.",
+      } as const;
+    }
+
+    if (result.stage === "target") {
+      return {
+        ok: false,
+        message: "The project domain is not a valid bounded scan target.",
+      } as const;
+    }
+
+    if (result.stage === "crawl") {
+      return {
+        ok: false,
+        message:
+          "The project domain was valid but the crawl stage did not complete.",
+      } as const;
+    }
+
+    return {
+      ok: false,
+      message: "The bounded scan was stopped before execution.",
+    } as const;
+  }
+
   return {
     ok: true,
-    message: `Prepared a bounded scan request for project ${launch.value.projectId}. The live provider remains disabled until the environment is explicitly configured.`,
+    message: `Project scan started for ${launch.value.projectId}. The execution path is configured but live provider execution remains gated until a server-only environment is enabled.`,
   } as const;
 }
 
