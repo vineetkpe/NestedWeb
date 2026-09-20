@@ -28,6 +28,7 @@
 - Follow Level 0–6 sequence; do not jump ahead
 - The workspace + project foundation is required before scan/report logic
 - The next task must be smaller and bounded
+- The project scan launch boundary is now the immediate pre-scan validation step
 - Record any order change in `ARCHITECTURE.md`
 
 ## Verification rules

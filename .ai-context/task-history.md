@@ -14,6 +14,7 @@
 - A real project-creation server action is wired to the workspace page.
 - A project list/load panel exists for the next workspace boundary.
 - Project selection is explicit in the list UI and the selected project state is visible.
+- A validated project scan launch request builder is in place for workspace/project/worker IDs and lease limits.
 - Full verification passes on the current repo state.
 - Workspace route contract regression passes in desktop and mobile Playwright checks.
 
@@ -21,5 +22,5 @@
 
 - Prove real authenticated project listing against a live workspace/member environment.
 - Enforce project selection and authorization checks for the signed-in workspace only.
-- Move into Level 2 scan execution and provider boundary work.
+- Move into Level 2 scan execution and provider boundary work using the project-scoped authenticated runner.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

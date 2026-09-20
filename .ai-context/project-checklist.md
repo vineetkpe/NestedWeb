@@ -27,12 +27,13 @@ Completed or partially completed:
 - [x] Current projects section exists for the workspace boundary
 - [x] Project listing action boundary is in the workspace flow
 - [x] Project list selection state is visible and explicit in the UI
+- [x] Project scan launch validation exists for workspace/project/worker IDs and lease bounds
 - [x] Build verification passes
 - [x] Route regression verifies workspace-project flow contract
 - [x] Full `npm run verify` passes on the current repo state
 - [ ] Real authenticated project listing against live Supabase is proven
 - [ ] Real project selection / workspace member authorization is fully tested
-- [ ] Level 2 scanning and provider boundary work begins
+- [ ] Level 2 scanning and provider boundary work begins in the authenticated project execution path
 - [ ] Raw observation/citation interpretation workflow starts
 - [ ] Recommendation/competitor/metrics layer begins
 - [ ] Dashboard/report UI and history are built
@@ -51,6 +52,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- build the real workspace-member project list/select authorization path
-- validate the project is only accessible within the correct signed-in workspace
-- then move into the scan execution boundary
+- validate the authenticated project path using the exact authorization and project-boundary server code
+- move into the real project-scoped scan execution boundary behind the launch validation
+- keep provider execution disabled unless a server-only live credential and worker config are explicitly supplied
