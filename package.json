@@ -16,7 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts",
+    "test:unit": "node --conditions=react-server --test src/domain/*.test.ts src/application/*.test.ts src/infrastructure/*.test.ts src/infrastructure/supabase/*.test.ts",
     "test:db": "supabase test db --local",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

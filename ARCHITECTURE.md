@@ -2,19 +2,21 @@
 
 ## Current implementation
 
-One Next.js App Router application. `src/app/page.tsx` renders static preview content and links to the static report prototype at `src/app/report/page.tsx`; `layout.tsx` sets metadata/language; `globals.css` owns design tokens. `next.config.ts` provides baseline response headers. Browser tests in `tests/e2e` exercise the production build. No route invokes network access or server state.
+Reconciled against source at `7190ab0` on 2026-09-20. See [project progress](docs/project-progress.md) for the delivery checklist and remaining work. Historical ADRs describe the boundaries at the time they were accepted; their old implementation-status statements are not a current inventory.
 
-The standalone domain intake slice below adds reusable URL rules and an explicitly invoked DNS preflight. It is not connected to a route or UI and performs no HTTP requests.
+The Next.js routes remain a static product preview at `/` and empty report prototype at `/report`. No customer login, project, scan, or evidence workflow is connected to these routes.
 
-The Firecrawl foundation in ADR-008 adds a crawler contract and a server-only request/response adapter, exercised with mocked transport. There is no enabled live crawler or scanner.
+`src/proxy.ts` does run conditional Supabase session maintenance for matching requests, including these pages: with public Supabase configuration it verifies claims and can refresh cookies. Without that configuration it passes through. This is existing session plumbing, not a customer login or project workflow.
 
-The standalone company-profile extractor in ADR-009 interprets supplied crawl text without invoking a crawler, model, database, or UI.
+Server modules implement Supabase identity verification, workspace authorization/bootstrap, project access, durable scan reservation/leasing/finalization, profile/prompt provenance, and raw observation persistence. Migrations and pgTAP tests exist, and database replay/tests are configured in CI. The earlier blanket description of all database work as unverified drafts is obsolete; [the tenancy security record](docs/security-exit.md) records historical hosted checks. Current hosted migration parity and production readiness are not established by this source inspection.
 
-The standalone prompt library in ADR-010 produces bounded, deterministic planned questions from supplied profiles. It does not execute queries or populate the report.
+Website normalization/DNS screening and a native pinned HTTPS entry-page crawler exist. Hosted Firecrawl remains closed by default. Company-profile extraction and deterministic prompt generation feed a request-scoped project scan composition. An explicit live Gemini factory exists separately from the closed fixture factory; the scan entry point requires a caller-supplied provider factory and is not exposed through a route or scheduled worker loop.
 
-The Gemini boundary in ADR-011 captures one query through injected test transport, preserving raw response and citation provenance. Default live execution remains unavailable; there is no scanner or report integration.
+Citation normalization, entity alias catalogs, and exact mention evidence have application/persistence layers. Recommendation detection currently has a pure classification core only. Visibility metrics, customer action recommendations, historical dashboard/report integration, billing, and production deployment remain unfinished.
 
-Local Supabase configuration, a core tenant migration, and pgTAP tests exist as the unverified database draft in ADR-006. No application database integration or deployed migration is claimed.
+### 2026-09-20 maintenance boundary
+
+Level 1 verification maintenance and cross-level status reconciliation, authorized by the user's request for small fixes, progress reporting, and pushing to GitHub. Correct the unit test command that omits three nested Supabase server test files; reconcile current summaries and document delivery criteria. No development-order change or new production feature is introduced. Acceptance: all existing source tests are selected, applicable verification results are recorded honestly, and only this bounded change is committed/pushed. Stop before the next feature task.
 
 ## ADR-001: small application with explicit boundaries
 

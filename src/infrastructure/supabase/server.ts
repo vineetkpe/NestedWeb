@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies } from "next/headers.js";
 import { requireSupabaseIdentity } from "../supabase-auth.ts";
 import { requireSupabasePublicConfig } from "./config.ts";
 
