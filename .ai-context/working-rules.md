@@ -29,6 +29,7 @@
 - The workspace + project foundation is required before scan/report logic
 - The next task must be smaller and bounded
 - The project scan launch boundary is now the immediate pre-scan validation step
+- All workspace and project IDs must be validated before they can trigger DB or scan work
 - Record any order change in `ARCHITECTURE.md`
 
 ## Verification rules

@@ -28,6 +28,7 @@ Completed or partially completed:
 - [x] Project listing action boundary is in the workspace flow
 - [x] Project list selection state is visible and explicit in the UI
 - [x] Project scan launch validation exists for workspace/project/worker IDs and lease bounds
+- [x] Workspace and project ID validation now rejects malformed inputs before DB or scan work
 - [x] Build verification passes
 - [x] Route regression verifies workspace-project flow contract
 - [x] Full `npm run verify` passes on the current repo state

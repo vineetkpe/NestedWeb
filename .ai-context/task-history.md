@@ -15,6 +15,7 @@
 - A project list/load panel exists for the next workspace boundary.
 - Project selection is explicit in the list UI and the selected project state is visible.
 - A validated project scan launch request builder is in place for workspace/project/worker IDs and lease limits.
+- Workspace and project UUID validation is enforced before loading project records or starting a launch.
 - Full verification passes on the current repo state.
 - Workspace route contract regression passes in desktop and mobile Playwright checks.
 
