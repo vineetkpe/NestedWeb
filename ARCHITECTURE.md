@@ -2,21 +2,29 @@
 
 ## Current implementation
 
-One Next.js App Router application. `src/app/page.tsx` renders static preview content and links to the static report prototype at `src/app/report/page.tsx`; `layout.tsx` sets metadata/language; `globals.css` owns design tokens. `next.config.ts` provides baseline response headers. Browser tests in `tests/e2e` exercise the production build. No route invokes network access or server state.
+Reconciled against source at `7190ab0` on 2026-09-20. See [project progress](docs/project-progress.md) for the delivery checklist and remaining work. Historical ADRs describe the boundaries at the time they were accepted; their old implementation-status statements are not a current inventory.
 
-The standalone domain intake slice below adds reusable URL rules and an explicitly invoked DNS preflight. It is not connected to a route or UI and performs no HTTP requests.
+The Next.js routes remain a static product preview at `/` and empty report prototype at `/report`. No customer login, project, scan, or evidence workflow is connected to these routes.
 
-The Firecrawl foundation in ADR-008 adds a crawler contract and a server-only request/response adapter, exercised with mocked transport. There is no enabled live crawler or scanner.
+`src/proxy.ts` does run conditional Supabase session maintenance for matching requests, including these pages: with public Supabase configuration it verifies claims and can refresh cookies. Without that configuration it passes through. This is existing session plumbing, not a customer login or project workflow.
 
-The standalone company-profile extractor in ADR-009 interprets supplied crawl text without invoking a crawler, model, database, or UI.
+Server modules implement Supabase identity verification, workspace authorization/bootstrap, project access, durable scan reservation/leasing/finalization, profile/prompt provenance, and raw observation persistence. Migrations and pgTAP tests exist, and database replay/tests are configured in CI. The earlier blanket description of all database work as unverified drafts is obsolete; [the tenancy security record](docs/security-exit.md) records historical hosted checks. Current hosted migration parity and production readiness are not established by this source inspection.
 
-The standalone prompt library in ADR-010 produces bounded, deterministic planned questions from supplied profiles. It does not execute queries or populate the report.
+Website normalization/DNS screening and a native pinned HTTPS entry-page crawler exist. Hosted Firecrawl remains closed by default. Company-profile extraction and deterministic prompt generation feed a request-scoped project scan composition. An explicit live Gemini factory exists separately from the closed fixture factory; the scan entry point requires a caller-supplied provider factory and is not exposed through a route or scheduled worker loop.
 
+<<<<<<< HEAD
 The Gemini boundary in ADR-011 captures one query through injected test transport, preserving raw response and citation provenance. Default live execution remains unavailable.
 
 ADR-012 adds an in-process sequential scan runner over supplied profiles/prompts and the provider interface, verified with fake providers. There is no persistent scan, worker, route, live scanning or report integration.
+=======
 
-Local Supabase configuration, a core tenant migration, and pgTAP tests exist as the unverified database draft in ADR-006. No application database integration or deployed migration is claimed.
+Citation normalization, entity alias catalogs, and exact mention evidence have application/persistence layers. Recommendation detection currently has a pure classification core only. Visibility metrics, customer action recommendations, historical dashboard/report integration, billing, and production deployment remain unfinished.
+
+> > > > > > > c95a04a46e4a9bace265f04ac8026f16a5e28a35
+
+### 2026-09-20 maintenance boundary
+
+Level 1 verification maintenance and cross-level status reconciliation, authorized by the user's request for small fixes, progress reporting, and pushing to GitHub. Correct the unit test command that omits three nested Supabase server test files; reconcile current summaries and document delivery criteria. No development-order change or new production feature is introduced. Acceptance: all existing source tests are selected, applicable verification results are recorded honestly, and only this bounded change is committed/pushed. Stop before the next feature task.
 
 ## ADR-001: small application with explicit boundaries
 
@@ -137,6 +145,8 @@ Only `candidates[0].groundingMetadata.groundingChunks[*].web` creates citation r
 
 Live execution has no default transport or enablement flag. A server-only injected exchange supports deterministic fixtures only until authorization, reservations, deployment/egress, provider data handling, and billing controls are separately implemented and reviewed. One request, no retries, one active attempt per instance, a 20-second deadline, 2 MiB response cap, and 50 grounding chunks bound this slice. Reuse the crawler's bounded body reader without changing its limits. Oversized, unreadable, or credential-bearing bodies are discarded with an explicit capture state, never silently truncated or redacted and called exact. Normal diagnostics must never serialize request credentials or raw observations.
 
+<<<<<<< HEAD
+
 ## ADR-012: bounded single-scan application orchestration
 
 Status: authorized by the user's single-scan request on 2026-09-10. Level 2 preparation ahead of unfinished authentication, durable storage, usage reservations and live-provider prerequisites. This exception permits only an in-process application runner with supplied CompanyProfile and prompt-library output. No crawling, prompt regeneration, persistence, jobs, routes, UI, interpretation or production scanning. Stop after review and the four required checks; no commit.
@@ -148,3 +158,24 @@ Accept the existing GroundedAIProvider interface as an injected trusted dependen
 Derive reserved observation/attempt IDs from length-prefixed caller scan/attempt IDs and one-based query position, never query text or timestamps. Retain one ordered attempt entry per planned query. Distinguish answered, refused, partial, failed, cancelled and not_attempted states; an invoked provider can itself report not_executed, which retains a failure entry but no fabricated observation. Preserve valid observations from other queries when a provider throws, rejects, fails or returns malformed/mismatched data. No retries. Cancellation prevents every later provider call without erasing a completed active observation. A settled scan means collection attempts settled, not that all answers succeeded or that a report is ready.
 
 Bound and validate provider results before retaining them, including query/observation identity, citation ownership, record states and sizes. Treat all answer/citation/metadata strings as inert data. No URL following, content interpretation, logging or extra tools. Ten records and per-observation size bounds bound retained output. Persistence, distributed concurrency, durable IDs, authorization/reservations and worker recovery remain independent prerequisites; this runner does not supply them.
+=======
+
+## ADR-012: durable prompt cohorts bind scans to profile provenance
+
+Status: accepted for C6 on 2026-09-12. The C5 `company_profile_snapshots` row is the immutable evidence source for prompt planning. C6 persists one immutable prompt cohort against that exact tenant/project/profile snapshot rather than regenerating a historical cohort later and assuming it is equivalent. The application recomputes `niche-prompts-v1` from the supplied profile instead of accepting caller-supplied prompts, and PostgreSQL requires the supplied profile payload to equal the stored C5 snapshot before it accepts the cohort.
+
+Persist the exact prompt method and source profile method, prompt count and order, query ID/text/category/template version, planned state, `language: en`, `locale: null`, and profile field/value/evidence references. PostgreSQL validates every evidence reference against a `confirmed` value and an existing evidence index in the exact stored profile. Identical idempotent replay returns the original cohort; reuse with a different profile/cohort payload fails closed. A deterministic sparse profile may persist a zero-query cohort because absence of eligible prompts is meaningful evidence, but that cohort cannot reserve paid execution.
+
+The prompt cohort is the canonical provenance record. `scan_queries` remains a reduced immutable execution snapshot containing only the query identity/version/text required by worker leasing. New scans are reserved by durable prompt-cohort ID; PostgreSQL copies those execution fields from cohort rows in stored ordinal order while applying the existing pricing, budget, concurrency and idempotency checks. An immutable `scan_prompt_cohorts` row binds each new scan to exactly one cohort, and replay cannot rebind that scan to a different cohort even when prompt text happens to be identical. Existing pre-C6 scan rows without a cohort binding are not assigned invented provenance.
+
+Authenticated clients may read cohort provenance through workspace-member RLS but cannot write it. Cohort persistence is service-role-only through a narrow RPC, while direct table writes remain revoked. The legacy authenticated reservation RPC that accepted caller-supplied prompt payloads is revoked; the authenticated reservation surface now accepts only tenant/project/idempotency identities plus a durable cohort ID. C6 does not enable live Gemini or Firecrawl execution, raw provider observation persistence, intelligence metrics, recommendations, or UI; those remain separate later boundaries.
+
+## ADR-013: versioned citation URL normalization is derived evidence
+
+Status: accepted for D1a/D1b on 2026-09-14. Level 3 begins by separating immutable provider citation occurrences from later canonical URL/domain interpretation. `raw_citations` remains the source evidence; `citation-url-v1` is a pure deterministic transform whose result is persisted separately as `citation_url_normalizations` and keyed by exact workspace, observation, citation identity, and method version.
+
+The normalization method may canonicalize only syntax the native WHATWG URL parser establishes. It preserves query parameter order, tracking parameters, paths, fragments, duplicate source occurrences, and the full parsed hostname. It does not infer a registrable domain, redirect target, source equivalence, ownership, support span, claim relationship, brand association, recommendation, or competitor relationship. Invalid, unsupported-scheme, and unsafe URLs remain explicit excluded derived rows rather than disappearing.
+
+Derived rows are append-only for a method version: identical replay is idempotent and conflicting replay fails closed. A narrow service-role RPC validates the exact raw citation identity and the strict derived payload shape; direct table writes remain revoked. Authenticated users have explicit SELECT only through workspace-member RLS, while `anon` has no access. This explicit grant model avoids dependence on Supabase's changing automatic Data API exposure defaults. Application/backfill orchestration that reads raw citations, runs `citation-url-v1`, and calls the persistence RPC is intentionally deferred to D1c.
+
+> > > > > > > c95a04a46e4a9bace265f04ac8026f16a5e28a35

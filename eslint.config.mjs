@@ -25,7 +25,9 @@ export default defineConfig([
     ".agents/**",
     ".foundation-cache/**",
     "playwright-report/**",
+    "**/playwright-report/**",
     "test-results/**",
+    "**/test-results/**",
     "next-env.d.ts",
   ]),
 ]);

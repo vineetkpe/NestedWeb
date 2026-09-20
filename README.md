@@ -1,8 +1,10 @@
 # AI Visibility OS
 
-Foundation for agency-first, evidence-backed AI-answer monitoring. The app contains an honest product preview at `/` and a report prototype at `/report`, with unexecuted query templates and empty evidence/metric/action states. The [report specification](docs/report-specification.md) defines the future records and auditable formulas. Authentication, live data collection, metric calculations, billing, and workspace UI are **not implemented**.
+Agency-first, evidence-backed AI-answer monitoring: Measure → Explain → Recommend → Monitor.
 
-Standalone modules implement website normalization/DNS preflight, a Firecrawl adapter tested with mocked transport (live crawling is unavailable), and deterministic CompanyProfile extraction from supplied `CrawlResult` data. Profiles retain exact supporting text, unknown fields, and conflicting claims; they are not connected to either route. Local tenant migration and pgTAP files are drafts with database verification/deployment still pending. See [ARCHITECTURE.md](ARCHITECTURE.md) for implemented boundaries and remaining prerequisites.
+**Current status:** substantial backend components exist; the customer product is not yet connected. `/` and `/report` remain static previews. Backend code covers auth/tenancy, projects, bounded crawling and Gemini calls, durable scans/cost reservations, evidence storage, citations, aliases, and mention detection. Recommendation classification has a pure core. Metrics, actionable customer recommendations, customer workflows, billing, and production delivery remain unfinished.
+
+See [project progress](docs/project-progress.md) for what exists, what remains, and how completion is counted. [ARCHITECTURE.md](ARCHITECTURE.md) describes boundaries; [the security exit record](docs/security-exit.md) records historical database verification. Source code and historical checks do not prove a currently deployed working product.
 
 ## Run locally
 

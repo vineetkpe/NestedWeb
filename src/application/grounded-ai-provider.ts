@@ -15,8 +15,8 @@ export interface GroundedAIProvider {
   readonly capabilities: Readonly<{
     provider: string;
     surface: "api";
-    grounding: string;
-    liveExecution: false;
+    grounding: "google_search";
+    liveExecution: boolean;
     maxQueries: 1;
     maxCitations: number;
   }>;
