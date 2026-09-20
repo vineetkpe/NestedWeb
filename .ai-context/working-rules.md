@@ -35,6 +35,7 @@
 - Build and relevant tests must pass before claiming success
 - Use the project verification commands for the relevant task
 - Keep evidence in the terminal output and document honest limitations
+- The current repo evidence is: `npm run verify` passed in the active workspace
 
 ## Repo hygiene
 

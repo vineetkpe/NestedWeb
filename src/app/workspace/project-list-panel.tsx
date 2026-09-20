@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 export type ProjectListItem = Readonly<{
   id: string;
@@ -21,12 +21,22 @@ export function ProjectListPanel({
   loadProjectsAction: (formData: FormData) => Promise<ProjectListState>;
   disabled: boolean;
 }>) {
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  );
+
   const [state, formAction, isPending] = useActionState<
     ProjectListState,
     FormData
   >(
     async (_previousState: ProjectListState, formData: FormData) => {
       const result = await loadProjectsAction(formData);
+      const firstProject = result.projects[0];
+
+      if (firstProject && selectedProjectId === null) {
+        setSelectedProjectId(firstProject.id);
+      }
+
       return {
         ok: result.ok,
         message: result.message,
@@ -82,17 +92,46 @@ export function ProjectListPanel({
       ) : null}
 
       {state.projects.length > 0 ? (
-        <ul className="space-y-3">
-          {state.projects.map((project) => (
-            <li
-              key={project.id}
-              className="rounded-sm border border-border bg-background p-3"
-            >
-              <p className="font-medium text-foreground">{project.name}</p>
-              <p className="text-sm text-muted-foreground">{project.trackedDomain}</p>
-            </li>
-          ))}
-        </ul>
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-foreground">
+            Available projects
+          </p>
+          <ul className="space-y-3">
+            {state.projects.map((project) => {
+              const isSelected = project.id === selectedProjectId;
+              return (
+                <li
+                  key={project.id}
+                  className="rounded-sm border border-border bg-background p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {project.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {project.trackedDomain}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedProjectId(project.id)}
+                      className="inline-flex min-h-9 items-center rounded-sm border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-ring"
+                    >
+                      {isSelected ? "Selected" : "Select project"}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {selectedProjectId ? (
+            <div className="rounded-sm border border-border bg-accent/40 p-3 text-sm text-muted-foreground">
+              Selected project ID: {selectedProjectId}
+            </div>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

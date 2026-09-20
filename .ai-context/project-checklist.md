@@ -26,8 +26,10 @@ Completed or partially completed:
 - [x] Workspace ID is explicitly included in the project setup flow
 - [x] Current projects section exists for the workspace boundary
 - [x] Project listing action boundary is in the workspace flow
+- [x] Project list selection state is visible and explicit in the UI
 - [x] Build verification passes
 - [x] Route regression verifies workspace-project flow contract
+- [x] Full `npm run verify` passes on the current repo state
 - [ ] Real authenticated project listing against live Supabase is proven
 - [ ] Real project selection / workspace member authorization is fully tested
 - [ ] Level 2 scanning and provider boundary work begins

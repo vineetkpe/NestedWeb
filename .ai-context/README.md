@@ -12,10 +12,11 @@ This folder preserves the working project context so future coding sessions, dif
 
 ## Files in this pack
 
-- `project-checklist.md` — the current product and engineering checklist
-- `working-rules.md` — the non-negotiable rules for this project
-- `task-history.md` — the completed work log and what remains
-- `handoff-template.md` — a reusable summary template for future AI sessions
+- [INDEX.md](INDEX.md) — the quick navigation page for the context pack
+- [project-checklist.md](project-checklist.md) — the current product and engineering checklist
+- [working-rules.md](working-rules.md) — the non-negotiable rules for this project
+- [task-history.md](task-history.md) — the completed work log and what remains
+- [handoff-template.md](handoff-template.md) — a reusable summary template for future AI sessions
 
 ## Important rules
 
@@ -28,4 +29,10 @@ This folder preserves the working project context so future coding sessions, dif
 
 ## Current repo reality
 
-The app is still in the foundation/product-order slice. The implemented and verified work is mostly the authenticated workspace/project setup boundary, not the full SaaS flow.
+The app remains in the foundation/product-order slice. The verified work includes the workspace bootstrap flow, the project setup flow, and the project listing/selection state, but the full SaaS report and scan pipeline are still ahead of the current implementation boundary.
+
+## Latest verified status
+
+- `npm run verify` passed on the current repo state.
+- The repository is consistent with the actual implemented product boundary: workspace/project foundation is the current proven slice.
+- The next product step is the authenticated scan execution boundary after project selection is confirmed.

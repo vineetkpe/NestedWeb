@@ -13,7 +13,8 @@
 
 - A real project-creation server action is wired to the workspace page.
 - A project list/load panel exists for the next workspace boundary.
-- Build passes.
+- Project selection is explicit in the list UI and the selected project state is visible.
+- Full verification passes on the current repo state.
 - Workspace route contract regression passes in desktop and mobile Playwright checks.
 
 ## Remaining work

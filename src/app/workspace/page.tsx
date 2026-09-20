@@ -49,7 +49,11 @@ async function createProjectAction(formData: FormData) {
   const projectName = String(formData.get("projectName") ?? "").trim();
   const trackedWebsite = String(formData.get("trackedWebsite") ?? "").trim();
 
-  if (workspaceId.length === 0 || projectName.length === 0 || trackedWebsite.length === 0) {
+  if (
+    workspaceId.length === 0 ||
+    projectName.length === 0 ||
+    trackedWebsite.length === 0
+  ) {
     return;
   }
 
@@ -160,9 +164,9 @@ export default function WorkspaceSetupPage() {
         <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
           <h2 className="text-xl font-semibold">Workspace bootstrap</h2>
           <p className="mt-4 text-muted-foreground">
-            Before any client project can be created, the current signed-in member
-            needs a valid agency workspace identity. This is the tenant boundary for
-            subsequent project and scan records.
+            Before any client project can be created, the current signed-in
+            member needs a valid agency workspace identity. This is the tenant
+            boundary for subsequent project and scan records.
           </p>
 
           <form action={createWorkspaceAction} className="mt-6 space-y-5">
