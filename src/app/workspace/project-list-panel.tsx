@@ -14,13 +14,21 @@ export type ProjectListState = Readonly<{
   projects: readonly ProjectListItem[];
 }>;
 
+export type ProjectScanLaunchState = Readonly<{
+  ok: boolean;
+  message: string;
+}>;
+
 export function ProjectListPanel({
   loadProjectsAction,
+  launchScanAction,
   disabled,
 }: Readonly<{
   loadProjectsAction: (formData: FormData) => Promise<ProjectListState>;
+  launchScanAction: (formData: FormData) => Promise<ProjectScanLaunchState>;
   disabled: boolean;
 }>) {
+  const [workspaceId, setWorkspaceId] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
   );
@@ -31,11 +39,15 @@ export function ProjectListPanel({
   >(
     async (_previousState: ProjectListState, formData: FormData) => {
       const result = await loadProjectsAction(formData);
-      const firstProject = result.projects[0];
+      const nextWorkspaceId = String(formData.get("workspaceId") ?? "");
+      const nextProjectId = result.projects.some(
+        (project) => project.id === selectedProjectId,
+      )
+        ? selectedProjectId
+        : (result.projects[0]?.id ?? null);
 
-      if (firstProject && selectedProjectId === null) {
-        setSelectedProjectId(firstProject.id);
-      }
+      setWorkspaceId(nextWorkspaceId);
+      setSelectedProjectId(nextProjectId);
 
       return {
         ok: result.ok,
@@ -47,6 +59,23 @@ export function ProjectListPanel({
       ok: false,
       message: "",
       projects: [],
+    },
+  );
+
+  const [scanState, launchFormAction, isLaunchPending] = useActionState<
+    ProjectScanLaunchState,
+    FormData
+  >(
+    async (_previousState: ProjectScanLaunchState, formData: FormData) => {
+      const result = await launchScanAction(formData);
+      return {
+        ok: result.ok,
+        message: result.message,
+      };
+    },
+    {
+      ok: false,
+      message: "",
     },
   );
 
@@ -64,6 +93,8 @@ export function ProjectListPanel({
             id="workspace-id-list"
             name="workspaceId"
             type="text"
+            value={workspaceId}
+            onChange={(event) => setWorkspaceId(event.target.value)}
             disabled={disabled}
             placeholder="00000000-0000-4000-8000-000000000000"
             className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -127,8 +158,36 @@ export function ProjectListPanel({
           </ul>
 
           {selectedProjectId ? (
-            <div className="rounded-sm border border-border bg-accent/40 p-3 text-sm text-muted-foreground">
-              Selected project ID: {selectedProjectId}
+            <div className="space-y-3 rounded-sm border border-border bg-accent/40 p-3 text-sm text-muted-foreground">
+              <div>Selected project ID: {selectedProjectId}</div>
+
+              <form action={launchFormAction} className="space-y-3">
+                <input type="hidden" name="workspaceId" value={workspaceId} />
+                <input
+                  type="hidden"
+                  name="projectId"
+                  value={selectedProjectId}
+                />
+                <button
+                  type="submit"
+                  disabled={disabled || isLaunchPending}
+                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLaunchPending ? "Preparing…" : "Prepare project scan"}
+                </button>
+              </form>
+            </div>
+          ) : null}
+
+          {scanState.message ? (
+            <div
+              className={
+                scanState.ok
+                  ? "rounded-sm border border-border bg-accent/40 p-3 text-sm text-muted-foreground"
+                  : "rounded-sm border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive"
+              }
+            >
+              {scanState.message}
             </div>
           ) : null}
         </div>

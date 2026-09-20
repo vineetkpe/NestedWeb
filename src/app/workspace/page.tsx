@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { buildProjectScanLaunchRequest } from "../../application/project-scan-launch.ts";
 import { getWorkspaceProjectSetupStatus } from "../../application/workspace-project-setup.ts";
 import {
   createCurrentUserProject,
@@ -98,6 +99,32 @@ async function loadProjectsAction(formData: FormData) {
       name: project.name,
       trackedDomain: project.trackedDomain,
     })),
+  } as const;
+}
+
+async function prepareProjectScanAction(formData: FormData) {
+  "use server";
+
+  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
+  const projectId = String(formData.get("projectId") ?? "").trim();
+
+  const launch = buildProjectScanLaunchRequest({
+    workspaceId,
+    projectId,
+    workerId: crypto.randomUUID(),
+    leaseSeconds: 60,
+  });
+
+  if (!launch.ok) {
+    return {
+      ok: false,
+      message: "Select a valid workspace and project before preparing a scan.",
+    } as const;
+  }
+
+  return {
+    ok: true,
+    message: `Prepared a bounded scan request for project ${launch.value.projectId}. The live provider remains disabled until the environment is explicitly configured.`,
   } as const;
 }
 
@@ -213,6 +240,7 @@ export default function WorkspaceSetupPage() {
 
           <ProjectListPanel
             loadProjectsAction={loadProjectsAction}
+            launchScanAction={prepareProjectScanAction}
             disabled={!setupStatus.available}
           />
         </section>
