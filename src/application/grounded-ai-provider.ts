@@ -13,12 +13,12 @@ export type GroundedQueryResponse =
 
 export interface GroundedAIProvider {
   readonly capabilities: Readonly<{
-    provider: "gemini";
+    provider: string;
     surface: "api";
-    grounding: "google_search";
+    grounding: string;
     liveExecution: false;
     maxQueries: 1;
-    maxCitations: 50;
+    maxCitations: number;
   }>;
   query(input: unknown, signal?: AbortSignal): Promise<GroundedQueryResponse>;
 }

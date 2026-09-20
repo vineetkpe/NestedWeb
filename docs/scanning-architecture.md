@@ -1,8 +1,8 @@
 # Scanning architecture (proposed)
 
-No scanner or worker is implemented. Start with one grounded provider and a small fixed query cohort after authenticated tenant isolation works. Candidate: durable Postgres job/attempt records and one worker scheduled by the chosen host. Runtime selection remains open. No queue broker, long-running HTTP request, browser scraper, fire-and-forget promise, or in-memory job state is introduced now.
+An in-process single-scan application boundary exists under ADR-012, tested with fake providers. It consumes a supplied profile and 1–10 planned queries sequentially, with per-query outcomes and cancellation; it creates no durable job state or production scan. No worker is implemented. Durable Postgres job/attempt records and one worker remain candidates after authenticated tenant isolation and usage controls work. Runtime selection remains open. No queue broker, long-running HTTP route, browser scraper or fire-and-forget job is introduced.
 
-Existing Level 2 preparation consists of website intake/DNS preflight, a Firecrawl adapter tested with mocked transport and no enabled live path, and pure CompanyProfile extraction from supplied `CrawlResult` text (ARCHITECTURE.md ADR-007–009). These modules have no scanner, persistence, provider observation collection, or route integration. The flow below remains proposed; local extraction does not satisfy live-call authorization or durable evidence prerequisites.
+Existing Level 2 preparation includes website intake/DNS preflight, a Firecrawl adapter with no enabled live path, pure CompanyProfile extraction, deterministic planned prompts, a Gemini boundary with injected test transport, and the in-process runner (ARCHITECTURE.md ADR-007–012). None supplies persistence, live collection authorization, durable evidence or route integration. The durable flow below remains proposed.
 
 ## Flow and states
 

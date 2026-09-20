@@ -41,9 +41,9 @@ export type RawObservation = Readonly<{
   queryId: string;
   queryVersion: string;
   queryText: string;
-  provider: "gemini";
+  provider: string;
   surface: "api";
-  captureVersion: "gemini-generate-content-v1";
+  captureVersion: string;
   captureMode: "injected_transport" | "not_executed";
   requestedModel: string;
   modelVersion: string | null;

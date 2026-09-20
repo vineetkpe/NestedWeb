@@ -46,6 +46,27 @@ export type PromptGenerationResult =
 
 type Term = Readonly<{ text: string; ref: PromptEvidenceReference }>;
 
+export const promptTemplateCategories: Readonly<
+  Record<PromptTemplateVersion, PromptCategory>
+> = {
+  "category@v1": "category-discovery",
+  "service-area@v1": "category-discovery",
+  "best-audience@v1": "best-tools-platforms",
+  "alternatives@v1": "alternatives",
+  "comparison-category@v1": "comparison",
+  "use-case@v1": "use-case-recommendation",
+  "use-case-audience@v1": "use-case-recommendation",
+  "buyer@v1": "buyer-intent",
+};
+
+/** Shared identity rule only; this does not generate or rewrite query text. */
+export function promptQueryId(
+  templateVersion: PromptTemplateVersion,
+  text: string,
+): string {
+  return `niche-prompts-v1:${encodeURIComponent(JSON.stringify([templateVersion, "en", null, text]))}`;
+}
+
 function normalized(value: string): string {
   return value
     .normalize("NFKC")
@@ -114,7 +135,7 @@ export function buildPromptCohort(
     if (prompts.length >= 10 || text.length > 600 || seen.has(key)) return;
     seen.add(key);
     prompts.push({
-      queryId: `niche-prompts-v1:${encodeURIComponent(JSON.stringify([templateVersion, "en", null, text]))}`,
+      queryId: promptQueryId(templateVersion, text),
       category,
       text,
       templateVersion,
