@@ -17,7 +17,7 @@ const observedAt = new Date().toISOString();
 const capabilities = {
   provider: "test-provider",
   surface: "api",
-  grounding: "test-search",
+  grounding: "google_search",
   liveExecution: false,
   maxQueries: 1,
   maxCitations: 50,

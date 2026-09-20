@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+import { getWorkspaceProjectSetupStatus } from "../application/workspace-project-setup.ts";
+
+const setupStatus = getWorkspaceProjectSetupStatus(process.env);
+
 export default function HomePage() {
   return (
     <>
@@ -42,31 +46,52 @@ export default function HomePage() {
             >
               How evidence works
             </a>
-            <Link
-              href="/report"
-              className="inline-flex min-h-11 items-center text-sm font-medium text-accent-foreground underline underline-offset-4"
-            >
-              Explore the report prototype
-            </Link>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                href="/workspace"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-accent-foreground underline underline-offset-4"
+              >
+                Set up workspace
+              </Link>
+              <Link
+                href="/report"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-accent-foreground underline underline-offset-4"
+              >
+                Explore the report prototype
+              </Link>
+            </div>
           </div>
           <aside
             aria-labelledby="observation-title"
             className="flex flex-col gap-4 rounded-md border border-border bg-card p-6 sm:p-8"
           >
             <span className="text-sm font-medium text-muted-foreground">
-              Observation status
+              Workspace setup status
             </span>
             <h2 id="observation-title" className="text-xl font-semibold">
-              No observations collected
+              {setupStatus.available
+                ? "Signed-in workspace flow ready"
+                : "Setup pending"}
             </h2>
-            <p className="text-muted-foreground">
-              This preview contains no visibility results. Monitoring and
-              workspace setup are not available yet.
+            <p className="text-sm font-medium text-muted-foreground">
+              No observations collected
             </p>
-            <p className="border-t border-border pt-4 text-sm text-muted-foreground">
-              Visibility metrics will appear only when they can be supported by
-              recorded answers.
-            </p>
+            <p className="text-muted-foreground">{setupStatus.message}</p>
+            {setupStatus.available ? (
+              <p className="border-t border-border pt-4 text-sm text-muted-foreground">
+                The application can begin a signed-in workspace and project flow
+                when the authenticated user enters a real client project.
+              </p>
+            ) : (
+              <div className="border-t border-border pt-4 text-sm text-muted-foreground">
+                <p>Missing environment values:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {setupStatus.missing.map((key) => (
+                    <li key={key}>{key}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </aside>
         </section>
         <section

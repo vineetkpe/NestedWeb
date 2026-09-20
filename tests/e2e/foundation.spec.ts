@@ -19,6 +19,36 @@ test("shows an honest empty state and lets the reader inspect the methodology", 
   expect(errors).toEqual([]);
 });
 
+test("offers a workspace setup route from the preview page", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Set up workspace" }).click();
+  await expect(page).toHaveURL(/\/workspace$/);
+  await expect(
+    page.getByRole("heading", { name: "Workspace setup" }),
+  ).toBeVisible();
+});
+
+test("shows the next project setup step on the workspace route", async ({
+  page,
+}) => {
+  await page.goto("/workspace");
+  await expect(
+    page.getByRole("heading", { name: "Workspace bootstrap" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Workspace name")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create workspace" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Project setup" }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Current projects" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Load projects" })).toBeVisible();
+  await expect(page.getByLabel("Workspace ID", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Client project name")).toBeVisible();
+  await expect(page.getByLabel("Tracked website")).toBeVisible();
+});
+
 test("supports keyboard navigation and has no automated WCAG AA violations", async ({
   page,
 }) => {

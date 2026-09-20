@@ -1,0 +1,310 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { getWorkspaceProjectSetupStatus } from "../../application/workspace-project-setup.ts";
+import {
+  createCurrentUserProject,
+  listCurrentUserProjects,
+} from "../../infrastructure/supabase/projects-server.ts";
+import { bootstrapCurrentUserWorkspace } from "../../infrastructure/supabase/workspace-bootstrap-server.ts";
+import { ProjectListPanel } from "./project-list-panel.tsx";
+
+export const metadata: Metadata = {
+  title: "Workspace setup — AI Visibility OS",
+};
+
+const setupStatus = getWorkspaceProjectSetupStatus(process.env);
+
+async function createWorkspaceAction(formData: FormData) {
+  "use server";
+
+  if (!setupStatus.available) {
+    return;
+  }
+
+  const workspaceName = String(formData.get("workspaceName") ?? "").trim();
+  if (workspaceName.length === 0) {
+    return;
+  }
+
+  const result = await bootstrapCurrentUserWorkspace({
+    workspaceName,
+    idempotencyKey: crypto.randomUUID(),
+  });
+
+  if (result.ok) {
+    redirect("/workspace");
+  }
+}
+
+async function createProjectAction(formData: FormData) {
+  "use server";
+
+  if (!setupStatus.available) {
+    return;
+  }
+
+  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
+  const projectName = String(formData.get("projectName") ?? "").trim();
+  const trackedWebsite = String(formData.get("trackedWebsite") ?? "").trim();
+
+  if (workspaceId.length === 0 || projectName.length === 0 || trackedWebsite.length === 0) {
+    return;
+  }
+
+  const result = await createCurrentUserProject({
+    workspaceId,
+    name: projectName,
+    website: trackedWebsite,
+    idempotencyKey: crypto.randomUUID(),
+  });
+
+  if (result.ok) {
+    redirect("/workspace");
+  }
+}
+
+async function loadProjectsAction(formData: FormData) {
+  "use server";
+
+  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
+  if (!setupStatus.available || workspaceId.length === 0) {
+    return {
+      ok: false,
+      message: "Provide a valid workspace ID to load project records.",
+      projects: [],
+    } as const;
+  }
+
+  const result = await listCurrentUserProjects({ workspaceId });
+  if (!result.ok) {
+    return {
+      ok: false,
+      message: "Unable to load current projects for this workspace.",
+      projects: [],
+    } as const;
+  }
+
+  return {
+    ok: true,
+    message: `Loaded ${result.projects.length} project${result.projects.length === 1 ? "" : "s"}.`,
+    projects: result.projects.map((project) => ({
+      id: project.projectId,
+      name: project.name,
+      trackedDomain: project.trackedDomain,
+    })),
+  } as const;
+}
+
+export default function WorkspaceSetupPage() {
+  return (
+    <>
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
+          <span className="font-semibold tracking-tight">AI Visibility OS</span>
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center text-sm text-accent-foreground underline underline-offset-4"
+          >
+            Back to product preview
+          </Link>
+        </div>
+      </header>
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16">
+        <div className="mb-8 max-w-2xl">
+          <p className="mb-3 text-sm font-medium text-muted-foreground">
+            Workspace setup
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Workspace setup
+          </h1>
+          <p className="mt-4 text-muted-foreground">
+            This is the next operational boundary before real project and client
+            data are exposed. The app can only begin the authenticated flow when
+            the required Supabase configuration is present.
+          </p>
+        </div>
+
+        <section className="rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Current status</h2>
+          <p className="mt-4 text-sm font-medium text-muted-foreground">
+            {setupStatus.available
+              ? "Signed-in workspace flow ready"
+              : "Setup pending"}
+          </p>
+          <p className="mt-2 text-muted-foreground">{setupStatus.message}</p>
+
+          {setupStatus.available ? (
+            <div className="mt-6 rounded-sm border border-border bg-accent/40 p-4 text-sm text-muted-foreground">
+              The app is ready for the workspace bootstrapping and project setup
+              path once a signed-in member enters a real client project.
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Add the missing environment values before exposing the real
+                workspace flow.
+              </p>
+              <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                {setupStatus.missing.length > 0 ? (
+                  setupStatus.missing.map((key) => <li key={key}>{key}</li>)
+                ) : (
+                  <li>No environment values are missing.</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </section>
+
+        <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Workspace bootstrap</h2>
+          <p className="mt-4 text-muted-foreground">
+            Before any client project can be created, the current signed-in member
+            needs a valid agency workspace identity. This is the tenant boundary for
+            subsequent project and scan records.
+          </p>
+
+          <form action={createWorkspaceAction} className="mt-6 space-y-5">
+            <div className="space-y-2">
+              <label
+                htmlFor="workspace-name"
+                className="text-sm font-medium text-foreground"
+              >
+                Workspace name
+              </label>
+              <input
+                id="workspace-name"
+                name="workspaceName"
+                type="text"
+                disabled={!setupStatus.available}
+                placeholder="Northstar SEO"
+                className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="submit"
+                disabled={!setupStatus.available}
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Create workspace
+              </button>
+              <span className="text-sm text-muted-foreground">
+                {setupStatus.available
+                  ? "Supabase is ready for tenant bootstrap."
+                  : "Complete the required Supabase configuration first."}
+              </span>
+            </div>
+          </form>
+        </section>
+
+        <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Current projects</h2>
+          <p className="mt-4 text-muted-foreground">
+            Review the workspace’s current client projects before creating a new
+            one or selecting an existing brand for future scan work.
+          </p>
+
+          <ProjectListPanel
+            loadProjectsAction={loadProjectsAction}
+            disabled={!setupStatus.available}
+          />
+        </section>
+
+        <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Project setup</h2>
+          <p className="mt-4 text-muted-foreground">
+            The next proof point is a real client project linked to the current
+            workspace. This confirms the agency can create and manage a tracked
+            domain before any report or recommendation logic is exposed.
+          </p>
+
+          <form action={createProjectAction} className="mt-6 space-y-5">
+            <div className="space-y-2">
+              <label
+                htmlFor="workspace-id"
+                className="text-sm font-medium text-foreground"
+              >
+                Workspace ID
+              </label>
+              <input
+                id="workspace-id"
+                name="workspaceId"
+                type="text"
+                disabled={!setupStatus.available}
+                placeholder="00000000-0000-4000-8000-000000000000"
+                className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="project-name"
+                className="text-sm font-medium text-foreground"
+              >
+                Client project name
+              </label>
+              <input
+                id="project-name"
+                name="projectName"
+                type="text"
+                disabled={!setupStatus.available}
+                placeholder="Acme Growth"
+                className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="tracked-website"
+                className="text-sm font-medium text-foreground"
+              >
+                Tracked website
+              </label>
+              <input
+                id="tracked-website"
+                name="trackedWebsite"
+                type="url"
+                disabled={!setupStatus.available}
+                placeholder="https://www.acme.com"
+                className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="submit"
+                disabled={!setupStatus.available}
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Create client project
+              </button>
+              <span className="text-sm text-muted-foreground">
+                {setupStatus.available
+                  ? "Workspace credentials are available."
+                  : "Complete the required Supabase configuration first."}
+              </span>
+            </div>
+          </form>
+        </section>
+
+        <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Next steps</h2>
+          <ol className="mt-6 list-decimal space-y-4 pl-5 text-muted-foreground">
+            <li>Configure the public Supabase URL and publishable key.</li>
+            <li>
+              Verify the workspace and member tables are available in the app
+              tenant.
+            </li>
+            <li>
+              Start the real workspace bootstrap and project creation flow for
+              an authenticated agency member.
+            </li>
+          </ol>
+        </section>
+      </main>
+    </>
+  );
+}
