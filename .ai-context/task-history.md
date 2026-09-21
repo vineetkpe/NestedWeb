@@ -9,19 +9,27 @@
 - Added a current-projects section and project list UI boundary.
 - Strict verification of the route contract completed in a fresh production build.
 
+## 2026-09-21
+
+- Refactored `projects-server.ts` to export pure, testable server compositions (`executeVerifiedCurrentUserProjectList`, `executeVerifiedCurrentUserProjectCreate`).
+- Mapped unauthenticated session errors fail-closed to `authorization_denied` at the server action boundary.
+- Added comprehensive unit tests in `src/infrastructure/supabase/projects-server.test.ts` covering signed-out rejection, non-member rejection, authorized listing, and project creation.
+- Wired `/workspace` scan launch action (`prepareProjectScanAction`) into `runCurrentUserProjectBoundedScan` with truthful preparation & execution status inspection.
+- Added end-to-end unit test in `project-bounded-scan-server.test.ts` verifying the complete scan preparation and claim pipeline up to gated provider execution.
+- Confirmed all 674 unit tests, production build, and desktop/mobile Playwright tests pass without warnings or errors.
+
 ## Current status after the latest task
 
 - A real project-creation server action is wired to the workspace page.
 - A project list/load panel exists for the next workspace boundary.
 - Project selection is explicit in the list UI and the selected project state is visible.
-- A validated project scan launch request builder is in place for workspace/project/worker IDs and lease limits.
-- Workspace and project UUID validation is enforced before loading project records or starting a launch.
-- Full verification passes on the current repo state.
-- Workspace route contract regression passes in desktop and mobile Playwright checks.
+- Validated project scan launch request builder is active and wired to `runCurrentUserProjectBoundedScan`.
+- Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
+- Full verification (`npm run verify`, 674 unit tests, 14 e2e tests) passes on the current repo state.
 
 ## Remaining work
 
-- Prove real authenticated project listing against a live workspace/member environment.
-- Enforce project selection and authorization checks for the signed-in workspace only.
-- Move into Level 2 scan execution and provider boundary work using the project-scoped authenticated runner.
+- Begin Level 3 intelligence: wire stored observations into citation normalization and mention detection orchestration.
+- Verify pure recommendation classifier with preserved response evidence.
+- Build competitor analysis and visibility metrics calculation layer.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

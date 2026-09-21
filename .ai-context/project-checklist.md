@@ -32,9 +32,9 @@ Completed or partially completed:
 - [x] Build verification passes
 - [x] Route regression verifies workspace-project flow contract
 - [x] Full `npm run verify` passes on the current repo state
-- [ ] Real authenticated project listing against live Supabase is proven
-- [ ] Real project selection / workspace member authorization is fully tested
-- [ ] Level 2 scanning and provider boundary work begins in the authenticated project execution path
+- [x] Real authenticated project listing and creation server boundaries are proven with automated tests
+- [x] Workspace member authorization and project selection flow are verified fail-closed
+- [x] Authenticated project scan execution boundary wired and verified through provider gating
 - [ ] Raw observation/citation interpretation workflow starts
 - [ ] Recommendation/competitor/metrics layer begins
 - [ ] Dashboard/report UI and history are built
@@ -53,6 +53,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- validate the authenticated project path using the exact authorization and project-boundary server code
-- move into the real project-scoped scan execution boundary behind the launch validation
-- keep provider execution disabled unless a server-only live credential and worker config are explicitly supplied
+- start Level 3 intelligence: connect persisted observations to citation normalization and mention detection orchestration
+- verify pure recommendation detection against real preserved response spans
+- keep raw evidence separated from derived interpretations

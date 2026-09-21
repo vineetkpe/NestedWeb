@@ -184,15 +184,52 @@ async function prepareProjectScanAction(formData: FormData) {
       } as const;
     }
 
+    if (result.stage === "cancelled") {
+      return {
+        ok: false,
+        message: "The bounded scan was cancelled before completion.",
+      } as const;
+    }
+
     return {
       ok: false,
       message: "The bounded scan was stopped before execution.",
     } as const;
   }
 
+  if (result.scan.state === "not_executed") {
+    return {
+      ok: false,
+      message:
+        "The project scan could not be reserved or claimed in the database.",
+    } as const;
+  }
+
+  const execution = result.scan.execution;
+  if (!execution.ok) {
+    if (execution.stage === "provider_setup") {
+      return {
+        ok: true,
+        message: `Project scan prepared and claimed for ${launch.value.projectId}. Live provider calls remain disabled until server credentials are configured.`,
+      } as const;
+    }
+
+    return {
+      ok: false,
+      message: `Project scan execution stopped at ${execution.stage} stage.`,
+    } as const;
+  }
+
+  if (execution.state === "idle") {
+    return {
+      ok: true,
+      message: `No scan work currently pending for project ${launch.value.projectId}.`,
+    } as const;
+  }
+
   return {
     ok: true,
-    message: `Project scan started for ${launch.value.projectId}. The execution path is configured but live provider execution remains gated until a server-only environment is enabled.`,
+    message: `Project scan completed with state ${execution.state} for ${launch.value.projectId} (${execution.observationIds.length} observations).`,
   } as const;
 }
 
