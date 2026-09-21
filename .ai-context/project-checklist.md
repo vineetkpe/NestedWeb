@@ -44,6 +44,10 @@ Completed or partially completed:
 - [x] Two-server deployment architecture documented (`.ai-context/deployment-architecture.md`)
 - [x] Decoupled standalone marketing landing site in `landing/`
 - [x] SaaS entry / auth gateway (`/login`, `/signup`, and `/` routing)
+- [x] Admin Telemetry Domain and Application Service (`src/domain/admin-telemetry.ts`, `src/application/admin-telemetry.ts`)
+- [x] Dedicated SaaS Admin Dashboard (`/admin`) with Service Telemetry, Queue, and Tenant analytics
+- [x] Enhanced Agency User Dashboard with Project Operations & Customer Actions Panel (`/workspace`)
+- [x] Unified SaaS Navigation Header (`src/app/components/app-header.tsx`)
 - [x] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work

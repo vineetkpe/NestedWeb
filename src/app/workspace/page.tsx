@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { buildProjectScanLaunchRequest } from "../../application/project-scan-launch.ts";
@@ -11,6 +10,7 @@ import {
 import { runCurrentUserProjectBoundedScan } from "../../infrastructure/supabase/project-bounded-scan-server.ts";
 import { bootstrapCurrentUserWorkspace } from "../../infrastructure/supabase/workspace-bootstrap-server.ts";
 import { getWorkspaceQuotaSummary } from "../../application/plan-entitlements.ts";
+import { AppHeader } from "../components/app-header.tsx";
 import {
   PlanUsagePanel,
   type QuotaInspectionResult,
@@ -294,18 +294,18 @@ async function prepareProjectScanAction(formData: FormData) {
 export default function WorkspaceSetupPage() {
   return (
     <>
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
-          <span className="font-semibold tracking-tight">AI Visibility OS</span>
-          <Link
-            href="/"
-            className="inline-flex min-h-11 items-center text-sm text-accent-foreground underline underline-offset-4"
-          >
-            Back to product preview
-          </Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16">
+      <a
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:rounded-sm focus:bg-card focus:p-3"
+        href="#main-workspace"
+      >
+        Skip to content
+      </a>
+      <AppHeader currentSection="workspace" />
+      <main
+        id="main-workspace"
+        tabIndex={-1}
+        className="mx-auto max-w-4xl px-4 py-10 sm:px-8 sm:py-16"
+      >
         <div className="mb-8 max-w-2xl">
           <p className="mb-3 text-sm font-medium text-muted-foreground">
             Workspace setup
