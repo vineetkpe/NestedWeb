@@ -36,7 +36,7 @@ Completed or partially completed:
 - [x] Workspace member authorization and project selection flow are verified fail-closed
 - [x] Authenticated project scan execution boundary wired and verified through provider gating
 - [x] Raw observation citation normalization and brand mention detection orchestration verified (Level 3 Intelligence slice 1)
-- [ ] Recommendation/competitor/metrics layer begins
+- [x] Recommendation interpretation, competitor analysis, and auditable visibility metrics engine verified (Level 3 Intelligence slice 2)
 - [ ] Dashboard/report UI and history are built
 - [ ] Billing / usage limits are implemented
 - [ ] Production deployment work completes
@@ -53,6 +53,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- Implement Level 3 recommendation persistence and competitor mention classification slice
-- Calculate auditable visibility metrics over verified observations and cohorts
-- Keep raw evidence separated from derived interpretations
+- Begin Level 4 Product: wire verified scans, observations, and visibility metrics into the connected customer dashboard and report view
+- Present authentic calculated metrics with traceability back to observation IDs, citations, and evidence spans
+- Preserve truthful empty and unavailable states when scans have not yet been executed

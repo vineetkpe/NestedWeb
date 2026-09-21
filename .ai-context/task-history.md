@@ -22,21 +22,27 @@
 - Implemented `evaluateMentionRecommendations` evaluating positive brand mentions with exact response evidence spans using `detectRecommendationForMention`.
 - Implemented server-only Supabase adapter (`src/infrastructure/supabase-scan-intelligence.ts`) composing citation and mention database RPCs atomically.
 - Created unit test suites (`scan-intelligence.test.ts` and `supabase-scan-intelligence.test.ts`) covering request validation, deduplication, multi-observation aggregation, partial failure isolation, and evidence span extraction.
-- Full verification passed cleanly: 682 unit tests, 14 Playwright e2e tests, 0 lint warnings, clean production build, and 0 audit vulnerabilities.
+- Implemented pure visibility metrics calculation engine (`src/domain/visibility-metrics.ts`) following `report-metrics-v1`:
+  - `calculateMentionRate`: measures percentage of eligible answers with an unambiguous target brand mention.
+  - `calculateRecommendationRate`: measures percentage of eligible answers where target brand was explicitly recommended.
+  - `calculateAiShareOfVoice`: measures target brand's share of total brand mentions across a declared target + competitor set.
+  - `calculateCitationShare`: measures percentage of eligible cited URLs matching the tracked company domain scope with strict hostname/subdomain spoof prevention.
+  - `calculateCompetitorGap`: computes percentage points difference in positive recommendation rate between competitor and target brand.
+  - `calculateScanVisibilityMetrics`: aggregates the complete metrics suite with explicit observation-level exclusion reasons (`observation_unanswered`, `mention_ambiguous`, `recommendation_unknown`, etc.).
+- Implemented application service (`src/application/scan-metrics.ts`) orchestrating metrics calculation from structured observation intelligence records.
+- Added comprehensive unit test suites (`visibility-metrics.test.ts` and `scan-metrics.test.ts`) covering domain boundary rules, spoof prevention, rate rounding, zero-denominator unavailable states, and end-to-end multi-observation scenarios.
+- Full verification passed cleanly: 691 unit tests, 14 Playwright e2e tests, 0 lint warnings, clean production build, and 0 audit vulnerabilities.
 
 ## Current status after the latest task
 
-- A real project-creation server action is wired to the workspace page.
-- A project list/load panel exists for the next workspace boundary.
-- Project selection is explicit in the list UI and the selected project state is visible.
-- Validated project scan launch request builder is active and wired to `runCurrentUserProjectBoundedScan`.
 - Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
-- Level 3 Intelligence orchestration and server-only composition are verified: raw observations remain immutable, citation normalizations and span-accurate brand mentions are derived without fabricating metrics or customer outcomes.
-- Full verification (`npm run verify`, 682 unit tests, 14 e2e tests) passes on the current repo state.
+- Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, and conservative recommendations classified.
+- Auditable visibility metrics engine (`report-metrics-v1`) is proven and verified: metrics strictly expose numerators, denominators, eligible IDs, and exclusions; zero denominators yield honest `unavailable` states rather than fabricated numbers or arbitrary scores.
+- Full verification (`npm run verify`, 691 unit tests, 14 e2e tests) passes on the current repo state.
 
 ## Remaining work
 
-- Implement Level 3 recommendation persistence and competitor mention classification slice.
-- Calculate auditable visibility metrics over verified observations and cohorts.
-- Build dashboard, reports, history, and billing limits.
+- Begin Level 4 Product: connect verified scan observations and auditable visibility metrics into customer-facing dashboard and report views.
+- Implement scan history comparison and recommendation action proposals.
+- Implement Level 5 monetization and billing limits.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.
