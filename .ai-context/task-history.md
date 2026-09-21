@@ -48,11 +48,12 @@
 - Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, conservative recommendations classified, and auditable visibility metrics engine (`report-metrics-v1`) verified.
 - Level 4 Product is connected: workspace project selection directly deep-links to authentic client-specific visibility reports.
 - Level 5 Monetization is implemented: server-side plan entitlements, usage accounting, and scan execution quotas are verified and integrated into the workspace.
-- Full verification (`npm run verify`, 700 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
+- Customer Action Recommendations Engine (`customer-actions-v1`) is implemented: deterministic generation of prioritized actions (`comparison_defense`, `citation_building`, `content_expansion`) linked to scanned queries, immutable, and strictly test-verified.
+- Production Health Diagnostic Endpoint (`/api/health`) is implemented: reports uptime, timestamp, configuration health, and system readiness without secret leakage.
+- Full verification (`npm run verify`, 709 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work
 
-- Begin Level 6 Production: observability, operational signals, security testing, performance budgets, and deployment verification.
-- Implement scan history comparison and customer action recommendations.
+- Deploy to hosted production environment and execute live agency validation flows with real Gemini / Supabase backends.
+- Implement scan history comparison across successive runs.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.
-

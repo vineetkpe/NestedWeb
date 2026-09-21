@@ -39,7 +39,9 @@ Completed or partially completed:
 - [x] Recommendation interpretation, competitor analysis, and auditable visibility metrics engine verified (Level 3 Intelligence slice 2)
 - [x] Connected workspace client project reporting & evidence views built (Level 4 Product)
 - [x] Plan tiers, server-side usage accounting, and scan limits implemented (Level 5 Monetization)
-- [ ] Production deployment and observability hardening (Level 6)
+- [x] Customer action recommendations engine and query linking implemented (`customer-actions-v1`)
+- [x] Production health check diagnostic API endpoint implemented (`/api/health`)
+- [x] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work
 
@@ -53,6 +55,5 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- Begin Level 6 Production: observability, operational signals, security testing, and deployment verification
-- Verify environment deployment variables, graceful degradation, and production build artifact validation
-
+- Deploy to production platform (Vercel/Supabase) and perform staging validation with real agency workflows
+- Monitor production health signals and verify scheduled background worker operations

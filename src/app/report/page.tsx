@@ -356,9 +356,9 @@ export default async function ReportPage(props: ReportPageProps) {
               No evidence-based actions available yet.
             </p>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Each action will identify its reason, target, expected impact,
-              effort, priority, and supporting evidence. Impact will be an
-              explained hypothesis, not a promised ranking improvement.
+              {loadedProject
+                ? `Evidence-based actions will be generated for ${loadedProject.name} once a scan completes, identifying citation authority opportunities, competitor comparison defense, and high-impact content expansion.`
+                : "Each action will identify its reason, target, expected impact, effort, priority, and supporting evidence. Impact will be an explained hypothesis, not a promised ranking improvement."}
             </p>
           </section>
         </div>
