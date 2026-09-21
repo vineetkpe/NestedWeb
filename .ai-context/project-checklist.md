@@ -37,7 +37,7 @@ Completed or partially completed:
 - [x] Authenticated project scan execution boundary wired and verified through provider gating
 - [x] Raw observation citation normalization and brand mention detection orchestration verified (Level 3 Intelligence slice 1)
 - [x] Recommendation interpretation, competitor analysis, and auditable visibility metrics engine verified (Level 3 Intelligence slice 2)
-- [ ] Dashboard/report UI and history are built
+- [x] Connected workspace client project reporting & evidence views built (Level 4 Product)
 - [ ] Billing / usage limits are implemented
 - [ ] Production deployment work completes
 
@@ -53,6 +53,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- Begin Level 4 Product: wire verified scans, observations, and visibility metrics into the connected customer dashboard and report view
-- Present authentic calculated metrics with traceability back to observation IDs, citations, and evidence spans
-- Preserve truthful empty and unavailable states when scans have not yet been executed
+- Begin Level 5 Monetization: implement server-side scan usage quota and plan tier limits
+- Ensure usage limits are atomically checked and reserved before provider execution
+- Prepare production deployment and observability hardening (Level 6)

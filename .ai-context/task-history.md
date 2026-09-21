@@ -31,18 +31,22 @@
   - `calculateScanVisibilityMetrics`: aggregates the complete metrics suite with explicit observation-level exclusion reasons (`observation_unanswered`, `mention_ambiguous`, `recommendation_unknown`, etc.).
 - Implemented application service (`src/application/scan-metrics.ts`) orchestrating metrics calculation from structured observation intelligence records.
 - Added comprehensive unit test suites (`visibility-metrics.test.ts` and `scan-metrics.test.ts`) covering domain boundary rules, spoof prevention, rate rounding, zero-denominator unavailable states, and end-to-end multi-observation scenarios.
-- Full verification passed cleanly: 691 unit tests, 14 Playwright e2e tests, 0 lint warnings, clean production build, and 0 audit vulnerabilities.
+- Implemented Level 4 Product connected reporting in `/report` and `/workspace`:
+  - Updated `ProjectListPanel` with an accessible "View AI Visibility Report →" action carrying workspace and project parameters.
+  - Upgraded `ReportPage` to accept optional `workspaceId` and `projectId` search parameters, safely querying the tenant's projects via `listCurrentUserProjects` while preserving the empty prototype experience when no parameters are present.
+  - Displays authenticated client name, tracked domain, connected client banner, and truthful "Awaiting scan execution" status without fabricating scan observations or metrics.
+  - Passes full test verification: 691 unit tests, 14 Playwright e2e tests (desktop and mobile), 0 lint warnings, clean production build, and 0 audit vulnerabilities.
 
 ## Current status after the latest task
 
 - Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
-- Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, and conservative recommendations classified.
-- Auditable visibility metrics engine (`report-metrics-v1`) is proven and verified: metrics strictly expose numerators, denominators, eligible IDs, and exclusions; zero denominators yield honest `unavailable` states rather than fabricated numbers or arbitrary scores.
+- Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, conservative recommendations classified, and auditable visibility metrics engine (`report-metrics-v1`) verified.
+- Level 4 Product is connected: workspace project selection directly deep-links to authentic client-specific visibility reports.
 - Full verification (`npm run verify`, 691 unit tests, 14 e2e tests) passes on the current repo state.
 
 ## Remaining work
 
-- Begin Level 4 Product: connect verified scan observations and auditable visibility metrics into customer-facing dashboard and report views.
-- Implement scan history comparison and recommendation action proposals.
-- Implement Level 5 monetization and billing limits.
+- Begin Level 5 Monetization: implement server-side scan usage quota, scan limits, and plan tier enforcement before provider execution.
+- Implement scan history comparison and customer action recommendations.
+- Final production delivery and observability hardening (Level 6).
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

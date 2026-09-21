@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 
 export type ProjectListItem = Readonly<{
@@ -161,21 +162,29 @@ export function ProjectListPanel({
             <div className="space-y-3 rounded-sm border border-border bg-accent/40 p-3 text-sm text-muted-foreground">
               <div>Selected project ID: {selectedProjectId}</div>
 
-              <form action={launchFormAction} className="space-y-3">
-                <input type="hidden" name="workspaceId" value={workspaceId} />
-                <input
-                  type="hidden"
-                  name="projectId"
-                  value={selectedProjectId}
-                />
-                <button
-                  type="submit"
-                  disabled={disabled || isLaunchPending}
-                  className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              <div className="flex flex-wrap items-center gap-3">
+                <form action={launchFormAction} className="inline">
+                  <input type="hidden" name="workspaceId" value={workspaceId} />
+                  <input
+                    type="hidden"
+                    name="projectId"
+                    value={selectedProjectId}
+                  />
+                  <button
+                    type="submit"
+                    disabled={disabled || isLaunchPending}
+                    className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isLaunchPending ? "Preparing…" : "Prepare project scan"}
+                  </button>
+                </form>
+                <Link
+                  href={`/report?workspaceId=${encodeURIComponent(workspaceId)}&projectId=${encodeURIComponent(selectedProjectId)}`}
+                  className="inline-flex min-h-11 items-center rounded-sm border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted"
                 >
-                  {isLaunchPending ? "Preparing…" : "Prepare project scan"}
-                </button>
-              </form>
+                  View AI Visibility Report →
+                </Link>
+              </div>
             </div>
           ) : null}
 

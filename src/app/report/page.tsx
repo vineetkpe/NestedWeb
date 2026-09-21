@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { listCurrentUserProjects } from "../../infrastructure/supabase/projects-server.ts";
+
 export const metadata: Metadata = {
   title: "Report prototype — AI Visibility OS",
 };
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const queryTemplates = [
   { kind: "Category discovery", text: "Which platforms serve [category]?" },
@@ -78,7 +83,67 @@ const metricDefinitions = [
   },
 ];
 
-export default function ReportPage() {
+type ReportPageProps = Readonly<{
+  searchParams?: Promise<{
+    workspaceId?: string;
+    projectId?: string;
+  }>;
+}>;
+
+export default async function ReportPage(props: ReportPageProps) {
+  const searchParams = props.searchParams
+    ? await props.searchParams
+    : undefined;
+  const rawWorkspaceId = searchParams?.workspaceId?.trim().toLowerCase();
+  const rawProjectId = searchParams?.projectId?.trim().toLowerCase();
+
+  const workspaceId =
+    rawWorkspaceId && UUID_PATTERN.test(rawWorkspaceId) ? rawWorkspaceId : null;
+  const projectId =
+    rawProjectId && UUID_PATTERN.test(rawProjectId) ? rawProjectId : null;
+
+  let loadedProject: {
+    projectId: string;
+    name: string;
+    trackedDomain: string;
+  } | null = null;
+  let projectLookupError: string | null = null;
+
+  if (workspaceId && projectId) {
+    try {
+      const listResult = await listCurrentUserProjects({ workspaceId });
+      if (listResult.ok) {
+        const found = listResult.projects.find(
+          (p) => p.projectId === projectId,
+        );
+        if (found) {
+          loadedProject = {
+            projectId: found.projectId,
+            name: found.name,
+            trackedDomain: found.trackedDomain,
+          };
+        } else {
+          projectLookupError = "Project not found in this workspace.";
+        }
+      } else {
+        projectLookupError = "Workspace access denied or unavailable.";
+      }
+    } catch {
+      projectLookupError =
+        "Workspace authentication or configuration unavailable.";
+    }
+  }
+
+  const companyName = loadedProject
+    ? loadedProject.name
+    : "Company not selected";
+  const companyDomain = loadedProject
+    ? loadedProject.trackedDomain
+    : "Not provided";
+  const reportDate = loadedProject
+    ? "Awaiting scan execution"
+    : "Not generated";
+
   return (
     <>
       <a
@@ -90,12 +155,21 @@ export default function ReportPage() {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-8">
           <span className="font-semibold">AI Visibility OS</span>
-          <Link
-            href="/"
-            className="inline-flex min-h-11 items-center text-sm text-accent-foreground underline underline-offset-4"
-          >
-            Back to product preview
-          </Link>
+          {loadedProject ? (
+            <Link
+              href="/workspace"
+              className="inline-flex min-h-11 items-center text-sm text-accent-foreground underline underline-offset-4"
+            >
+              Back to workspace
+            </Link>
+          ) : (
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center text-sm text-accent-foreground underline underline-offset-4"
+            >
+              Back to product preview
+            </Link>
+          )}
         </div>
       </header>
       <main
@@ -103,17 +177,36 @@ export default function ReportPage() {
         tabIndex={-1}
         className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12"
       >
+        {projectLookupError ? (
+          <div
+            role="alert"
+            className="mb-8 rounded-sm border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive"
+          >
+            {projectLookupError}
+          </div>
+        ) : null}
+
+        {loadedProject ? (
+          <div className="mb-8 rounded-sm border border-border bg-accent/30 p-4 text-sm text-muted-foreground">
+            Connected client project:{" "}
+            <strong className="font-semibold text-foreground">
+              {loadedProject.name}
+            </strong>{" "}
+            ({loadedProject.trackedDomain}).
+          </div>
+        ) : null}
+
         <div className="mb-8 max-w-2xl">
           <p className="mb-3 text-sm font-medium text-muted-foreground">
-            Report prototype
+            {loadedProject ? "Client report" : "Report prototype"}
           </p>
           <h1 className="text-3xl font-semibold tracking-tight">
             AI visibility report
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Follow a company’s presence from the original answers to the actions
-            they support. This prototype shows the report structure; no company
-            or observations have been added.
+            {loadedProject
+              ? `Follow ${loadedProject.name}’s presence in AI-generated answers from original observations to the evidence-backed actions they support.`
+              : "Follow a company’s presence from the original answers to the actions they support. This prototype shows the report structure; no company or observations have been added."}
           </p>
         </div>
         <nav
@@ -150,17 +243,17 @@ export default function ReportPage() {
             <dl className="mt-6 grid gap-6 sm:grid-cols-3">
               <div>
                 <dt className="text-sm text-muted-foreground">Company name</dt>
-                <dd className="mt-1 font-medium">Company not selected</dd>
+                <dd className="mt-1 font-medium">{companyName}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">
                   Website/domain
                 </dt>
-                <dd className="mt-1">Not provided</dd>
+                <dd className="mt-1">{companyDomain}</dd>
               </div>
               <div>
                 <dt className="text-sm text-muted-foreground">Report date</dt>
-                <dd className="mt-1">Not generated</dd>
+                <dd className="mt-1">{reportDate}</dd>
               </div>
             </dl>
           </section>
