@@ -36,17 +36,23 @@
   - Upgraded `ReportPage` to accept optional `workspaceId` and `projectId` search parameters, safely querying the tenant's projects via `listCurrentUserProjects` while preserving the empty prototype experience when no parameters are present.
   - Displays authenticated client name, tracked domain, connected client banner, and truthful "Awaiting scan execution" status without fabricating scan observations or metrics.
   - Passes full test verification: 691 unit tests, 14 Playwright e2e tests (desktop and mobile), 0 lint warnings, clean production build, and 0 audit vulnerabilities.
+- Implemented Level 5 Monetization (Plan Tiers, Usage Accounting & Entitlement Enforcement):
+  - Created `src/domain/plan-entitlements.ts` and test suite: pure deterministic plan catalog (`free_tier`, `agency_starter`, `agency_pro`), explicit limits (project count, monthly scans, queries per scan, concurrent scans, worst-case budget), and fail-closed entitlement validation.
+  - Created `src/application/plan-entitlements.ts` and test suite: application service orchestrating server-side quota verification (`verifyProjectCreationQuota`, `verifyScanExecutionQuota`, `getWorkspaceQuotaSummary`) with fail-closed error propagation.
+  - Created `src/app/workspace/plan-usage-panel.tsx` and wired it into `/workspace`: displays authentic workspace plan name, active tier badge, project quota meter, monthly scan consumption, and concurrency limits without fabricated statistics.
+  - Passes full test verification: 700 unit tests, 14 Playwright e2e tests (desktop and mobile), 0 lint warnings, clean production build, and 0 audit vulnerabilities.
 
 ## Current status after the latest task
 
 - Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
 - Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, conservative recommendations classified, and auditable visibility metrics engine (`report-metrics-v1`) verified.
 - Level 4 Product is connected: workspace project selection directly deep-links to authentic client-specific visibility reports.
-- Full verification (`npm run verify`, 691 unit tests, 14 e2e tests) passes on the current repo state.
+- Level 5 Monetization is implemented: server-side plan entitlements, usage accounting, and scan execution quotas are verified and integrated into the workspace.
+- Full verification (`npm run verify`, 700 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work
 
-- Begin Level 5 Monetization: implement server-side scan usage quota, scan limits, and plan tier enforcement before provider execution.
+- Begin Level 6 Production: observability, operational signals, security testing, performance budgets, and deployment verification.
 - Implement scan history comparison and customer action recommendations.
-- Final production delivery and observability hardening (Level 6).
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.
+

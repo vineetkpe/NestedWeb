@@ -10,6 +10,11 @@ import {
 } from "../../infrastructure/supabase/projects-server.ts";
 import { runCurrentUserProjectBoundedScan } from "../../infrastructure/supabase/project-bounded-scan-server.ts";
 import { bootstrapCurrentUserWorkspace } from "../../infrastructure/supabase/workspace-bootstrap-server.ts";
+import { getWorkspaceQuotaSummary } from "../../application/plan-entitlements.ts";
+import {
+  PlanUsagePanel,
+  type QuotaInspectionResult,
+} from "./plan-usage-panel.tsx";
 import { ProjectListPanel } from "./project-list-panel.tsx";
 
 export const metadata: Metadata = {
@@ -117,6 +122,59 @@ async function loadProjectsAction(formData: FormData) {
       trackedDomain: project.trackedDomain,
     })),
   } as const;
+}
+
+async function checkWorkspaceQuotaAction(
+  _previousState: QuotaInspectionResult,
+  formData: FormData,
+): Promise<QuotaInspectionResult> {
+  "use server";
+
+  const workspaceId = normalizeUuid(String(formData.get("workspaceId") ?? ""));
+  if (!setupStatus.available || workspaceId === null) {
+    return {
+      ok: false,
+      message: "Provide a valid workspace ID to inspect plan quotas.",
+      summary: null,
+    };
+  }
+
+  const listResult = await listCurrentUserProjects({ workspaceId });
+  if (!listResult.ok) {
+    return {
+      ok: false,
+      message: "Unable to inspect plan quota: workspace access denied.",
+      summary: null,
+    };
+  }
+
+  const quotaResult = await getWorkspaceQuotaSummary(
+    { workspaceId },
+    async (id) => ({
+      ok: true as const,
+      usage: {
+        workspaceId: id,
+        tier: "free_tier" as const,
+        projectCount: listResult.projects.length,
+        monthScans: 0,
+        activeScans: 0,
+      },
+    }),
+  );
+
+  if (!quotaResult.ok) {
+    return {
+      ok: false,
+      message: "Unable to calculate quota summary.",
+      summary: null,
+    };
+  }
+
+  return {
+    ok: true,
+    message: `Loaded plan quotas for workspace ${workspaceId.slice(0, 8)}…`,
+    summary: quotaResult.summary,
+  };
 }
 
 async function prepareProjectScanAction(formData: FormData) {
@@ -348,6 +406,22 @@ export default function WorkspaceSetupPage() {
             launchScanAction={prepareProjectScanAction}
             disabled={!setupStatus.available}
           />
+        </section>
+
+        <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">
+          <h2 className="text-xl font-semibold">Plan & usage accounting</h2>
+          <p className="mt-4 text-muted-foreground">
+            Monitor your agency’s active tier, tracked client capacity, and scan
+            execution limits. Entitlements are strictly verified server-side
+            before provider resources are reserved.
+          </p>
+
+          <div className="mt-6">
+            <PlanUsagePanel
+              checkQuotaAction={checkWorkspaceQuotaAction}
+              disabled={!setupStatus.available}
+            />
+          </div>
         </section>
 
         <section className="mt-8 rounded-md border border-border bg-card p-6 sm:p-8">

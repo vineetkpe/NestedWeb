@@ -38,8 +38,8 @@ Completed or partially completed:
 - [x] Raw observation citation normalization and brand mention detection orchestration verified (Level 3 Intelligence slice 1)
 - [x] Recommendation interpretation, competitor analysis, and auditable visibility metrics engine verified (Level 3 Intelligence slice 2)
 - [x] Connected workspace client project reporting & evidence views built (Level 4 Product)
-- [ ] Billing / usage limits are implemented
-- [ ] Production deployment work completes
+- [x] Plan tiers, server-side usage accounting, and scan limits implemented (Level 5 Monetization)
+- [ ] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work
 
@@ -53,6 +53,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- Begin Level 5 Monetization: implement server-side scan usage quota and plan tier limits
-- Ensure usage limits are atomically checked and reserved before provider execution
-- Prepare production deployment and observability hardening (Level 6)
+- Begin Level 6 Production: observability, operational signals, security testing, and deployment verification
+- Verify environment deployment variables, graceful degradation, and production build artifact validation
+

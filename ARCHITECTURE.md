@@ -12,15 +12,7 @@ Server modules implement Supabase identity verification, workspace authorization
 
 Website normalization/DNS screening and a native pinned HTTPS entry-page crawler exist. Hosted Firecrawl remains closed by default. Company-profile extraction and deterministic prompt generation feed a request-scoped project scan composition. An explicit live Gemini factory exists separately from the closed fixture factory; the scan entry point requires a caller-supplied provider factory and is not exposed through a route or scheduled worker loop.
 
-<<<<<<< HEAD
-The Gemini boundary in ADR-011 captures one query through injected test transport, preserving raw response and citation provenance. Default live execution remains unavailable.
-
-ADR-012 adds an in-process sequential scan runner over supplied profiles/prompts and the provider interface, verified with fake providers. There is no persistent scan, worker, route, live scanning or report integration.
-=======
-
-Citation normalization, entity alias catalogs, and exact mention evidence have application/persistence layers. Recommendation detection currently has a pure classification core only. Visibility metrics, customer action recommendations, historical dashboard/report integration, billing, and production deployment remain unfinished.
-
-> > > > > > > c95a04a46e4a9bace265f04ac8026f16a5e28a35
+The Gemini boundary captures queries through explicit live or test transport, preserving raw response and citation provenance. Citation normalization, entity alias catalogs, and exact mention evidence have application/persistence layers. Auditable visibility metrics (`report-metrics-v1`) and connected client project reporting exist. Customer action recommendations, billing, and production deployment remain unfinished.
 
 ### 2026-09-20 maintenance boundary
 
@@ -145,8 +137,6 @@ Only `candidates[0].groundingMetadata.groundingChunks[*].web` creates citation r
 
 Live execution has no default transport or enablement flag. A server-only injected exchange supports deterministic fixtures only until authorization, reservations, deployment/egress, provider data handling, and billing controls are separately implemented and reviewed. One request, no retries, one active attempt per instance, a 20-second deadline, 2 MiB response cap, and 50 grounding chunks bound this slice. Reuse the crawler's bounded body reader without changing its limits. Oversized, unreadable, or credential-bearing bodies are discarded with an explicit capture state, never silently truncated or redacted and called exact. Normal diagnostics must never serialize request credentials or raw observations.
 
-<<<<<<< HEAD
-
 ## ADR-012: bounded single-scan application orchestration
 
 Status: authorized by the user's single-scan request on 2026-09-10. Level 2 preparation ahead of unfinished authentication, durable storage, usage reservations and live-provider prerequisites. This exception permits only an in-process application runner with supplied CompanyProfile and prompt-library output. No crawling, prompt regeneration, persistence, jobs, routes, UI, interpretation or production scanning. Stop after review and the four required checks; no commit.
@@ -158,9 +148,8 @@ Accept the existing GroundedAIProvider interface as an injected trusted dependen
 Derive reserved observation/attempt IDs from length-prefixed caller scan/attempt IDs and one-based query position, never query text or timestamps. Retain one ordered attempt entry per planned query. Distinguish answered, refused, partial, failed, cancelled and not_attempted states; an invoked provider can itself report not_executed, which retains a failure entry but no fabricated observation. Preserve valid observations from other queries when a provider throws, rejects, fails or returns malformed/mismatched data. No retries. Cancellation prevents every later provider call without erasing a completed active observation. A settled scan means collection attempts settled, not that all answers succeeded or that a report is ready.
 
 Bound and validate provider results before retaining them, including query/observation identity, citation ownership, record states and sizes. Treat all answer/citation/metadata strings as inert data. No URL following, content interpretation, logging or extra tools. Ten records and per-observation size bounds bound retained output. Persistence, distributed concurrency, durable IDs, authorization/reservations and worker recovery remain independent prerequisites; this runner does not supply them.
-=======
 
-## ADR-012: durable prompt cohorts bind scans to profile provenance
+## ADR-012b: durable prompt cohorts bind scans to profile provenance
 
 Status: accepted for C6 on 2026-09-12. The C5 `company_profile_snapshots` row is the immutable evidence source for prompt planning. C6 persists one immutable prompt cohort against that exact tenant/project/profile snapshot rather than regenerating a historical cohort later and assuming it is equivalent. The application recomputes `niche-prompts-v1` from the supplied profile instead of accepting caller-supplied prompts, and PostgreSQL requires the supplied profile payload to equal the stored C5 snapshot before it accepts the cohort.
 
@@ -177,5 +166,3 @@ Status: accepted for D1a/D1b on 2026-09-14. Level 3 begins by separating immutab
 The normalization method may canonicalize only syntax the native WHATWG URL parser establishes. It preserves query parameter order, tracking parameters, paths, fragments, duplicate source occurrences, and the full parsed hostname. It does not infer a registrable domain, redirect target, source equivalence, ownership, support span, claim relationship, brand association, recommendation, or competitor relationship. Invalid, unsupported-scheme, and unsafe URLs remain explicit excluded derived rows rather than disappearing.
 
 Derived rows are append-only for a method version: identical replay is idempotent and conflicting replay fails closed. A narrow service-role RPC validates the exact raw citation identity and the strict derived payload shape; direct table writes remain revoked. Authenticated users have explicit SELECT only through workspace-member RLS, while `anon` has no access. This explicit grant model avoids dependence on Supabase's changing automatic Data API exposure defaults. Application/backfill orchestration that reads raw citations, runs `citation-url-v1`, and calls the persistence RPC is intentionally deferred to D1c.
-
-> > > > > > > c95a04a46e4a9bace265f04ac8026f16a5e28a35
