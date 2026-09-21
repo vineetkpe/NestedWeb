@@ -53,7 +53,8 @@
 - Decoupled Two-Server Architecture is established: documented in `.ai-context/deployment-architecture.md`, with standalone marketing landing site in `landing/` (`nestedweb.com`) and dedicated SaaS application gateway (`app.nestedweb.com`) with `/login`, `/signup`, and direct `/workspace` dashboard access.
 - Admin Telemetry Service and Dedicated Admin Dashboard (`/admin`) are implemented: provides live operational service health, worker queue depth, lease monitoring, and tenant plan distribution (`free_tier`, `agency_starter`, `agency_pro`) without secret exposure.
 - Agency User Dashboard (`/workspace`) is enhanced: includes project operations panel with prompt cohort preview, DNS verification status, and customer action recommendations.
-- Full verification (`npm run verify`, 716 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
+- Live Supabase Authentication is connected: Server Actions (`signInWithPasswordAction`, `signUpAction`, `signInWithOtpAction`, `signOutAction`), domain input validation, and secure PKCE `/auth/callback` route handler with strict open-redirect prevention.
+- Full verification (`npm run verify`, 725 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work
 

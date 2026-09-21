@@ -44,6 +44,8 @@ Completed or partially completed:
 - [x] Two-server deployment architecture documented (`.ai-context/deployment-architecture.md`)
 - [x] Decoupled standalone marketing landing site in `landing/`
 - [x] SaaS entry / auth gateway (`/login`, `/signup`, and `/` routing)
+- [x] Live Supabase Auth actions (`src/application/auth-actions.ts`) & PKCE callback (`src/app/auth/callback/route.ts`)
+- [x] Open-redirect security protection & domain input validation (`src/domain/auth-validation.ts`)
 - [x] Admin Telemetry Domain and Application Service (`src/domain/admin-telemetry.ts`, `src/application/admin-telemetry.ts`)
 - [x] Dedicated SaaS Admin Dashboard (`/admin`) with Service Telemetry, Queue, and Tenant analytics
 - [x] Enhanced Agency User Dashboard with Project Operations & Customer Actions Panel (`/workspace`)
