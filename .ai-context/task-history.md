@@ -18,7 +18,11 @@
 - Added end-to-end unit test in `project-bounded-scan-server.test.ts` verifying the complete scan preparation and claim pipeline up to gated provider execution.
 - Diagnosed CI checkout failure caused by phantom `NestedWeb` submodule entry (mode 160000); removed cached entry and pushed commit `8cda474`.
 - Confirmed GitHub Actions CI run (#35617487687) passed 100% green (`verify` and `database-security` both succeeded).
-- Confirmed all 674 unit tests, production build, and desktop/mobile Playwright tests pass without warnings or errors.
+- Implemented Level 3 Intelligence application orchestration (`src/application/scan-intelligence.ts`) coordinating citation normalization (`normalizePersistedCitations`) and entity mention detection (`detectPersistedMentions`) with fail-closed boundary validation and failure isolation.
+- Implemented `evaluateMentionRecommendations` evaluating positive brand mentions with exact response evidence spans using `detectRecommendationForMention`.
+- Implemented server-only Supabase adapter (`src/infrastructure/supabase-scan-intelligence.ts`) composing citation and mention database RPCs atomically.
+- Created unit test suites (`scan-intelligence.test.ts` and `supabase-scan-intelligence.test.ts`) covering request validation, deduplication, multi-observation aggregation, partial failure isolation, and evidence span extraction.
+- Full verification passed cleanly: 682 unit tests, 14 Playwright e2e tests, 0 lint warnings, clean production build, and 0 audit vulnerabilities.
 
 ## Current status after the latest task
 
@@ -27,11 +31,12 @@
 - Project selection is explicit in the list UI and the selected project state is visible.
 - Validated project scan launch request builder is active and wired to `runCurrentUserProjectBoundedScan`.
 - Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
-- Full verification (`npm run verify`, 674 unit tests, 14 e2e tests) passes on the current repo state.
+- Level 3 Intelligence orchestration and server-only composition are verified: raw observations remain immutable, citation normalizations and span-accurate brand mentions are derived without fabricating metrics or customer outcomes.
+- Full verification (`npm run verify`, 682 unit tests, 14 e2e tests) passes on the current repo state.
 
 ## Remaining work
 
-- Begin Level 3 intelligence: wire stored observations into citation normalization and mention detection orchestration.
-- Verify pure recommendation classifier with preserved response evidence.
-- Build competitor analysis and visibility metrics calculation layer.
+- Implement Level 3 recommendation persistence and competitor mention classification slice.
+- Calculate auditable visibility metrics over verified observations and cohorts.
+- Build dashboard, reports, history, and billing limits.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

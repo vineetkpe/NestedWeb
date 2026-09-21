@@ -35,7 +35,7 @@ Completed or partially completed:
 - [x] Real authenticated project listing and creation server boundaries are proven with automated tests
 - [x] Workspace member authorization and project selection flow are verified fail-closed
 - [x] Authenticated project scan execution boundary wired and verified through provider gating
-- [ ] Raw observation/citation interpretation workflow starts
+- [x] Raw observation citation normalization and brand mention detection orchestration verified (Level 3 Intelligence slice 1)
 - [ ] Recommendation/competitor/metrics layer begins
 - [ ] Dashboard/report UI and history are built
 - [ ] Billing / usage limits are implemented
@@ -53,6 +53,6 @@ Completed or partially completed:
 
 ## The next concrete task
 
-- start Level 3 intelligence: connect persisted observations to citation normalization and mention detection orchestration
-- verify pure recommendation detection against real preserved response spans
-- keep raw evidence separated from derived interpretations
+- Implement Level 3 recommendation persistence and competitor mention classification slice
+- Calculate auditable visibility metrics over verified observations and cohorts
+- Keep raw evidence separated from derived interpretations
