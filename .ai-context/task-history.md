@@ -54,9 +54,11 @@
 - Admin Telemetry Service and Dedicated Admin Dashboard (`/admin`) are implemented: provides live operational service health, worker queue depth, lease monitoring, and tenant plan distribution (`free_tier`, `agency_starter`, `agency_pro`) without secret exposure.
 - Agency User Dashboard (`/workspace`) is enhanced: includes project operations panel with prompt cohort preview, DNS verification status, and customer action recommendations.
 - Live Supabase Authentication is connected: Server Actions (`signInWithPasswordAction`, `signUpAction`, `signInWithOtpAction`, `signOutAction`), domain input validation, and secure PKCE `/auth/callback` route handler with strict open-redirect prevention.
-- Live Supabase cloud project (`ckekmlrybsztcplqaipu`) connected: Auth settings verified 200 OK via REST API, existing `workspaces` and `projects` tables confirmed with active RLS enforcement.
+- Live Supabase cloud project (`ckekmlrybsztcplqaipu`) fully connected: Auth settings verified 200 OK via REST API, service_role administrative access verified 200 OK on `workspaces` table.
 - Live Google Gemini 2.5 Flash API credentials verified working against Google Generative Language API (200 OK).
-- Secure `.env.local` created with project URL, publishable key, and Gemini key (strictly gitignored; 0 secrets tracked or exposed).
+- Updated infrastructure secret validation regexes to support standard Supabase JWT service role keys and Google AI Studio dotted API keys.
+- Production diagnostic health endpoint (`/api/health`) reporting 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
+- Secure `.env.local` configured with project URL, publishable key, service role key, and Gemini key (strictly gitignored; 0 secrets tracked or exposed).
 - Full verification (`npm run verify`, 725 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work

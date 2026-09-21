@@ -50,8 +50,9 @@ Completed or partially completed:
 - [x] Dedicated SaaS Admin Dashboard (`/admin`) with Service Telemetry, Queue, and Tenant analytics
 - [x] Enhanced Agency User Dashboard with Project Operations & Customer Actions Panel (`/workspace`)
 - [x] Unified SaaS Navigation Header (`src/app/components/app-header.tsx`)
-- [x] Live Supabase cloud project connected (`ckekmlrybsztcplqaipu`), Auth verified 200 OK, and tables confirmed
+- [x] Live Supabase cloud project connected (`ckekmlrybsztcplqaipu`), Auth (anon) and Admin (service_role) verified 200 OK
 - [x] Live Google Gemini 2.5 Flash API key connected and verified against Generative Language API
+- [x] Production health diagnostic endpoint reporting 100% healthy (`/api/health` -> healthy)
 - [x] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work

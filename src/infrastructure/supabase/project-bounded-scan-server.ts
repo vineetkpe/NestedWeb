@@ -27,7 +27,8 @@ import {
 } from "./config.ts";
 import { createSupabaseServerClient } from "./server.ts";
 
-const SECRET_KEY_PATTERN = /^sb_secret_[A-Za-z0-9._-]{10,500}$/;
+const SECRET_KEY_PATTERN =
+  /^(?:sb_secret_[A-Za-z0-9._-]{10,500}|eyJ[A-Za-z0-9._-]{20,2000})$/;
 
 type ServerEnvironment = Readonly<Record<string, unknown>>;
 

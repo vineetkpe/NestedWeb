@@ -104,7 +104,7 @@ function buildGeminiProvider(
   const key = (options.env ?? process.env).GEMINI_API_KEY;
   if (key === undefined || key === "")
     return { ok: false, code: "missing_credential" };
-  if (typeof key !== "string" || !/^[a-zA-Z0-9_-]{16,256}$/.test(key))
+  if (typeof key !== "string" || !/^[a-zA-Z0-9._-]{16,256}$/.test(key))
     return { ok: false, code: "invalid_credential" };
   const model = options.model;
   if (
