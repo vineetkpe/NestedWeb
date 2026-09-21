@@ -29,10 +29,11 @@ This folder preserves the working project context so future coding sessions, dif
 
 ## Current repo reality
 
-The app remains in the foundation/product-order slice. The verified work includes the workspace bootstrap flow, the project setup flow, and the project listing/selection state, but the full SaaS report and scan pipeline are still ahead of the current implementation boundary.
+Level 1 foundation and Level 2 scan preparation boundaries are verified and passing. The workspace bootstrap flow, project setup flow, authenticated project listing/selection state, and scan launch wiring are proven locally and in CI. The next focus is Level 3 intelligence: connecting stored observations to citation normalization, entity mention detection, and recommendation classification.
 
 ## Latest verified status
 
-- `npm run verify` passed on the current repo state.
-- The repository is consistent with the actual implemented product boundary: workspace/project foundation is the current proven slice.
-- The next product step is the authenticated scan execution boundary after project selection is confirmed.
+- `npm run verify` passed (674 unit tests, 14 desktop/mobile Playwright e2e tests, clean production build).
+- GitHub Actions CI (`verify` and `database-security`) passed 100% green on commit `8cda474`.
+- Phantom git submodule was removed, resolving CI checkout issues.
+- Next step: Level 3 intelligence pipeline.

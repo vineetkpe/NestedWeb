@@ -15,10 +15,10 @@ This folder is the quick navigation hub for the repository. Use this file first 
 
 ## Quick status
 
-- Current focus: workspace + project boundary before scan/report implementation
-- Current gate: authenticated member/project authorization and project selection
-- Latest repo evidence: `npm run verify` passed on the current codebase
-- Next major step: scan execution boundary after project authorization is proven
+- Current focus: Level 3 intelligence pipeline (raw observations → citations → mentions → recommendations)
+- Current gate: Level 1 & Level 2 foundation & scan boundaries verified (674 unit tests, 14 e2e tests, all CI checks green)
+- Latest repo evidence: GitHub Actions CI passed (`verify` + `database-security`) and `npm run verify` passed
+- Next major step: Level 3 intelligence orchestration (citation normalization and mention detection persistence)
 
 ## Repo links
 

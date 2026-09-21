@@ -16,6 +16,8 @@
 - Added comprehensive unit tests in `src/infrastructure/supabase/projects-server.test.ts` covering signed-out rejection, non-member rejection, authorized listing, and project creation.
 - Wired `/workspace` scan launch action (`prepareProjectScanAction`) into `runCurrentUserProjectBoundedScan` with truthful preparation & execution status inspection.
 - Added end-to-end unit test in `project-bounded-scan-server.test.ts` verifying the complete scan preparation and claim pipeline up to gated provider execution.
+- Diagnosed CI checkout failure caused by phantom `NestedWeb` submodule entry (mode 160000); removed cached entry and pushed commit `8cda474`.
+- Confirmed GitHub Actions CI run (#35617487687) passed 100% green (`verify` and `database-security` both succeeded).
 - Confirmed all 674 unit tests, production build, and desktop/mobile Playwright tests pass without warnings or errors.
 
 ## Current status after the latest task
