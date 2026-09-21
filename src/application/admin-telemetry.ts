@@ -28,11 +28,13 @@ export function createDefaultAdminTelemetryGateway(
             ? env.SUPABASE_URL
             : "";
       const supabaseKey =
-        typeof env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string"
-          ? env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-          : typeof env.SUPABASE_ANON_KEY === "string"
-            ? env.SUPABASE_ANON_KEY
-            : "";
+        typeof env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY === "string"
+          ? env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+          : typeof env.NEXT_PUBLIC_SUPABASE_ANON_KEY === "string"
+            ? env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+            : typeof env.SUPABASE_ANON_KEY === "string"
+              ? env.SUPABASE_ANON_KEY
+              : "";
       const geminiKey =
         typeof env.GEMINI_API_KEY === "string" ? env.GEMINI_API_KEY.trim() : "";
 
