@@ -7,6 +7,7 @@ This folder is the quick navigation hub for the repository. Use this file first 
 - [README.md](README.md) — overview and purpose of the context pack
 - [project-checklist.md](project-checklist.md) — current checklist and next deliverables
 - [task-history.md](task-history.md) — what has been completed and what remains
+- [deployment-architecture.md](deployment-architecture.md) — 2-server architecture (landing on nestedweb.com vs SaaS on app.nestedweb.com)
 
 ## Rules and guardrails
 
@@ -15,10 +16,8 @@ This folder is the quick navigation hub for the repository. Use this file first 
 
 ## Quick status
 
-- Current focus: Level 3 intelligence pipeline (raw observations → citations → mentions → recommendations)
-- Current gate: Level 1 & Level 2 foundation & scan boundaries verified (674 unit tests, 14 e2e tests, all CI checks green)
-- Latest repo evidence: GitHub Actions CI passed (`verify` + `database-security`) and `npm run verify` passed
-- Next major step: Level 3 intelligence orchestration (citation normalization and mention detection persistence)
+- Current focus: Level 6 production deployment & decoupling (marketing landing on separate CDN, SaaS auth gateway on app.nestedweb.com)
+- Current gate: 709 unit tests, 14 e2e tests, 0 lint warnings, 0 type errors, 0 audit vulnerabilities passing cleanly
 
 ## Repo links
 

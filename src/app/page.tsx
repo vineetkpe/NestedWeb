@@ -16,7 +16,20 @@ export default function HomePage() {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-8">
           <span className="font-semibold tracking-tight">AI Visibility OS</span>
-          <span className="text-sm text-muted-foreground">Product preview</span>
+          <div className="flex items-center gap-4 text-sm">
+            <Link
+              href="/login"
+              className="text-foreground hover:text-accent-foreground"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="rounded-sm bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:bg-primary-hover"
+            >
+              Register
+            </Link>
+          </div>
         </div>
       </header>
       <main
@@ -40,12 +53,20 @@ export default function HomePage() {
               with what was observed, then trace each insight back to its
               source.
             </p>
-            <a
-              href="#methodology"
-              className="inline-flex min-h-11 items-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover"
-            >
-              How evidence works
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/login"
+                className="inline-flex min-h-11 items-center rounded-sm bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-hover"
+              >
+                Sign In to Platform →
+              </Link>
+              <a
+                href="#methodology"
+                className="inline-flex min-h-11 items-center rounded-sm border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-muted"
+              >
+                How evidence works
+              </a>
+            </div>
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/workspace"

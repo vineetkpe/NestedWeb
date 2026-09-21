@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      NestedWeb — The AI Search Visibility Operating System for Agencies
+    </title>
+    <meta
+      name="description"
+      content="Audit, track, and optimize how Gemini, ChatGPT, and Perplexity cite and mention your B2B SaaS clients. Evidence-backed AI visibility intelligence."
+    />
+
+    <!-- Open Graph / Meta -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://nestedweb.com/" />
+    <meta
+      property="og:title"
+      content="NestedWeb — AI Visibility OS for B2B SaaS Agencies"
+    />
+    <meta
+      property="og:description"
+      content="Evidence-first AI visibility auditing. Track raw citations, brand mentions, and competitor recommendations with zero guesswork."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #090d16;
+        --bg-card: rgba(18, 26, 43, 0.75);
+        --bg-card-hover: rgba(26, 38, 64, 0.85);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-focus: rgba(99, 102, 241, 0.6);
+        --primary: #6366f1;
+        --primary-hover: #4f46e5;
+        --primary-glow: rgba(99, 102, 241, 0.25);
+        --accent-cyan: #06b6d4;
+        --accent-emerald: #10b981;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --text-dim: #64748b;
+        --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        line-height: 1.6;
+        overflow-x: hidden;
+        background-image:
+          radial-gradient(
+            ellipse 80% 50% at 50% -20%,
+            rgba(99, 102, 241, 0.18),
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 80% 60%,
+            rgba(6, 182, 212, 0.08),
+            transparent 60%
+          );
+      }
+
+      /* Container */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      /* Header & Nav */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(9, 13, 22, 0.75);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 4.5rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 700;
+        font-size: 1.25rem;
+        letter-spacing: -0.02em;
+      }
+
+      .logo-badge {
+        width: 2rem;
+        height: 2rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.9rem;
+        color: #ffffff;
+        box-shadow: 0 0 16px var(--primary-glow);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem;
+        font-size: 0.925rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        border: 1px solid transparent;
+      }
+
+      .btn-ghost {
+        color: var(--text);
+        background: transparent;
+        border-color: var(--border);
+      }
+
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #4338ca);
+        color: #ffffff;
+        box-shadow: 0 4px 20px var(--primary-glow);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+      }
+
+      .btn-lg {
+        padding: 0.85rem 1.75rem;
+        font-size: 1.05rem;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 6rem 0 4rem;
+        text-align: center;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 1rem;
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #a5b4fc;
+        margin-bottom: 1.75rem;
+      }
+
+      .pill-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background-color: var(--accent-emerald);
+        box-shadow: 0 0 8px var(--accent-emerald);
+      }
+
+      .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4.25rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.12;
+        max-width: 900px;
+        margin: 0 auto 1.5rem;
+      }
+
+      .gradient-text {
+        background: linear-gradient(
+          135deg,
+          #ffffff 30%,
+          #a5b4fc 70%,
+          var(--accent-cyan) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 720px;
+        margin: 0 auto 2.5rem;
+        font-weight: 400;
+      }
+
+      .hero-cta-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 4rem;
+      }
+
+      /* Evidence Showcase Window */
+      .showcase {
+        max-width: 1050px;
+        margin: 0 auto 6rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+      }
+
+      .showcase-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        background: rgba(13, 19, 33, 0.9);
+      }
+
+      .window-dots {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .window-dot {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 50%;
+      }
+
+      .dot-red {
+        background: #ef4444;
+      }
+      .dot-yellow {
+        background: #f59e0b;
+      }
+      .dot-green {
+        background: #10b981;
+      }
+
+      .showcase-title {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        color: var(--text-dim);
+      }
+
+      .showcase-content {
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        text-align: left;
+      }
+
+      @media (max-width: 860px) {
+        .showcase-content {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .terminal-card {
+        background: rgba(9, 13, 22, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
+
+      .terminal-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--accent-cyan);
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .code-line {
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+      }
+
+      .highlight-cite {
+        color: var(--accent-emerald);
+        background: rgba(16, 185, 129, 0.1);
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.25rem;
+      }
+
+      .highlight-brand {
+        color: #a5b4fc;
+        font-weight: 600;
+      }
+
+      /* Value Pillars / Feature Grid */
+      .section-title-wrap {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto 3.5rem;
+      }
+
+      .section-tag {
+        color: var(--accent-cyan);
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.5rem;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        margin-bottom: 1rem;
+      }
+
+      .section-desc {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 6rem;
+      }
+
+      .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 2rem;
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--border-focus);
+        background: var(--bg-card-hover);
+      }
+
+      .feature-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background: rgba(99, 102, 241, 0.15);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1.5rem;
+        color: #a5b4fc;
+      }
+
+      .feature-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+      }
+
+      .feature-text {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      /* Pricing Section */
+      .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 6rem;
+        align-items: stretch;
+      }
+
+      .pricing-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 1.25rem;
+        padding: 2.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .pricing-featured {
+        border-color: var(--primary);
+        background: linear-gradient(
+          180deg,
+          rgba(30, 41, 75, 0.8),
+          rgba(18, 26, 43, 0.85)
+        );
+        box-shadow: 0 0 35px var(--primary-glow);
+      }
+
+      .badge-pop {
+        position: absolute;
+        top: -0.85rem;
+        right: 1.5rem;
+        background: var(--primary);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .plan-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .plan-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        min-height: 2.8rem;
+      }
+
+      .plan-price {
+        display: flex;
+        align-items: baseline;
+        gap: 0.35rem;
+        margin-bottom: 2rem;
+      }
+
+      .price-amount {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .price-period {
+        color: var(--text-dim);
+        font-size: 1rem;
+      }
+
+      .plan-features {
+        list-style: none;
+        margin-bottom: 2.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+      }
+
+      .plan-features li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        color: var(--text);
+      }
+
+      .check-icon {
+        color: var(--accent-emerald);
+        flex-shrink: 0;
+        font-weight: bold;
+      }
+
+      /* CTA Banner */
+      .cta-banner {
+        background: linear-gradient(
+          135deg,
+          rgba(30, 41, 75, 0.9),
+          rgba(18, 26, 43, 0.9)
+        );
+        border: 1px solid var(--border-focus);
+        border-radius: 1.5rem;
+        padding: 4rem 2rem;
+        text-align: center;
+        margin-bottom: 6rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 4rem 0 2rem;
+        color: var(--text-dim);
+        font-size: 0.9rem;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 3rem;
+        margin-bottom: 3rem;
+      }
+
+      @media (max-width: 768px) {
+        .footer-grid {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          display: none;
+        }
+      }
+
+      .footer-col h4 {
+        color: var(--text);
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+      }
+
+      .footer-col ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .footer-col a {
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .footer-col a:hover {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header>
+      <div class="container nav-inner">
+        <a href="/" class="logo" id="nav-logo">
+          <div class="logo-badge">NW</div>
+          <span>NestedWeb</span>
+        </a>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#evidence">Methodology</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+        <div class="nav-actions">
+          <!-- Direct links to the SaaS platform on app.nestedweb.com -->
+          <a
+            href="https://app.nestedweb.com/login"
+            class="btn btn-ghost"
+            id="nav-login-btn"
+            >Sign In</a
+          >
+          <a
+            href="https://app.nestedweb.com/signup"
+            class="btn btn-primary"
+            id="nav-signup-btn"
+            >Start Free Pilot</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="pill">
+          <span class="pill-dot"></span>
+          <span>AI Visibility OS for B2B SaaS Agencies</span>
+        </div>
+        <h1 class="hero-title">
+          Every AI Answer <span class="gradient-text">Needs Evidence.</span>
+        </h1>
+        <p class="hero-subtitle">
+          Stop guessing how Gemini, Perplexity, and ChatGPT cite your clients.
+          Audit real generative responses, detect competitor mentions with
+          character-span accuracy, and execute auditable SEO playbooks.
+        </p>
+        <div class="hero-cta-group">
+          <a
+            href="https://app.nestedweb.com/signup"
+            class="btn btn-primary btn-lg"
+            id="hero-get-started-btn"
+          >
+            Launch Agency Platform →
+          </a>
+          <a
+            href="#evidence"
+            class="btn btn-ghost btn-lg"
+            id="hero-evidence-btn"
+          >
+            Inspect Architecture
+          </a>
+        </div>
+
+        <!-- Live Terminal / Evidence Showcase -->
+        <div class="showcase" id="evidence">
+          <div class="showcase-header">
+            <div class="window-dots">
+              <span class="window-dot dot-red"></span>
+              <span class="window-dot dot-yellow"></span>
+              <span class="window-dot dot-green"></span>
+            </div>
+            <span class="showcase-title"
+              >intelligence/gemini-pro-evidence.json</span
+            >
+            <span style="font-size: 0.75rem; color: var(--accent-emerald)"
+              >● VERIFIED_IMMUTABLE</span
+            >
+          </div>
+          <div class="showcase-content">
+            <div class="terminal-card">
+              <div class="terminal-label">
+                <span>Query Fact Observation</span>
+                <span>Gemini 2.5 Flash</span>
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">query:</span> "best SOC2 compliance
+                automation for B2B SaaS"
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">observation:</span> "Leading
+                solutions include
+                <span class="highlight-brand">Acme Security</span> and Vanta,
+                which automate audit readiness..."
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">detected_mention:</span>
+                <span class="highlight-cite"
+                  >[span: 24..37, verified: true]</span
+                >
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">citations_found:</span> 4
+                authoritative sources
+              </div>
+            </div>
+            <div class="terminal-card">
+              <div class="terminal-label">
+                <span>Action Recommendation Engine</span>
+                <span>customer-actions-v1</span>
+              </div>
+              <div class="code-line">
+                <span style="color: #f59e0b">● ACTION:</span> comparison_defense
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">impact:</span>
+                <span style="color: #10b981; font-weight: 700">HIGH</span> |
+                <span style="color: #64748b">effort:</span> MEDIUM
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">hypothesis:</span> "Competitor
+                featured prominently in comparison queries. Build alternative
+                battlecard."
+              </div>
+              <div class="code-line">
+                <span style="color: #64748b">evidence_hash:</span>
+                <span style="color: #a5b4fc">sha256:7f8a91b...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Value Pillars -->
+    <section class="container" id="features">
+      <div class="section-title-wrap">
+        <div class="section-tag">Agency Architecture</div>
+        <h2 class="section-title">Built for Real Agency Workflows</h2>
+        <p class="section-desc">
+          From domain intake to automated client evidence reports, every feature
+          is designed to protect your agency's credibility.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3 class="feature-name">Zero-Hallucination Evidence</h3>
+          <p class="feature-text">
+            We never fabricate visibility scores or AI citations. Every metric
+            links directly to immutable raw Gemini API observations stored with
+            cryptographically verified hashes.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3 class="feature-name">Span-Accurate Mention Auditing</h3>
+          <p class="feature-text">
+            Identify exact brand aliases, competitor co-occurrences, and
+            sentiment tone with precise character offsets across complex
+            generative summaries.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-name">Actionable Client Playbooks</h3>
+          <p class="feature-text">
+            Generate prioritized recommendations: comparison defense, citation
+            building, and content expansion with estimated agency effort and
+            query linkages.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏢</div>
+          <h3 class="feature-name">Strict Multi-Tenant Isolation</h3>
+          <p class="feature-text">
+            Secure your client roster with Supabase Postgres Row-Level Security,
+            workspace tenant boundaries, and fail-closed member authorization.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3 class="feature-name">Cost Reservation & Budgeting</h3>
+          <p class="feature-text">
+            Pre-flight cost estimation and token limits ensure your agency never
+            faces surprise provider bills during large-scale competitive scans.
+          </p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-name">Shareable Client Reports</h3>
+          <p class="feature-text">
+            Deliver clean, accessible visibility reports that prove the ROI of
+            your GEO (Generative Engine Optimization) initiatives directly to
+            CMOs and founders.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="container" id="pricing">
+      <div class="section-title-wrap">
+        <div class="section-tag">Transparent Monetization</div>
+        <h2 class="section-title">Agency Plans Built to Scale</h2>
+        <p class="section-desc">
+          Straightforward project limits and monthly scan allowances with zero
+          hidden fees.
+        </p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free Pilot -->
+        <div class="pricing-card">
+          <h3 class="plan-title">Free Pilot</h3>
+          <p class="plan-desc">
+            For validating visibility auditing on a single flagship SaaS client.
+          </p>
+          <div class="plan-price">
+            <span class="price-amount">$0</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="plan-features">
+            <li>
+              <span class="check-icon">✓</span> <strong>1</strong> Client
+              Project
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>5</strong> AI Scans per
+              month
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>5</strong> Search
+              Queries per scan
+            </li>
+            <li><span class="check-icon">✓</span> 1 Concurrent Worker</li>
+            <li>
+              <span class="check-icon">✓</span> Full Evidence & Citation Reports
+            </li>
+          </ul>
+          <a
+            href="https://app.nestedweb.com/signup?plan=free_tier"
+            class="btn btn-ghost"
+            id="pricing-free-btn"
+            >Start Free Pilot</a
+          >
+        </div>
+
+        <!-- Agency Starter -->
+        <div class="pricing-card pricing-featured">
+          <div class="badge-pop">Most Popular</div>
+          <h3 class="plan-title">Agency Starter</h3>
+          <p class="plan-desc">
+            Ideal for boutique SEO and GEO agencies managing multiple B2B
+            clients.
+          </p>
+          <div class="plan-price">
+            <span class="price-amount">$299</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="plan-features">
+            <li>
+              <span class="check-icon">✓</span> <strong>5</strong> Client
+              Projects
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>50</strong> AI Scans per
+              month
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>10</strong> Search
+              Queries per scan
+            </li>
+            <li><span class="check-icon">✓</span> 3 Concurrent Workers</li>
+            <li>
+              <span class="check-icon">✓</span> Priority Customer Actions Engine
+            </li>
+            <li>
+              <span class="check-icon">✓</span> White-Label Client Reports
+            </li>
+          </ul>
+          <a
+            href="https://app.nestedweb.com/signup?plan=agency_starter"
+            class="btn btn-primary"
+            id="pricing-starter-btn"
+            >Upgrade to Starter</a
+          >
+        </div>
+
+        <!-- Agency Pro -->
+        <div class="pricing-card">
+          <h3 class="plan-title">Agency Pro</h3>
+          <p class="plan-desc">
+            For established growth agencies requiring enterprise scale and
+            volume.
+          </p>
+          <div class="plan-price">
+            <span class="price-amount">$899</span>
+            <span class="price-period">/month</span>
+          </div>
+          <ul class="plan-features">
+            <li>
+              <span class="check-icon">✓</span> <strong>25</strong> Client
+              Projects
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>250</strong> AI Scans
+              per month
+            </li>
+            <li>
+              <span class="check-icon">✓</span> <strong>10</strong> Search
+              Queries per scan
+            </li>
+            <li><span class="check-icon">✓</span> 5 Concurrent Workers</li>
+            <li>
+              <span class="check-icon">✓</span> Dedicated Account & Priority SLA
+            </li>
+            <li>
+              <span class="check-icon">✓</span> Custom Competitor Extraction
+            </li>
+          </ul>
+          <a
+            href="https://app.nestedweb.com/signup?plan=agency_pro"
+            class="btn btn-ghost"
+            id="pricing-pro-btn"
+            >Get Agency Pro</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="container">
+      <div class="cta-banner">
+        <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem">
+          Ready to Prove Your Agency's AI Visibility Value?
+        </h2>
+        <p
+          style="
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            font-size: 1.1rem;
+          "
+        >
+          Get started with a free pilot workspace today. No credit card
+          required.
+        </p>
+        <a
+          href="https://app.nestedweb.com/signup"
+          class="btn btn-primary btn-lg"
+          id="bottom-cta-btn"
+          >Create Free Workspace →</a
+        >
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <div class="logo" style="margin-bottom: 1rem">
+              <div class="logo-badge">NW</div>
+              <span>NestedWeb</span>
+            </div>
+            <p style="color: var(--text-muted); max-width: 350px">
+              The AI Visibility Operating System for SEO & GEO agencies.
+              Evidence-first observation, citation tracking, and competitive
+              intelligence.
+            </p>
+          </div>
+          <div class="footer-col">
+            <h4>Platform</h4>
+            <ul>
+              <li><a href="https://app.nestedweb.com/login">Sign In</a></li>
+              <li>
+                <a href="https://app.nestedweb.com/signup">Create Workspace</a>
+              </li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Legal & Security</h4>
+            <ul>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#">Security Statement</a></li>
+              <li>
+                <a href="https://app.nestedweb.com/api/health">System Status</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          style="
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+          "
+        >
+          <span>© 2026 NestedWeb Inc. All rights reserved.</span>
+          <span>Hosted globally on Edge CDN.</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

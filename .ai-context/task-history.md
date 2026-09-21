@@ -50,6 +50,7 @@
 - Level 5 Monetization is implemented: server-side plan entitlements, usage accounting, and scan execution quotas are verified and integrated into the workspace.
 - Customer Action Recommendations Engine (`customer-actions-v1`) is implemented: deterministic generation of prioritized actions (`comparison_defense`, `citation_building`, `content_expansion`) linked to scanned queries, immutable, and strictly test-verified.
 - Production Health Diagnostic Endpoint (`/api/health`) is implemented: reports uptime, timestamp, configuration health, and system readiness without secret leakage.
+- Decoupled Two-Server Architecture is established: documented in `.ai-context/deployment-architecture.md`, with standalone marketing landing site in `landing/` (`nestedweb.com`) and dedicated SaaS application gateway (`app.nestedweb.com`) with `/login`, `/signup`, and direct `/workspace` dashboard access.
 - Full verification (`npm run verify`, 709 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work

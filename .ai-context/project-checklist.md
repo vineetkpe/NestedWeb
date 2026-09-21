@@ -41,6 +41,9 @@ Completed or partially completed:
 - [x] Plan tiers, server-side usage accounting, and scan limits implemented (Level 5 Monetization)
 - [x] Customer action recommendations engine and query linking implemented (`customer-actions-v1`)
 - [x] Production health check diagnostic API endpoint implemented (`/api/health`)
+- [x] Two-server deployment architecture documented (`.ai-context/deployment-architecture.md`)
+- [x] Decoupled standalone marketing landing site in `landing/`
+- [x] SaaS entry / auth gateway (`/login`, `/signup`, and `/` routing)
 - [x] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work
