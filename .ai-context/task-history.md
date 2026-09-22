@@ -76,6 +76,10 @@
   - Configured production security headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Strict-Transport-Security`.
 - Performed Cloud Staging Verification:
   - Executed scan worker directly against live Supabase cloud database (`ckekmlrybsztcplqaipu`), successfully calling PostgREST RPC `claim_scan_work` and confirming `{ ok: true, state: "idle" }`.
+- Created Scan Controls Auto-Provisioning Migration (`supabase/migrations/20260922200000_scan_controls_auto_provisioning.sql`):
+  - Configures Gemini 2.5 Flash provider pricing (`scan_provider_configs`) and metering (`scan_provider_metering_configs`).
+  - Sets up automated PostgreSQL triggers on `public.workspaces` and `public.projects` to automatically initialize scan controls with valid budget windows for any new workspace/project.
+  - Backfills scan controls for existing workspaces and projects.
 
 ## Current status after the latest task
 
