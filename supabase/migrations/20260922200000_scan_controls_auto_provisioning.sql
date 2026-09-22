@@ -14,8 +14,8 @@ insert into app_private.scan_provider_configs (
   enabled
 ) values (
   'gemini',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-v1',
+  'gemini-3.6-flash',
+  'gemini-3.6-flash-v1',
   'USD',
   20000,
   8192,
@@ -37,8 +37,8 @@ insert into app_private.scan_provider_metering_configs (
   search_microunits_per_thousand_queries
 ) values (
   'gemini',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-v1',
+  'gemini-3.6-flash',
+  'gemini-3.6-flash-v1',
   'gross_list_price',
   75000,
   300000,
@@ -70,8 +70,8 @@ begin
   ) values (
     NEW.id,
     'gemini',
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-v1',
+    'gemini-3.6-flash',
+    'gemini-3.6-flash-v1',
     true,
     10,
     2,
@@ -154,8 +154,8 @@ insert into app_private.workspace_scan_controls (
 select
   w.id,
   'gemini',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-v1',
+  'gemini-3.6-flash',
+  'gemini-3.6-flash-v1',
   true,
   10,
   2,
