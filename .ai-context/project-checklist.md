@@ -85,7 +85,8 @@ The repo stays in the strict product-order sequence:
 - [x] Verified zero fabrication: all evidence, attempts, and observations accurately recorded in database without mock data
 - [ ] Enable billing / pay-as-you-go on Google AI Studio project to unlock Google Search Grounding quota for full grounded responses
 - [ ] Re-run scan with active search grounding quota to observe live brand mentions and recommendations
-- [ ] Inspect connected report display on `/report?workspaceId=...&projectId=...`
+- [x] Inspect connected report display on `/report?workspaceId=...&projectId=...`:
+  - Verified live client project banner, synthesized queries, and raw observations table with SHA-256 digests
 - [x] Commit and sync verified codebase to GitHub repository (`origin/main`)
 
 ---
