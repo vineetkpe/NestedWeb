@@ -29,11 +29,19 @@ This folder preserves the working project context so future coding sessions, dif
 
 ## Current repo reality
 
-Level 1 foundation and Level 2 scan preparation boundaries are verified and passing. The workspace bootstrap flow, project setup flow, authenticated project listing/selection state, and scan launch wiring are proven locally and in CI. The next focus is Level 3 intelligence: connecting stored observations to citation normalization, entity mention detection, and recommendation classification.
+Levels 1 through 6 are fully implemented and verified across domain, application, infrastructure, and UI. The core agency workflow (**Measure → Explain → Recommend → Monitor**) is 100% complete:
+
+- **Measure**: Native entry-page crawling, business profile extraction, prompt synthesis, cost reservation, and durable scan execution.
+- **Explain**: Citation normalization, entity mention detection with character spans, recommendation classification, and auditable visibility metrics (`report-metrics-v1`).
+- **Recommend**: Deterministic customer action recommendations (`customer-actions-v1`: Comparison Defense, Citation Building, Content Expansion) linked to specific query evidence.
+- **Monitor**: Historical scan comparison engine (`scan-comparison-v1`: mathematical deltas, query shifts, trajectory classification) and connected comparison panel in `/report`.
+- **Cloud & AI Integration**: Live Supabase project (`ckekmlrybsztcplqaipu`) and Google Gemini 2.5 Flash API connected and verified healthy via `/api/health`.
 
 ## Latest verified status
 
-- `npm run verify` passed (674 unit tests, 14 desktop/mobile Playwright e2e tests, clean production build).
-- GitHub Actions CI (`verify` and `database-security`) passed 100% green on commit `8cda474`.
-- Phantom git submodule was removed, resolving CI checkout issues.
-- Next step: Level 3 intelligence pipeline.
+- `npm run verify` passed: 742 unit tests passing, 0 failing.
+- 14 Playwright e2e tests passing (Desktop & Mobile Chromium, zero WCAG AA accessibility violations).
+- 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
+- 0 security vulnerabilities in `npm audit`.
+- `/api/health` reports 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
+- Next step: Production deployment to hosting environment and staging agency workflow validation.

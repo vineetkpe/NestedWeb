@@ -42,31 +42,58 @@
   - Created `src/app/workspace/plan-usage-panel.tsx` and wired it into `/workspace`: displays authentic workspace plan name, active tier badge, project quota meter, monthly scan consumption, and concurrency limits without fabricated statistics.
   - Passes full test verification: 700 unit tests, 14 Playwright e2e tests (desktop and mobile), 0 lint warnings, clean production build, and 0 audit vulnerabilities.
 
+## 2026-09-22
+
+- Implemented Production Health Diagnostic Endpoint (`/api/health`) reporting uptime, timestamp, configuration status, and system readiness without secret exposure.
+- Documented Two-Server Decoupled Architecture (`.ai-context/deployment-architecture.md`) with standalone marketing landing site in `landing/` (`nestedweb.com`) and dedicated SaaS application gateway (`app.nestedweb.com`).
+- Implemented SaaS Auth Gateway (`/login`, `/signup`, `/`) with Live Supabase Auth actions (`src/application/auth-actions.ts`), secure PKCE callback (`src/app/auth/callback/route.ts`), and open-redirect protection (`src/domain/auth-validation.ts`).
+- Built dedicated SaaS Admin Dashboard (`/admin`) with Service Telemetry, Queue Depth, Lease Monitoring, and Tenant Plan Distribution analytics.
+- Built Enhanced Agency User Dashboard with Project Operations & Customer Actions Panel (`/workspace`).
+- Connected live Supabase cloud backend (`ckekmlrybsztcplqaipu`):
+  - Verified `/auth/v1/settings` returns HTTP 200 OK (email auth enabled).
+  - Verified PostgREST `service_role` admin access on `workspaces` table (HTTP 200 OK).
+  - Verified PostgreSQL RPC functions (`public.create_workspace`, etc.) with RLS enforcement (HTTP 42501 for unauthorized calls).
+- Connected live Google Gemini 2.5 Flash API credentials, verified against Google Generative Language API (HTTP 200 OK).
+- Updated infrastructure credential patterns in `src/infrastructure/gemini.ts` and `src/infrastructure/supabase/` to support dotted Gemini API keys (`[a-zA-Z0-9._-]`) and standard Supabase JWT service role keys (`eyJ...`).
+- Verified production health check endpoint (`/api/health`) reports 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
+- Implemented Historical Scan Comparison & Monitoring Engine:
+  - Pure domain engine (`src/domain/scan-comparison.ts`) implementing `scan-comparison-v1`:
+    - Computes exact mathematical deltas for mention rate, recommendation rate, AI share of voice, citation share.
+    - Classifies query shifts (`gained_mention`, `lost_mention`, `gained_recommendation`, `lost_recommendation`).
+    - Classifies overall trajectory (`improving`, `regressing`, `stable`, `mixed`).
+    - Enforces compatibility gating on workspace, project, domain, and metric version (`report-metrics-v1`).
+  - Application service (`src/application/scan-history.ts`) enforcing workspace tenancy boundaries and fail-closed error handling.
+  - Connected UI panel (`src/app/report/scan-comparison-panel.tsx`) wired into `/report` with accessible trajectory badges, delta cards, query shift breakdown, and truthful baseline empty states.
+  - Added unit test suites (`scan-comparison.test.ts`, `scan-history.test.ts`) bringing total passing unit tests to 736 (0 failing).
+  - Validated Playwright E2E tests (14 passing across desktop and mobile, zero WCAG AA accessibility violations).
+- Implemented Background Scan Worker Route Handler (`src/app/api/worker/scan/route.ts`):
+  - Protected with `CRON_SECRET` timing-safe comparison (`crypto.timingSafeEqual`) accepting Bearer tokens and `x-cron-secret`.
+  - Supports both GET and POST requests for Vercel Cron compatibility.
+  - Connects directly to `runConfiguredScanWorkerOnce()` and reports queue status (`idle`, `completed`, `partial`) without secret leakage.
+  - Added 6 unit tests in `src/app/api/worker/scan/route.test.ts` (bringing total unit tests to 742 passing).
+- Configured Production Deployment Configuration (`vercel.json`):
+  - Configured Vercel Cron schedule (`*/5 * * * *` targeting `/api/worker/scan`).
+  - Configured production security headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Strict-Transport-Security`.
+- Performed Cloud Staging Verification:
+  - Executed scan worker directly against live Supabase cloud database (`ckekmlrybsztcplqaipu`), successfully calling PostgREST RPC `claim_scan_work` and confirming `{ ok: true, state: "idle" }`.
+
 ## Current status after the latest task
 
-- Full project scan pipeline (crawl → profile extraction → prompt generation → cost reservation → targeted claim) is verified through live provider gating.
-- Level 3 Intelligence orchestration is complete: raw observations remain immutable, citations normalized, span-accurate brand mentions detected, conservative recommendations classified, and auditable visibility metrics engine (`report-metrics-v1`) verified.
-- Level 4 Product is connected: workspace project selection directly deep-links to authentic client-specific visibility reports.
-- Level 5 Monetization is implemented: server-side plan entitlements, usage accounting, and scan execution quotas are verified and integrated into the workspace.
-- Customer Action Recommendations Engine (`customer-actions-v1`) is implemented: deterministic generation of prioritized actions (`comparison_defense`, `citation_building`, `content_expansion`) linked to scanned queries, immutable, and strictly test-verified.
-- Production Health Diagnostic Endpoint (`/api/health`) is implemented: reports uptime, timestamp, configuration health, and system readiness without secret leakage.
-- Decoupled Two-Server Architecture is established: documented in `.ai-context/deployment-architecture.md`, with standalone marketing landing site in `landing/` (`nestedweb.com`) and dedicated SaaS application gateway (`app.nestedweb.com`) with `/login`, `/signup`, and direct `/workspace` dashboard access.
-- Admin Telemetry Service and Dedicated Admin Dashboard (`/admin`) are implemented: provides live operational service health, worker queue depth, lease monitoring, and tenant plan distribution (`free_tier`, `agency_starter`, `agency_pro`) without secret exposure.
-- Agency User Dashboard (`/workspace`) is enhanced: includes project operations panel with prompt cohort preview, DNS verification status, and customer action recommendations.
-- Live Supabase Authentication is connected: Server Actions (`signInWithPasswordAction`, `signUpAction`, `signInWithOtpAction`, `signOutAction`), domain input validation, and secure PKCE `/auth/callback` route handler with strict open-redirect prevention.
-- Live Supabase cloud project (`ckekmlrybsztcplqaipu`) fully connected: Auth settings verified 200 OK via REST API, service_role administrative access verified 200 OK on `workspaces` table.
-- Live Google Gemini 2.5 Flash API credentials verified working against Google Generative Language API (200 OK).
-- Updated infrastructure secret validation regexes to support standard Supabase JWT service role keys and Google AI Studio dotted API keys.
-- Production diagnostic health endpoint (`/api/health`) reporting 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
-- Secure `.env.local` configured with project URL, publishable key, service role key, and Gemini key (strictly gitignored; 0 secrets tracked or exposed).
-- Implemented Historical Scan Comparison & Monitoring Engine (`scan-comparison-v1`):
-  - Pure domain model (`src/domain/scan-comparison.ts`) computing exact mathematical deltas for mention rate, recommendation rate, AI share of voice, citation share, query-level movement (`gained_mention`, `lost_mention`, `gained_recommendation`, `lost_recommendation`), and overall trajectory classification (`improving`, `regressing`, `stable`, `mixed`).
-  - Application service (`src/application/scan-history.ts`) enforcing workspace tenancy, project scope matching, and fail-closed error propagation.
-  - Connected UI panel (`src/app/report/scan-comparison-panel.tsx`) wired into `/report` with accessible delta badges, query movement breakdowns, and truthful baseline empty states.
-  - Added 11 new unit tests (736 total unit tests passing, 0 failing) and 14 passing Playwright E2E tests.
-- Full verification (`npm run verify`, 736 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
+- All 4 pillars of the core agency workflow (**Measure → Explain → Recommend → Monitor**) are 100% complete and verified:
+  1. **Measure**: Entry-page crawling, business profile extraction, prompt synthesis, cost reservation, durable scan execution.
+  2. **Explain**: Citation normalization, span-accurate mention detection, recommendation classification, auditable metrics (`report-metrics-v1`).
+  3. **Recommend**: Customer action recommendations engine (`customer-actions-v1`) linked to query evidence.
+  4. **Monitor**: Historical scan comparison engine (`scan-comparison-v1`) with trajectory analysis and query shift reporting.
+- Production cron-triggered scan worker route and deployment configuration (`vercel.json`) are in place and verified.
+- Live Supabase and Google Gemini integrations verified healthy (200 OK).
+- 742 unit tests passing (0 failing).
+- 14 Playwright E2E tests passing (Desktop & Mobile Chromium).
+- 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
+- 0 security vulnerabilities in `npm audit`.
+- Clean Git working tree synced to GitHub.
 
 ## Remaining work
 
-- Deploy to hosted production environment and execute live agency validation flows with real Gemini / Supabase backends.
+- Deploy to hosted production environment (Vercel / Supabase Cloud) and perform live agency validation.
+- Continuously monitor production health signals and verify scheduled background worker operations.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

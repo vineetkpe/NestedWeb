@@ -56,6 +56,9 @@ Completed or partially completed:
 - [x] Historical Scan Comparison & Monitor Engine (`scan-comparison-v1`, query shifts, trajectory classification)
 - [x] Connected Historical Comparison & Monitoring panel in report (`src/app/report/scan-comparison-panel.tsx`)
 - [x] Production deployment and observability hardening (Level 6)
+- [x] Background scan worker route handler implemented (`/api/worker/scan`) with `CRON_SECRET` timing-safe auth and Vercel Cron compatibility
+- [x] Production deployment configuration (`vercel.json`) with recurring cron jobs and strict security headers (HSTS, nosniff, DENY)
+- [x] Cloud staging verification of scan worker execution against live Supabase RPC (`ckekmlrybsztcplqaipu`)
 
 ## Required guardrails for future work
 

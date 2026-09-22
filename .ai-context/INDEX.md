@@ -16,8 +16,9 @@ This folder is the quick navigation hub for the repository. Use this file first 
 
 ## Quick status
 
-- Current focus: Level 6 production deployment & decoupling (marketing landing on separate CDN, SaaS auth gateway on app.nestedweb.com)
-- Current gate: 709 unit tests, 14 e2e tests, 0 lint warnings, 0 type errors, 0 audit vulnerabilities passing cleanly
+- Current focus: Production staging validation & deployment (live Supabase cloud + Gemini transport verified, 4-step workflow Measure → Explain → Recommend → Monitor 100% complete)
+- Current gate: 742 unit tests, 14 e2e tests, 0 lint warnings, 0 type errors, 0 audit vulnerabilities passing cleanly
+- Live services: Supabase (`ckekmlrybsztcplqaipu`) connected 200 OK; Google Gemini 2.5 Flash API connected 200 OK; `/api/health` reports status "healthy"
 
 ## Repo links
 

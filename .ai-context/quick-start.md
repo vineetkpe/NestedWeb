@@ -9,23 +9,26 @@
 
 ## Current focus
 
-- Level 1 foundation and Level 2 scan boundaries are fully verified.
-- The product is entering Level 3 intelligence: observation/citation processing and mention detection.
-- Keep the app truthful and evidence-first.
-- All tests pass locally and in GitHub Actions CI (`verify` and `database-security`).
+- Levels 1 through 6 are fully implemented and verified.
+- The complete 4-step workflow (**Measure → Explain → Recommend → Monitor**) is 100% operational.
+- Live Supabase cloud backend (`ckekmlrybsztcplqaipu`) and Google Gemini 2.5 Flash API are connected and healthy.
+- Next step: Production platform deployment and live agency validation flows.
 
 ## Current next task
 
-- Connect stored raw observations into citation normalization and mention detection orchestration.
-- Verify recommendation detection with explicit evidence spans.
-- Keep raw evidence separate from derived metrics.
+- Deploy production application to target hosting platform (e.g. Vercel).
+- Execute live agency validation runs using real client SaaS domains.
+- Monitor background worker queues and telemetry via `/admin` and `/api/health`.
 
 ## Current verified snapshot
 
-- Workspace bootstrap flow and project setup flow exist and are verified.
-- Project listing, selection, and scan launch request validation are in place.
-- Project-scoped bounded scan execution runner is proven through provider gating.
-- Full CI (verify + database-security) is 100% green on GitHub Actions.
+- Complete multi-tenant workspace & project operations with strict RBAC.
+- Durable scan execution with worst-case cost reservations and explicit Gemini transport.
+- Full intelligence pipeline: citation normalization, mention detection, recommendations, and auditable metrics (`report-metrics-v1`).
+- Customer action recommendations engine (`customer-actions-v1`) linked to query evidence.
+- Historical scan comparison and monitoring engine (`scan-comparison-v1`) with trajectory analysis.
+- Live `/api/health` diagnostic reports 100% healthy with both providers configured.
+- 742 unit tests and 14 Playwright e2e tests passing, 0 lint warnings, 0 type errors, 0 audit vulnerabilities.
 
 ## Minimum verification before claiming success
 
