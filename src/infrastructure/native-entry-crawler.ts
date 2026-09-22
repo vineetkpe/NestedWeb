@@ -18,7 +18,7 @@ const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const MAX_HTML_TEXT = 1024 * 1024;
 const MAX_REDIRECTS = 3;
 const MAX_REDIRECT_VALUE = 2048;
-const MAX_TAG_LENGTH = 8192;
+const MAX_TAG_LENGTH = 65536;
 const TOTAL_DEADLINE_MS = 15000;
 
 const redirectStatuses = new Set([301, 302, 303, 307, 308]);
