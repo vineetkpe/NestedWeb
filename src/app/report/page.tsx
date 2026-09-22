@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listCurrentUserProjects } from "../../infrastructure/supabase/projects-server.ts";
+import { ScanComparisonPanel } from "./scan-comparison-panel.tsx";
 
 export const metadata: Metadata = {
   title: "Report prototype — AI Visibility OS",
@@ -221,6 +222,7 @@ export default async function ReportPage(props: ReportPageProps) {
             { id: "interpretation", label: "Interpretation" },
             { id: "metrics", label: "Metrics" },
             { id: "recommendations", label: "Recommendations" },
+            { id: "monitoring", label: "Monitoring" },
           ].map((section) => (
             <a
               key={section.id}
@@ -360,6 +362,26 @@ export default async function ReportPage(props: ReportPageProps) {
                 ? `Evidence-based actions will be generated for ${loadedProject.name} once a scan completes, identifying citation authority opportunities, competitor comparison defense, and high-impact content expansion.`
                 : "Each action will identify its reason, target, expected impact, effort, priority, and supporting evidence. Impact will be an explained hypothesis, not a promised ranking improvement."}
             </p>
+          </section>
+          <section
+            id="monitoring"
+            aria-labelledby="monitoring-title"
+            className="scroll-mt-6 py-8"
+          >
+            <h2 id="monitoring-title" className="text-xl font-semibold">
+              Historical scan comparison & monitoring
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Monitor visibility trends and query movement between successive
+              scans. Comparisons strictly enforce matching project scope,
+              tracked domain, and methodology versions.
+            </p>
+            <div className="mt-6">
+              <ScanComparisonPanel
+                projectName={companyName}
+                comparisonReport={null}
+              />
+            </div>
           </section>
         </div>
         <p className="mt-6 max-w-2xl text-sm text-muted-foreground">

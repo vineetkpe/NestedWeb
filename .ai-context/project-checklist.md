@@ -53,6 +53,8 @@ Completed or partially completed:
 - [x] Live Supabase cloud project connected (`ckekmlrybsztcplqaipu`), Auth (anon) and Admin (service_role) verified 200 OK
 - [x] Live Google Gemini 2.5 Flash API key connected and verified against Generative Language API
 - [x] Production health diagnostic endpoint reporting 100% healthy (`/api/health` -> healthy)
+- [x] Historical Scan Comparison & Monitor Engine (`scan-comparison-v1`, query shifts, trajectory classification)
+- [x] Connected Historical Comparison & Monitoring panel in report (`src/app/report/scan-comparison-panel.tsx`)
 - [x] Production deployment and observability hardening (Level 6)
 
 ## Required guardrails for future work

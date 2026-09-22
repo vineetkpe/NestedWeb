@@ -59,10 +59,14 @@
 - Updated infrastructure secret validation regexes to support standard Supabase JWT service role keys and Google AI Studio dotted API keys.
 - Production diagnostic health endpoint (`/api/health`) reporting 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
 - Secure `.env.local` configured with project URL, publishable key, service role key, and Gemini key (strictly gitignored; 0 secrets tracked or exposed).
-- Full verification (`npm run verify`, 725 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
+- Implemented Historical Scan Comparison & Monitoring Engine (`scan-comparison-v1`):
+  - Pure domain model (`src/domain/scan-comparison.ts`) computing exact mathematical deltas for mention rate, recommendation rate, AI share of voice, citation share, query-level movement (`gained_mention`, `lost_mention`, `gained_recommendation`, `lost_recommendation`), and overall trajectory classification (`improving`, `regressing`, `stable`, `mixed`).
+  - Application service (`src/application/scan-history.ts`) enforcing workspace tenancy, project scope matching, and fail-closed error propagation.
+  - Connected UI panel (`src/app/report/scan-comparison-panel.tsx`) wired into `/report` with accessible delta badges, query movement breakdowns, and truthful baseline empty states.
+  - Added 11 new unit tests (736 total unit tests passing, 0 failing) and 14 passing Playwright E2E tests.
+- Full verification (`npm run verify`, 736 unit tests, 14 e2e tests) passes on the current repo state with 0 audit vulnerabilities.
 
 ## Remaining work
 
 - Deploy to hosted production environment and execute live agency validation flows with real Gemini / Supabase backends.
-- Implement scan history comparison across successive runs.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.
