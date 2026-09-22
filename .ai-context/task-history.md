@@ -77,9 +77,14 @@
 - Performed Cloud Staging Verification:
   - Executed scan worker directly against live Supabase cloud database (`ckekmlrybsztcplqaipu`), successfully calling PostgREST RPC `claim_scan_work` and confirming `{ ok: true, state: "idle" }`.
 - Created Scan Controls Auto-Provisioning Migration (`supabase/migrations/20260922200000_scan_controls_auto_provisioning.sql`):
-  - Configures Gemini 2.5 Flash provider pricing (`scan_provider_configs`) and metering (`scan_provider_metering_configs`).
+  - Configures Gemini Flash provider pricing (`scan_provider_configs`) and metering (`scan_provider_metering_configs`).
   - Sets up automated PostgreSQL triggers on `public.workspaces` and `public.projects` to automatically initialize scan controls with valid budget windows for any new workspace/project.
   - Backfills scan controls for existing workspaces and projects.
+- Executed Live Scan Reservation Verification on Supabase:
+  - Verified `public.reserve_scan_from_cohort` successfully executes on live cloud database (`ckekmlrybsztcplqaipu`), creating scan ID `bb5b323b-a913-4059-8591-849c3d718da6` with worst-case cost reservation ($0.28 USD).
+  - Background worker `/api/worker/scan` claimed the reserved scan for execution.
+  - Identified Google API model update: updated provider configuration to `gemini-3.6-flash` (confirmed HTTP 200 OK from Google Generative Language API) and expanded query limit to 10 queries per scan.
+  - Committed and pushed updates to `origin/main` (`ab709c7`, `454925b`).
 
 ## Current status after the latest task
 
@@ -88,16 +93,16 @@
   2. **Explain**: Citation normalization, span-accurate mention detection, recommendation classification, auditable metrics (`report-metrics-v1`).
   3. **Recommend**: Customer action recommendations engine (`customer-actions-v1`) linked to query evidence.
   4. **Monitor**: Historical scan comparison engine (`scan-comparison-v1`) with trajectory analysis and query shift reporting.
-- Production cron-triggered scan worker route and deployment configuration (`vercel.json`) are in place and verified.
-- Live Supabase and Google Gemini integrations verified healthy (200 OK).
+- Live Supabase cloud database actively enforcing tenant scan controls and worst-case cost reservations.
+- Live Google Gemini API connected with `gemini-3.6-flash` returning HTTP 200 OK.
 - 742 unit tests passing (0 failing).
 - 14 Playwright E2E tests passing (Desktop & Mobile Chromium).
 - 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
 - 0 security vulnerabilities in `npm audit`.
-- Clean Git working tree synced to GitHub.
+- Clean Git working tree synced to GitHub `origin/main`.
 
 ## Remaining work
 
-- Deploy to hosted production environment (Vercel / Supabase Cloud) and perform live agency validation.
-- Continuously monitor production health signals and verify scheduled background worker operations.
+- Complete live Gemini 3.6 Flash scan queries for the Resend project and verify observation persistence.
+- Inspect connected report view (`/report`) displaying real metrics, competitor comparisons, and customer action recommendations.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.

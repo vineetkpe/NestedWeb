@@ -3,22 +3,23 @@
 ## First 60 seconds
 
 1. Open [INDEX.md](INDEX.md) and read the current status.
-2. Open [project-checklist.md](project-checklist.md) for the current checklist.
-3. Open [task-history.md](task-history.md) to see what has already been completed.
+2. Open [project-checklist.md](project-checklist.md) for completed milestones and active tasks.
+3. Open [task-history.md](task-history.md) to see recent verified commits and database operations.
 4. Follow [working-rules.md](working-rules.md) before making any changes.
 
 ## Current focus
 
-- Levels 1 through 6 are fully implemented and verified.
+- Levels 1 through 6 are fully implemented, verified, and pushed to GitHub `origin/main`.
 - The complete 4-step workflow (**Measure → Explain → Recommend → Monitor**) is 100% operational.
-- Live Supabase cloud backend (`ckekmlrybsztcplqaipu`) and Google Gemini 2.5 Flash API are connected and healthy.
-- Next step: Production platform deployment and live agency validation flows.
+- Live Supabase cloud backend (`ckekmlrybsztcplqaipu`) and Google Gemini API (`gemini-3.6-flash`) are connected and healthy.
+- Scan controls auto-provisioning migration is deployed, and scan ID `bb5b323b-a913-4059-8591-849c3d718da6` was successfully reserved and claimed.
 
-## Current next task
+## Current active tasks
 
-- Deploy production application to target hosting platform (e.g. Vercel).
-- Execute live agency validation runs using real client SaaS domains.
-- Monitor background worker queues and telemetry via `/admin` and `/api/health`.
+- Complete live Gemini 3.6 Flash query execution on staging agency project (`Resend` / `resend.com`).
+- Verify observation persistence and citation normalization on live database.
+- Inspect live connected report display on `/report?workspaceId=...&projectId=...`.
+- Monitor background worker queue and telemetry via `/admin` and `/api/health`.
 
 ## Current verified snapshot
 
@@ -32,9 +33,9 @@
 
 ## Minimum verification before claiming success
 
-- Run the relevant build check.
-- Run the relevant route or unit test.
-- Confirm the actual output, not assumptions.
+- Run `npm run check` (format, lint, types).
+- Run `npm run test:unit`.
+- Confirm actual terminal output and live API responses, not assumptions.
 
 ## Links
 

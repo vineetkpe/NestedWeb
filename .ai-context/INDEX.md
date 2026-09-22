@@ -5,8 +5,8 @@ This folder is the quick navigation hub for the repository. Use this file first 
 ## Start here
 
 - [README.md](README.md) — overview and purpose of the context pack
-- [project-checklist.md](project-checklist.md) — current checklist and next deliverables
-- [task-history.md](task-history.md) — what has been completed and what remains
+- [project-checklist.md](project-checklist.md) — current checklist, completed milestones, and active deliverables
+- [task-history.md](task-history.md) — what has been completed, verified, and pushed
 - [deployment-architecture.md](deployment-architecture.md) — 2-server architecture (landing on nestedweb.com vs SaaS on app.nestedweb.com)
 
 ## Rules and guardrails
@@ -16,9 +16,12 @@ This folder is the quick navigation hub for the repository. Use this file first 
 
 ## Quick status
 
-- Current focus: Production staging validation & deployment (live Supabase cloud + Gemini transport verified, 4-step workflow Measure → Explain → Recommend → Monitor 100% complete)
+- Current focus: Staging validation with live Gemini execution & customer report display
 - Current gate: 742 unit tests, 14 e2e tests, 0 lint warnings, 0 type errors, 0 audit vulnerabilities passing cleanly
-- Live services: Supabase (`ckekmlrybsztcplqaipu`) connected 200 OK; Google Gemini 2.5 Flash API connected 200 OK; `/api/health` reports status "healthy"
+- Live database: Supabase (`ckekmlrybsztcplqaipu`) connected, scan controls provisioned and verified active; scan ID `bb5b323b-a913-4059-8591-849c3d718da6` reserved and claimed
+- Live AI provider: Google Gemini API connected; `gemini-3.6-flash` verified HTTP 200 OK
+- Background worker: `/api/worker/scan` operating with `CRON_SECRET` timing-safe auth and claiming queue items
+- Health check: `/api/health` reports status "healthy" (Supabase and Gemini both configured)
 
 ## Repo links
 

@@ -16,7 +16,9 @@ This folder preserves the working project context so future coding sessions, dif
 - [project-checklist.md](project-checklist.md) — the current product and engineering checklist
 - [working-rules.md](working-rules.md) — the non-negotiable rules for this project
 - [task-history.md](task-history.md) — the completed work log and what remains
-- [handoff-template.md](handoff-template.md) — a reusable summary template for future AI sessions
+- [deployment-architecture.md](deployment-architecture.md) — 2-server architecture blueprint
+- [quick-start.md](quick-start.md) — first 60 seconds onboarding guide
+- [handoff-template.md](handoff-template.md) — reusable summary template for future AI sessions
 
 ## Important rules
 
@@ -31,17 +33,18 @@ This folder preserves the working project context so future coding sessions, dif
 
 Levels 1 through 6 are fully implemented and verified across domain, application, infrastructure, and UI. The core agency workflow (**Measure → Explain → Recommend → Monitor**) is 100% complete:
 
-- **Measure**: Native entry-page crawling, business profile extraction, prompt synthesis, cost reservation, and durable scan execution.
+- **Measure**: Native entry-page crawling (with 64KB SVG support), business profile extraction, prompt synthesis, cost reservation, and durable scan execution.
 - **Explain**: Citation normalization, entity mention detection with character spans, recommendation classification, and auditable visibility metrics (`report-metrics-v1`).
 - **Recommend**: Deterministic customer action recommendations (`customer-actions-v1`: Comparison Defense, Citation Building, Content Expansion) linked to specific query evidence.
 - **Monitor**: Historical scan comparison engine (`scan-comparison-v1`: mathematical deltas, query shifts, trajectory classification) and connected comparison panel in `/report`.
-- **Cloud & AI Integration**: Live Supabase project (`ckekmlrybsztcplqaipu`) and Google Gemini 2.5 Flash API connected and verified healthy via `/api/health`.
+- **Cloud & AI Integration**: Live Supabase project (`ckekmlrybsztcplqaipu`) and Google Gemini API (`gemini-3.6-flash`) connected and verified healthy via `/api/health`.
+- **Worker Infrastructure**: `/api/worker/scan` operational with `CRON_SECRET` constant-time security and queue claim logic.
 
 ## Latest verified status
 
-- `npm run verify` passed: 742 unit tests passing, 0 failing.
+- `npm run check` passed: Prettier, ESLint, and strict TypeScript types passing with 0 errors.
+- `npm run test:unit` passed: 742 unit tests passing, 0 failing.
 - 14 Playwright e2e tests passing (Desktop & Mobile Chromium, zero WCAG AA accessibility violations).
-- 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
 - 0 security vulnerabilities in `npm audit`.
 - `/api/health` reports 100% `status: "healthy"` with both Supabase and Gemini marked `"configured"`.
-- Next step: Production deployment to hosting environment and staging agency workflow validation.
+- Next step: Staging agency validation with live query execution and customer report display.
