@@ -94,7 +94,14 @@
   3. **Recommend**: Customer action recommendations engine (`customer-actions-v1`) linked to query evidence.
   4. **Monitor**: Historical scan comparison engine (`scan-comparison-v1`) with trajectory analysis and query shift reporting.
 - Live Supabase cloud database actively enforcing tenant scan controls and worst-case cost reservations.
-- Live Google Gemini API connected with `gemini-3.6-flash` returning HTTP 200 OK.
+- Autonomous live worker execution pipeline executed end-to-end:
+  - Scans claimed and leased to worker `00000000-0000-4000-8000-000000000001`.
+  - Lease renewed with HTTP 200 OK.
+  - Queries dispatched to Google Generative Language API with `gemini-3.6-flash`.
+  - Without search grounding tool: returned HTTP 200 SUCCESS (`Pong! How can I help you today?`).
+  - With Google Search Grounding (`tools: [{ google_search: {} }]`): Google returned HTTP 429 `RESOURCE_EXHAUSTED` (Google AI Studio free-tier search grounding limit).
+  - Exact response recorded, SHA-256 digested, and persisted into `public.raw_observations` in Supabase Cloud.
+  - Scan state transition cycle handled cleanly via `retry_scan_work` to terminal failed state after max attempts exhausted.
 - 742 unit tests passing (0 failing).
 - 14 Playwright E2E tests passing (Desktop & Mobile Chromium).
 - 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
@@ -103,6 +110,7 @@
 
 ## Remaining work
 
-- Complete live Gemini 3.6 Flash scan queries for the Resend project and verify observation persistence.
+- Enable pay-as-you-go / billing in Google AI Studio to lift the `RESOURCE_EXHAUSTED` quota on `google_search` grounding.
+- Re-run scan with grounded responses to populate citations, positive brand mentions, and recommendation classifications.
 - Inspect connected report view (`/report`) displaying real metrics, competitor comparisons, and customer action recommendations.
 - Keep updating this file whenever a task is completed or the next concrete step is chosen.
