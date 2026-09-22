@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { listCurrentUserProjects } from "../../infrastructure/supabase/projects-server.ts";
+import { createSupabaseServerClient } from "../../infrastructure/supabase/server.ts";
+import { CustomerActionsPanel } from "./customer-actions-panel.tsx";
 import { ScanComparisonPanel } from "./scan-comparison-panel.tsx";
 
 export const metadata: Metadata = {
@@ -29,30 +31,6 @@ const queryTemplates = [
   {
     kind: "Buyer intent",
     text: "Which [category] platform fits [budget] and [requirements]?",
-  },
-];
-
-const evidenceSections = [
-  {
-    id: "observations",
-    title: "Raw observations",
-    empty: "No observations collected yet.",
-    description:
-      "The exact answer will appear here with its query, provider, model when disclosed, observation ID, and capture time. No AI queries have been run for this report.",
-  },
-  {
-    id: "citations",
-    title: "Citations and evidence",
-    empty: "No citations recorded yet.",
-    description:
-      "Each returned source will link to its observation, original URL, source domain, capture time, and relationship to the answer. A citation alone does not prove that a source supports a claim.",
-  },
-  {
-    id: "interpretation",
-    title: "Interpretation",
-    empty: "No interpretations available yet.",
-    description:
-      "Brand mentions, positive recommendations, competitor mentions, and source associations will point to supporting answer excerpts. Ambiguous context will remain labeled as uncertain.",
   },
 ];
 
@@ -109,6 +87,30 @@ export default async function ReportPage(props: ReportPageProps) {
     trackedDomain: string;
   } | null = null;
   let projectLookupError: string | null = null;
+  let latestScan: {
+    id: string;
+    state: string;
+    created_at: string;
+    query_count: number;
+    prompt_method_version: string;
+  } | null = null;
+  let scanQueries: readonly {
+    query_ordinal: number;
+    query_id: string;
+    query_version: string;
+    query_text: string;
+  }[] = [];
+  let rawObservations: readonly {
+    query_ordinal: number;
+    observation_id: string;
+    provider: string;
+    requested_model: string;
+    outcome: string;
+    failure_code: string | null;
+    response_digest: string | null;
+    observed_at: string;
+    raw_response_state: string;
+  }[] = [];
 
   if (workspaceId && projectId) {
     try {
@@ -123,6 +125,39 @@ export default async function ReportPage(props: ReportPageProps) {
             name: found.name,
             trackedDomain: found.trackedDomain,
           };
+
+          const client = await createSupabaseServerClient();
+          const { data: scans } = await client
+            .from("scans")
+            .select("id, state, created_at, query_count, prompt_method_version")
+            .eq("workspace_id", workspaceId)
+            .eq("project_id", projectId)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (scans && scans.length > 0 && scans[0]) {
+            const firstScan = scans[0];
+            latestScan = firstScan;
+
+            const { data: queries } = await client
+              .from("scan_queries")
+              .select("query_ordinal, query_id, query_version, query_text")
+              .eq("workspace_id", workspaceId)
+              .eq("scan_id", firstScan.id)
+              .order("query_ordinal", { ascending: true });
+            if (queries && queries.length > 0) scanQueries = queries;
+
+            const { data: obs } = await client
+              .from("raw_observations")
+              .select(
+                "query_ordinal, observation_id, provider, requested_model, outcome, failure_code, response_digest, observed_at, raw_response_state",
+              )
+              .eq("workspace_id", workspaceId)
+              .eq("project_id", projectId)
+              .eq("scan_id", firstScan.id)
+              .order("query_ordinal", { ascending: true });
+            if (obs && obs.length > 0) rawObservations = obs;
+          }
         } else {
           projectLookupError = "Project not found in this workspace.";
         }
@@ -141,9 +176,11 @@ export default async function ReportPage(props: ReportPageProps) {
   const companyDomain = loadedProject
     ? loadedProject.trackedDomain
     : "Not provided";
-  const reportDate = loadedProject
-    ? "Awaiting scan execution"
-    : "Not generated";
+  const reportDate = latestScan
+    ? new Date(latestScan.created_at).toISOString().split("T")[0]
+    : loadedProject
+      ? "Awaiting scan execution"
+      : "Not generated";
 
   return (
     <>
@@ -267,40 +304,162 @@ export default async function ReportPage(props: ReportPageProps) {
             <h2 id="queries-title" className="text-xl font-semibold">
               Queries
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Query templates only. None have been executed.
+            {scanQueries.length > 0 ? (
+              <>
+                <p className="mt-2 text-muted-foreground">
+                  Synthesized {scanQueries.length} buyer-intent queries for{" "}
+                  {companyName} (
+                  {latestScan?.prompt_method_version ?? "niche-prompts-v1"}).
+                </p>
+                <dl className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                  {scanQueries.map((query) => (
+                    <div
+                      key={query.query_ordinal}
+                      className="rounded-sm border border-border bg-background p-4"
+                    >
+                      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                        Query #{query.query_ordinal + 1} • {query.query_version}
+                      </dt>
+                      <dd className="mt-2 font-medium text-foreground text-sm">
+                        {query.query_text}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 text-muted-foreground">
+                  Query templates only. None have been executed.
+                </p>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  Bracketed terms need the company’s actual category, buyers,
+                  and competitors before questions can be selected.
+                </p>
+                <dl className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                  {queryTemplates.map((query) => (
+                    <div key={query.kind}>
+                      <dt className="font-medium">{query.kind}</dt>
+                      <dd className="mt-1 text-sm text-muted-foreground">
+                        {query.text}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
+          </section>
+
+          <section
+            id="observations"
+            aria-labelledby="observations-title"
+            className="scroll-mt-6 py-8"
+          >
+            <h2 id="observations-title" className="text-xl font-semibold">
+              Raw observations
+            </h2>
+            {rawObservations.length > 0 ? (
+              <>
+                <p className="mt-2 text-muted-foreground">
+                  Collected {rawObservations.length} raw AI provider
+                  observations with cryptographic evidence digests.
+                </p>
+                <div className="mt-6 overflow-x-auto rounded-md border border-border">
+                  <table className="w-full border-collapse text-left text-xs">
+                    <thead className="bg-muted text-muted-foreground">
+                      <tr>
+                        <th className="p-3 font-medium">#</th>
+                        <th className="p-3 font-medium">Observation ID</th>
+                        <th className="p-3 font-medium">Provider / Model</th>
+                        <th className="p-3 font-medium">Outcome</th>
+                        <th className="p-3 font-medium">Response Digest</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {rawObservations.map((obs) => (
+                        <tr
+                          key={obs.observation_id}
+                          className="hover:bg-muted/40 transition-colors"
+                        >
+                          <td className="p-3 font-mono">
+                            {obs.query_ordinal + 1}
+                          </td>
+                          <td className="p-3 font-mono text-muted-foreground">
+                            {obs.observation_id.slice(0, 8)}…
+                          </td>
+                          <td className="p-3">
+                            {obs.provider} ({obs.requested_model})
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`inline-flex rounded-xs px-1.5 py-0.5 font-medium ${
+                                obs.outcome === "answered"
+                                  ? "bg-emerald-500/10 text-emerald-400"
+                                  : "bg-rose-500/10 text-rose-400"
+                              }`}
+                            >
+                              {obs.outcome}{" "}
+                              {obs.failure_code ? `(${obs.failure_code})` : ""}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono text-muted-foreground">
+                            {obs.response_digest
+                              ? `${obs.response_digest.slice(0, 18)}…`
+                              : "None"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-4 font-medium">
+                  No observations collected yet.
+                </p>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  The exact answer will appear here with its query, provider,
+                  model when disclosed, observation ID, and capture time. No AI
+                  queries have been run for this report.
+                </p>
+              </>
+            )}
+          </section>
+
+          <section
+            id="citations"
+            aria-labelledby="citations-title"
+            className="scroll-mt-6 py-8"
+          >
+            <h2 id="citations-title" className="text-xl font-semibold">
+              Citations and evidence
+            </h2>
+            <p className="mt-4 font-medium">No citations recorded yet.</p>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Each returned source will link to its observation, original URL,
+              source domain, capture time, and relationship to the answer. A
+              citation alone does not prove that a source supports a claim.
+            </p>
+          </section>
+
+          <section
+            id="interpretation"
+            aria-labelledby="interpretation-title"
+            className="scroll-mt-6 py-8"
+          >
+            <h2 id="interpretation-title" className="text-xl font-semibold">
+              Interpretation
+            </h2>
+            <p className="mt-4 font-medium">
+              No interpretations available yet.
             </p>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Bracketed terms need the company’s actual category, buyers, and
-              competitors before questions can be selected.
+              Brand mentions, positive recommendations, competitor mentions, and
+              source associations will point to supporting answer excerpts.
+              Ambiguous context will remain labeled as uncertain.
             </p>
-            <dl className="mt-6 grid gap-x-8 gap-y-6 sm:grid-cols-2">
-              {queryTemplates.map((query) => (
-                <div key={query.kind}>
-                  <dt className="font-medium">{query.kind}</dt>
-                  <dd className="mt-1 text-sm text-muted-foreground">
-                    {query.text}
-                  </dd>
-                </div>
-              ))}
-            </dl>
           </section>
-          {evidenceSections.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              aria-labelledby={`${section.id}-title`}
-              className="scroll-mt-6 py-8"
-            >
-              <h2 id={`${section.id}-title`} className="text-xl font-semibold">
-                {section.title}
-              </h2>
-              <p className="mt-4 font-medium">{section.empty}</p>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                {section.description}
-              </p>
-            </section>
-          ))}
           <section
             id="metrics"
             aria-labelledby="metrics-title"
@@ -354,14 +513,25 @@ export default async function ReportPage(props: ReportPageProps) {
             <h2 id="recommendations-title" className="text-xl font-semibold">
               Recommendations
             </h2>
-            <p className="mt-4 font-medium">
-              No evidence-based actions available yet.
-            </p>
-            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              {loadedProject
-                ? `Evidence-based actions will be generated for ${loadedProject.name} once a scan completes, identifying citation authority opportunities, competitor comparison defense, and high-impact content expansion.`
-                : "Each action will identify its reason, target, expected impact, effort, priority, and supporting evidence. Impact will be an explained hypothesis, not a promised ranking improvement."}
-            </p>
+            {loadedProject ? (
+              <div className="mt-4">
+                <CustomerActionsPanel
+                  projectName={loadedProject.name}
+                  actions={[]}
+                />
+              </div>
+            ) : (
+              <>
+                <p className="mt-4 font-medium">
+                  No evidence-based actions available yet.
+                </p>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                  Each action will identify its reason, target, expected impact,
+                  effort, priority, and supporting evidence. Impact will be an
+                  explained hypothesis, not a promised ranking improvement.
+                </p>
+              </>
+            )}
           </section>
           <section
             id="monitoring"

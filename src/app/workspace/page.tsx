@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import type { ClaimedLiveProviderFactory } from "../../application/claim-scan-execution.ts";
 import { buildProjectScanLaunchRequest } from "../../application/project-scan-launch.ts";
 import { getWorkspaceProjectSetupStatus } from "../../application/workspace-project-setup.ts";
+import { createLiveGeminiProvider } from "../../infrastructure/gemini.ts";
 import {
   createCurrentUserProject,
   listCurrentUserProjects,
@@ -197,9 +199,20 @@ async function prepareProjectScanAction(formData: FormData) {
     } as const;
   }
 
+  const providerFactory: ClaimedLiveProviderFactory = (providerConfig) => {
+    if (!process.env.GEMINI_API_KEY) return null;
+    const setup = createLiveGeminiProvider({
+      model: providerConfig.modelId,
+      maxOutputTokens: providerConfig.maxOutputTokens,
+      env: process.env,
+    });
+    if (!setup.ok || !setup.provider.capabilities.liveExecution) return null;
+    return setup.provider;
+  };
+
   const result = await runCurrentUserProjectBoundedScan(
     launch.value,
-    () => null,
+    providerFactory,
   );
 
   if (result.state === "not_executed") {
