@@ -392,10 +392,10 @@ export default async function ReportPage(props: ReportPageProps) {
                           </td>
                           <td className="p-3">
                             <span
-                              className={`inline-flex rounded-xs px-1.5 py-0.5 font-medium ${
+                              className={`inline-flex rounded-xs border px-1.5 py-0.5 font-medium ${
                                 obs.outcome === "answered"
-                                  ? "bg-emerald-500/10 text-emerald-400"
-                                  : "bg-rose-500/10 text-rose-400"
+                                  ? "border-success/20 bg-success/10 text-success"
+                                  : "border-destructive/20 bg-destructive/10 text-destructive"
                               }`}
                             >
                               {obs.outcome}{" "}

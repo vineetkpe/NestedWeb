@@ -11,6 +11,7 @@ import {
 } from "../../infrastructure/supabase/projects-server.ts";
 import { runCurrentUserProjectBoundedScan } from "../../infrastructure/supabase/project-bounded-scan-server.ts";
 import { bootstrapCurrentUserWorkspace } from "../../infrastructure/supabase/workspace-bootstrap-server.ts";
+import { createSupabaseServerClient } from "../../infrastructure/supabase/server.ts";
 import { getWorkspaceQuotaSummary } from "../../application/plan-entitlements.ts";
 import { AppHeader } from "../components/app-header.tsx";
 import {
@@ -304,7 +305,24 @@ async function prepareProjectScanAction(formData: FormData) {
   } as const;
 }
 
-export default function WorkspaceSetupPage() {
+export default async function WorkspaceSetupPage() {
+  let detectedWorkspaceId: string | null = null;
+  if (setupStatus.available) {
+    try {
+      const client = await createSupabaseServerClient();
+      const { data } = await client
+        .from("workspace_memberships")
+        .select("workspace_id")
+        .limit(1)
+        .maybeSingle();
+      if (data?.workspace_id) {
+        detectedWorkspaceId = data.workspace_id;
+      }
+    } catch {
+      // Unauthenticated visitor
+    }
+  }
+
   return (
     <>
       <a
@@ -343,9 +361,21 @@ export default function WorkspaceSetupPage() {
           <p className="mt-2 text-muted-foreground">{setupStatus.message}</p>
 
           {setupStatus.available ? (
-            <div className="mt-6 rounded-sm border border-border bg-accent/40 p-4 text-sm text-muted-foreground">
-              The app is ready for the workspace bootstrapping and project setup
-              path once a signed-in member enters a real client project.
+            <div className="mt-6 space-y-3">
+              <div className="rounded-sm border border-border bg-accent/40 p-4 text-sm text-muted-foreground">
+                The app is ready for the workspace bootstrapping and project
+                setup path once a signed-in member enters a real client project.
+              </div>
+              {detectedWorkspaceId ? (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">
+                    Active Workspace:
+                  </span>
+                  <span className="rounded-xs bg-muted px-2 py-0.5 font-mono text-foreground">
+                    {detectedWorkspaceId}
+                  </span>
+                </div>
+              ) : null}
             </div>
           ) : (
             <div className="mt-6 space-y-4">
@@ -418,6 +448,7 @@ export default function WorkspaceSetupPage() {
             loadProjectsAction={loadProjectsAction}
             launchScanAction={prepareProjectScanAction}
             disabled={!setupStatus.available}
+            initialWorkspaceId={detectedWorkspaceId}
           />
         </section>
 
@@ -457,6 +488,7 @@ export default function WorkspaceSetupPage() {
                 id="workspace-id"
                 name="workspaceId"
                 type="text"
+                defaultValue={detectedWorkspaceId ?? ""}
                 disabled={!setupStatus.available}
                 placeholder="00000000-0000-4000-8000-000000000000"
                 className="min-h-11 w-full rounded-sm border border-border bg-background px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring disabled:cursor-not-allowed disabled:opacity-50"

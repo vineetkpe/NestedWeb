@@ -11,21 +11,21 @@ const CATEGORY_LABELS: Readonly<
 > = {
   comparison_defense: {
     label: "Comparison Defense",
-    badgeClasses: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    badgeClasses: "bg-warning/10 text-warning border-warning/20",
   },
   citation_building: {
     label: "Citation Building",
-    badgeClasses: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+    badgeClasses: "bg-accent text-accent-foreground border-border",
   },
   content_expansion: {
     label: "Content Expansion",
-    badgeClasses: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    badgeClasses: "bg-success/10 text-success border-success/20",
   },
 };
 
 const IMPACT_BADGES: Readonly<Record<string, string>> = {
-  high: "bg-rose-500/10 text-rose-400 border-rose-500/20",
-  medium: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  high: "bg-destructive/10 text-destructive border-destructive/20",
+  medium: "bg-warning/10 text-warning border-warning/20",
   low: "bg-muted text-muted-foreground border-border",
 };
 

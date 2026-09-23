@@ -24,12 +24,14 @@ export function ProjectListPanel({
   loadProjectsAction,
   launchScanAction,
   disabled,
+  initialWorkspaceId,
 }: Readonly<{
   loadProjectsAction: (formData: FormData) => Promise<ProjectListState>;
   launchScanAction: (formData: FormData) => Promise<ProjectScanLaunchState>;
   disabled: boolean;
+  initialWorkspaceId?: string | null;
 }>) {
-  const [workspaceId, setWorkspaceId] = useState("");
+  const [workspaceId, setWorkspaceId] = useState(initialWorkspaceId ?? "");
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
   );
