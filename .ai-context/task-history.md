@@ -108,6 +108,33 @@
 - 0 security vulnerabilities in `npm audit`.
 - Clean Git working tree synced to GitHub `origin/main`.
 
+## 2026-09-23
+
+- Elevated UI design system across `/`, `/workspace`, and `/report` strictly adhering to `DESIGN.md`:
+  - **Homepage (`/`)**: Added brand OS badge, refined navigation links, operational pulse indicator for environment readiness, and numbered methodology cards (`01. Observe` through `04. Recommend`) with hover highlights and clean monospace step labels.
+  - **Workspace (`/workspace`)**: Implemented server-side active workspace detection via `workspace_memberships` for authenticated agency members; pre-fills `initialWorkspaceId` into the project list and project creation form (`#workspace-id`) eliminating manual UUID copy-pasting. Added active workspace tenant pill badge.
+  - **Report & Customer Actions (`/report`)**: Harmonized all badge styles in `CustomerActionsPanel` and raw observation tables to strict semantic design system tokens (`text-success`, `text-warning`, `text-destructive`, `text-accent-foreground`). Preserved prototype string invariants and 5 "Not measured" cells for automated testing.
+  - **Full Verification**: 742/742 unit tests passing, 14/14 Playwright E2E tests passing (Desktop & Mobile Chromium), 0 WCAG AA accessibility violations, 0 horizontal layout reflow issues. Turbopack production compilation succeeded in 8.9s.
+  - **Codebase Synced**: Pushed commit `e0ef1f5` to GitHub `origin/main`.
+
+## Current status after the latest task
+
+- All 4 pillars of the core agency workflow (**Measure → Explain → Recommend → Monitor**) are 100% complete, verified, and styled with high-contrast B2B precision analytics aesthetics.
+- Live Supabase cloud database actively enforcing tenant scan controls and worst-case cost reservations.
+- Autonomous live worker execution pipeline executed end-to-end:
+  - Scans claimed and leased to worker `00000000-0000-4000-8000-000000000001`.
+  - Lease renewed with HTTP 200 OK.
+  - Queries dispatched to Google Generative Language API with `gemini-3.6-flash`.
+  - Without search grounding tool: returned HTTP 200 SUCCESS (`Pong! How can I help you today?`).
+  - With Google Search Grounding (`tools: [{ google_search: {} }]`): Google returned HTTP 429 `RESOURCE_EXHAUSTED` (Google AI Studio free-tier search grounding limit).
+  - Exact response recorded, SHA-256 digested, and persisted into `public.raw_observations` in Supabase Cloud.
+  - Scan state transition cycle handled cleanly via `retry_scan_work` to terminal failed state after max attempts exhausted.
+- 742 unit tests passing (0 failing).
+- 14 Playwright E2E tests passing (Desktop & Mobile Chromium).
+- 0 ESLint warnings, 0 TypeScript errors, clean Turbopack production build.
+- 0 security vulnerabilities in `npm audit`.
+- Clean Git working tree synced to GitHub `origin/main` (`e0ef1f5`).
+
 ## Remaining work
 
 - Enable pay-as-you-go / billing in Google AI Studio to lift the `RESOURCE_EXHAUSTED` quota on `google_search` grounding.

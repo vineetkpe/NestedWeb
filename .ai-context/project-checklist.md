@@ -87,7 +87,11 @@ The repo stays in the strict product-order sequence:
 - [ ] Re-run scan with active search grounding quota to observe live brand mentions and recommendations
 - [x] Inspect connected report display on `/report?workspaceId=...&projectId=...`:
   - Verified live client project banner, synthesized queries, and raw observations table with SHA-256 digests
-- [x] Commit and sync verified codebase to GitHub repository (`origin/main`)
+- [x] UI visual design and flow elevation across `/`, `/workspace`, and `/report`:
+  - Automated tenant detection from `workspace_memberships` (no manual UUID copy-paste)
+  - Strict semantic token harmonization per `DESIGN.md` in `CustomerActionsPanel` and observation outcome badges
+  - Zero WCAG AA violations, 100% responsive reflow at 320px
+- [x] Commit and sync verified codebase to GitHub repository (`origin/main`, commit `e0ef1f5`)
 
 ---
 
