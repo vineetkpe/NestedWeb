@@ -4,7 +4,9 @@ import Link from "next/link";
 import { listCurrentUserProjects } from "../../infrastructure/supabase/projects-server.ts";
 import { createSupabaseServerClient } from "../../infrastructure/supabase/server.ts";
 import { CustomerActionsPanel } from "./customer-actions-panel.tsx";
+import { ReportExportMenu } from "./report-export-menu.tsx";
 import { ScanComparisonPanel } from "./scan-comparison-panel.tsx";
+import type { RawObservationExportItem } from "../../domain/report-export.ts";
 
 export const metadata: Metadata = {
   title: "Report prototype — AI Visibility OS",
@@ -182,15 +184,39 @@ export default async function ReportPage(props: ReportPageProps) {
       ? "Awaiting scan execution"
       : "Not generated";
 
+  const exportObservations: readonly RawObservationExportItem[] =
+    rawObservations.map((obs) => {
+      const matchingQuery = scanQueries.find(
+        (q) => q.query_ordinal === obs.query_ordinal,
+      );
+      return {
+        queryOrdinal: obs.query_ordinal,
+        queryText:
+          matchingQuery?.query_text ?? `Query #${obs.query_ordinal + 1}`,
+        observationId: obs.observation_id,
+        provider: obs.provider,
+        requestedModel: obs.requested_model,
+        outcome: obs.outcome,
+        failureCode: obs.failure_code,
+        responseDigest: obs.response_digest,
+        observedAt: obs.observed_at,
+      };
+    });
+
+  const exportQueries = scanQueries.map((q) => ({
+    queryOrdinal: q.query_ordinal,
+    queryText: q.query_text,
+  }));
+
   return (
     <>
       <a
         href="#report"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:rounded-sm focus:bg-card focus:p-3"
+        className="no-print sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10 focus:rounded-sm focus:bg-card focus:p-3"
       >
         Skip to report
       </a>
-      <header className="border-b border-border bg-card">
+      <header className="no-print border-b border-border bg-card">
         <div className="mx-auto flex min-h-16 max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-8">
           <span className="font-semibold">AI Visibility OS</span>
           {loadedProject ? (
@@ -225,12 +251,65 @@ export default async function ReportPage(props: ReportPageProps) {
         ) : null}
 
         {loadedProject ? (
-          <div className="mb-8 rounded-sm border border-border bg-accent/30 p-4 text-sm text-muted-foreground">
-            Connected client project:{" "}
-            <strong className="font-semibold text-foreground">
-              {loadedProject.name}
-            </strong>{" "}
-            ({loadedProject.trackedDomain}).
+          <div className="mb-8 rounded-md border border-border bg-card p-5 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-accent text-accent-foreground font-semibold text-sm">
+                  {loadedProject.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-foreground">
+                      {loadedProject.name}
+                    </span>
+                    <span className="rounded-xs bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                      {loadedProject.trackedDomain}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Connected client project • ID:{" "}
+                    <span className="font-mono">{loadedProject.projectId}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="no-print flex items-center gap-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    latestScan?.state === "completed"
+                      ? "bg-success/10 text-success border border-success/20"
+                      : "bg-warning/10 text-warning border border-warning/20"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      latestScan?.state === "completed"
+                        ? "bg-success"
+                        : "bg-warning"
+                    }`}
+                  />
+                  {latestScan ? `Scan ${latestScan.state}` : "No scan run"}
+                </span>
+                <Link
+                  href="/workspace"
+                  className="inline-flex min-h-9 items-center rounded-sm border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  Switch project
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-border/60 pt-3">
+              <ReportExportMenu
+                workspaceId={workspaceId ?? ""}
+                projectId={loadedProject.projectId}
+                projectName={loadedProject.name}
+                trackedDomain={loadedProject.trackedDomain}
+                queries={exportQueries}
+                observations={exportObservations}
+                customerActions={[]}
+              />
+            </div>
           </div>
         ) : null}
 
@@ -249,7 +328,7 @@ export default async function ReportPage(props: ReportPageProps) {
         </div>
         <nav
           aria-label="Report sections"
-          className="mb-8 flex flex-wrap gap-x-6 gap-y-1 border-y border-border py-2 text-sm"
+          className="no-print mb-8 flex flex-wrap gap-x-6 gap-y-1 border-y border-border py-2 text-sm"
         >
           {[
             { id: "company", label: "Company" },
