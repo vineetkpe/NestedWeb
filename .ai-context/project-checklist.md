@@ -65,10 +65,15 @@ The repo stays in the strict product-order sequence:
 
 - [x] Live Supabase cloud project connected (`ckekmlrybsztcplqaipu`), Auth (anon) and Admin (service_role) verified 200 OK
 - [x] Live Google Gemini 2.5 Flash API key connected and verified against Generative Language API
-- [x] Production health diagnostic endpoint reporting 100% healthy (`/api/health`)
+- [x] Production health diagnostic endpoint reporting 100% healthy (`/api/health`) with automated tests
 - [x] Background scan worker route handler implemented (`/api/worker/scan`) with `CRON_SECRET` timing-safe auth
+- [x] Background scan scheduler route handler implemented (`/api/worker/scheduler`) with `CRON_SECRET` timing-safe auth
 - [x] Scan worker cloud execution verified against live Supabase RPC `claim_scan_work`
 - [x] Scan controls auto-provisioning migration created (`supabase/migrations/20260922200000_scan_controls_auto_provisioning.sql`) with Gemini 2.5 Flash pricing and automated triggers
+- [x] Project scan schedule foundation and auto-provisioning trigger (`supabase/migrations/20260928230000_project_scan_schedules.sql`)
+- [x] Strict production security headers in `next.config.ts`: HSTS preload, nosniff, frame-ancestors 'none', no-referrer
+- [x] Preflight environment and cryptographic audit script (`scripts/preflight-check.ts` / `npm run preflight`)
+- [x] Staging and production release runbook (`docs/staging-release-runbook.md`) with emergency kill-switch procedures
 
 ---
 
@@ -91,6 +96,13 @@ The repo stays in the strict product-order sequence:
   - Automated tenant detection from `workspace_memberships` (no manual UUID copy-paste)
   - Strict semantic token harmonization per `DESIGN.md` in `CustomerActionsPanel` and observation outcome badges
   - Zero WCAG AA violations, 100% responsive reflow at 320px
+- [x] Automated Scan Scheduling & Recurring Monitoring (Monitor Stage Automation):
+  - Pure domain model (`src/domain/scan-schedule.ts`) with deterministic cadences (`daily`, `weekly`, `biweekly`, `monthly`, `manual`) and interval computations
+  - Application scheduler orchestrator (`src/application/scan-scheduler.ts`) with fail-closed workspace scan quota enforcement
+  - Server-only Supabase adapter (`src/infrastructure/supabase/scan-scheduler-server.ts`) with auto-provisioning database migration (`20260928230000_project_scan_schedules.sql`)
+  - Timing-safe `CRON_SECRET` cron route (`/api/worker/scheduler`) registered in `vercel.json`
+  - Interactive agency cadence controls and next-scan indicator in `ProjectDetailPanel`
+  - Verified with 770 unit tests, 14 Playwright E2E tests, 0 security vulnerabilities
 - [x] Commit and sync verified codebase to GitHub repository (`origin/main`, commit `e0ef1f5`)
 
 ---

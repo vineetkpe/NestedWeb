@@ -166,3 +166,23 @@ Status: accepted for D1a/D1b on 2026-09-14. Level 3 begins by separating immutab
 The normalization method may canonicalize only syntax the native WHATWG URL parser establishes. It preserves query parameter order, tracking parameters, paths, fragments, duplicate source occurrences, and the full parsed hostname. It does not infer a registrable domain, redirect target, source equivalence, ownership, support span, claim relationship, brand association, recommendation, or competitor relationship. Invalid, unsupported-scheme, and unsafe URLs remain explicit excluded derived rows rather than disappearing.
 
 Derived rows are append-only for a method version: identical replay is idempotent and conflicting replay fails closed. A narrow service-role RPC validates the exact raw citation identity and the strict derived payload shape; direct table writes remain revoked. Authenticated users have explicit SELECT only through workspace-member RLS, while `anon` has no access. This explicit grant model avoids dependence on Supabase's changing automatic Data API exposure defaults. Application/backfill orchestration that reads raw citations, runs `citation-url-v1`, and calls the persistence RPC is intentionally deferred to D1c.
+
+## ADR-014: automated scan scheduling & recurring cadence controls
+
+Status: accepted on 2026-09-28. Level 4/6 Monitor Stage delivery. Establishes automated recurring scan scheduling for agency client projects, enabling continuous AI visibility tracking with cron triggers, quota safeguards, and UI cadence controls.
+
+Domain logic in `src/domain/scan-schedule.ts` is pure and deterministic: cadences (`daily`, `weekly`, `biweekly`, `monthly`, `manual`) compute exact forward intervals (`computeNextRunAt`) and check due state (`isScheduleDue`) against explicit timestamps without clock side-effects.
+
+Application orchestration in `src/application/scan-scheduler.ts` enforces fail-closed workspace scan quota validation prior to enqueuing work. If a tenant's monthly scan allotment is exhausted, the scheduler skips reservation safely, recording auditable skipping reasons without crashing the batch. Enqueued scans reuse existing durable reservation boundaries (`reserve_scan_from_cohort`).
+
+Infrastructure adapter `src/infrastructure/supabase/scan-scheduler-server.ts` operates server-only (`import "server-only"`) against `public.project_scan_schedules`. HTTP triggers arrive via `/api/worker/scheduler` protected by timing-safe `CRON_SECRET` authorization, registered on Vercel Crons (`0 * * * *`). Agency users manage monitoring cadences through the interactive `ProjectDetailPanel` in `/workspace`.
+
+## ADR-015: Level 6 production hardening, telemetry, and preflight verification
+
+Status: accepted on 2026-09-28. Hardens the application gateway for staging and production release readiness across operational diagnostics, transport security, and deployment verification.
+
+Operational diagnostic endpoint `/api/health` reports uptime, timestamp, configuration state, and multi-service telemetry (Supabase Auth/Database, Google Generative Language API, queue worker, and scan scheduler) with cache-control headers (`no-store, no-cache, must-revalidate`) and zero secret exposure.
+
+Transport security is hardened in `next.config.ts` with strict HTTP security headers: `Strict-Transport-Security` (`max-age=63072000; includeSubDomains; preload`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
+
+Staging preflight audit script `scripts/preflight-check.ts` (`npm run preflight`) audits required public URLs, secret patterns, high-entropy cron secrets, and validates live connectivity to Supabase and provider APIs before traffic cutover. Operational procedures and rollback protocols are documented in `docs/staging-release-runbook.md`.

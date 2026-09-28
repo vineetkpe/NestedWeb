@@ -12,6 +12,12 @@ export async function GET() {
   const hasGeminiKey =
     typeof process.env.GEMINI_API_KEY === "string" &&
     process.env.GEMINI_API_KEY.trim().length > 0;
+  const hasCronSecret =
+    typeof process.env.CRON_SECRET === "string" &&
+    process.env.CRON_SECRET.trim().length > 0;
+  const hasWorkerId =
+    typeof process.env.NESTEDWEB_SCAN_WORKER_ID === "string" &&
+    process.env.NESTEDWEB_SCAN_WORKER_ID.trim().length > 0;
 
   const uptimeSeconds = Math.floor((Date.now() - START_TIME) / 1000);
 
@@ -28,6 +34,9 @@ export async function GET() {
       services: {
         supabase: isConfigured ? "configured" : "pending_credentials",
         gemini: hasGeminiKey ? "configured" : "disabled_by_default",
+        scheduler: hasCronSecret ? "configured" : "unconfigured",
+        worker:
+          hasWorkerId && isConfigured ? "configured" : "disabled_by_default",
       },
     },
     {

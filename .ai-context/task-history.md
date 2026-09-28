@@ -135,6 +135,52 @@
 - 0 security vulnerabilities in `npm audit`.
 - Clean Git working tree synced to GitHub `origin/main` (`e0ef1f5`).
 
+## 2026-09-28: Automated Scan Scheduling & Recurring Monitoring (Monitor Stage)
+
+- **Domain Model (`src/domain/scan-schedule.ts`)**:
+  - Implemented `ScanCadence` (`daily`, `weekly`, `biweekly`, `monthly`, `manual`) and `ProjectScanSchedule`.
+  - Added pure, deterministic functions: `computeNextRunAt`, `isScheduleDue`, `validateProjectScanSchedule`, and `formatCadenceLabel`.
+  - Added full test suite in `src/domain/scan-schedule.test.ts` (12 unit tests).
+- **Application Orchestration (`src/application/scan-scheduler.ts`)**:
+  - Implemented `evaluateAndEnqueueDueSchedules` with fail-closed workspace scan quota checks (`checkScanQuota`).
+  - Gracefully handles quota exhaustion and scheduling failures without crashing the batch.
+  - Enqueues due project scans and updates schedule execution timestamps (`lastRunAt`, `nextRunAt`).
+  - Added full test suite in `src/application/scan-scheduler.test.ts` (5 unit tests).
+- **Supabase Server Adapter & Database Migration**:
+  - Created `supabase/migrations/20260928230000_project_scan_schedules.sql` adding `public.project_scan_schedules`, RLS policies, and auto-provisioning triggers for new projects.
+  - Implemented server-only adapter `src/infrastructure/supabase/scan-scheduler-server.ts` with environment validation and `runConfiguredScanSchedulerOnce`.
+  - Added unit tests in `src/infrastructure/supabase/scan-scheduler-server.test.ts`.
+- **Cron Route Handler & Vercel Configuration**:
+  - Implemented `/api/worker/scheduler` (`src/app/api/worker/scheduler/route.ts`) with timing-safe `CRON_SECRET` authorization (`GET`/`POST`) returning execution telemetry.
+  - Registered `/api/worker/scheduler` (`0 * * * *`) in `vercel.json` alongside `/api/worker/scan` (`*/5 * * * *`).
+  - Added unit tests in `src/app/api/worker/scheduler/route.test.ts` (5 tests).
+- **Agency Workspace UI (`src/app/workspace/project-detail-panel.tsx`)**:
+  - Added interactive "Monitoring Schedule" tab with cadence selector cards, monthly scan volume impact estimates, and next scheduled execution timestamp.
+  - Added active monitor badge to project header.
+- **Verification**:
+  - 770/770 unit tests passing (up from 742).
+  - 14/14 Playwright E2E tests passing.
+  - Turbopack production build succeeded.
+  - `npm audit`: 0 vulnerabilities.
+
+## 2026-09-28: Level 6 Production Hardening & Staging Release Readiness
+
+- **Health Probe & Telemetry Diagnostic (`/api/health`)**:
+  - Elevated [`/api/health`](src/app/api/health/route.ts) with multi-service telemetry (`supabase`, `gemini`, `scheduler`, `worker`) and no-cache controls.
+  - Added unit test suite in [`src/app/api/health/route.test.ts`](src/app/api/health/route.test.ts) verifying format invariants and zero secret leakage.
+- **Production Security Headers**:
+  - Hardened [`next.config.ts`](next.config.ts) with `Strict-Transport-Security` (`max-age=63072000; includeSubDomains; preload`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Permissions-Policy`.
+- **Staging Preflight Audit Script**:
+  - Implemented [`scripts/preflight-check.ts`](scripts/preflight-check.ts) (`npm run preflight`) to audit public URLs, anon keys, secret keys, Gemini keys, high-entropy cron secrets, and verify live connectivity.
+  - Verified clean execution and failure modes (7/7 checks passed when configured).
+- **Staging & Production Release Runbook**:
+  - Authored [`docs/staging-release-runbook.md`](docs/staging-release-runbook.md) covering two-domain DNS topology (`nestedweb.com` vs `app.nestedweb.com`), Supabase Auth URLs, Vercel Crons, and database-level kill switches.
+- **Verification**:
+  - 771/771 unit tests passing (0 failing).
+  - 14/14 Playwright E2E tests passing.
+  - Turbopack production compilation succeeded.
+  - `npm audit`: 0 vulnerabilities.
+
 ## Remaining work
 
 - Enable pay-as-you-go / billing in Google AI Studio to lift the `RESOURCE_EXHAUSTED` quota on `google_search` grounding.

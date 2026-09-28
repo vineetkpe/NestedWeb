@@ -4,6 +4,10 @@
     {
       "path": "/api/worker/scan",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/worker/scheduler",
+      "schedule": "0 * * * *"
     }
   ],
   "headers": [
