@@ -154,9 +154,10 @@
   - Implemented `/api/worker/scheduler` (`src/app/api/worker/scheduler/route.ts`) with timing-safe `CRON_SECRET` authorization (`GET`/`POST`) returning execution telemetry.
   - Registered `/api/worker/scheduler` (`0 * * * *`) in `vercel.json` alongside `/api/worker/scan` (`*/5 * * * *`).
   - Added unit tests in `src/app/api/worker/scheduler/route.test.ts` (5 tests).
-- **Agency Workspace UI (`src/app/workspace/project-detail-panel.tsx`)**:
+- **Agency Workspace UI (`src/app/workspace/project-detail-panel.tsx` & `src/app/workspace/project-list-panel.tsx`)**:
   - Added interactive "Monitoring Schedule" tab with cadence selector cards, monthly scan volume impact estimates, and next scheduled execution timestamp.
   - Added active monitor badge to project header.
+  - Connected `ProjectDetailPanel` into `ProjectListPanel` to activate client operations and monitoring management upon project selection.
 - **Verification**:
   - 770/770 unit tests passing (up from 742).
   - 14/14 Playwright E2E tests passing.

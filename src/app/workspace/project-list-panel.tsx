@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { ProjectDetailPanel } from "./project-detail-panel.tsx";
 
 export type ProjectListItem = Readonly<{
   id: string;
@@ -189,6 +190,21 @@ export function ProjectListPanel({
               </div>
             </div>
           ) : null}
+
+          {(() => {
+            const selected = state.projects.find(
+              (p) => p.id === selectedProjectId,
+            );
+            if (!selected) return null;
+            return (
+              <ProjectDetailPanel
+                workspaceId={workspaceId}
+                projectId={selected.id}
+                projectName={selected.name}
+                trackedDomain={selected.trackedDomain}
+              />
+            );
+          })()}
 
           {scanState.message ? (
             <div
